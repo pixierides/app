@@ -52,7 +52,7 @@ export default function BookReceived() {
         <Button
           size="lg"
           fullWidth
-          onPress={() => router.replace(`/(customer)/trip/${tripId}` as never)}
+          onPress={() => router.replace(`/trip/${tripId}` as never)}
         >
           See this trip
         </Button>

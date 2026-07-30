@@ -13,6 +13,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, IncludedRow } from '@/components/ui';
 import { devMarkPaid, dollars, fetchMyTrips, openPayScreen, type CustomerTrip } from '@/lib/booking';
 import { formatTime } from '@/lib/format';
+import { withinNonRefundableWindow } from '@/lib/policy';
 import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
 
 export default function ConfirmAndPay() {
@@ -21,6 +22,7 @@ export default function ConfirmAndPay() {
   const [holdUntil, setHoldUntil] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [consented, setConsented] = useState(false);
 
   useEffect(() => {
     fetchMyTrips().then((trips) => setTrip(trips.find((t) => t.id === id) ?? null));
@@ -36,7 +38,7 @@ export default function ConfirmAndPay() {
     setError(null);
     try {
       await devMarkPaid(id!);
-      router.replace(`/(customer)/trip/${id}` as never);
+      router.replace(`/trip/${id}` as never);
     } catch (e: any) {
       setError(e?.message ?? 'Payment failed. Try again.');
       setBusy(false);
@@ -44,6 +46,11 @@ export default function ConfirmAndPay() {
   };
 
   if (!trip) return <SafeAreaView style={styles.screen} />;
+
+  // 72d — pickups inside 48h are non-refundable once paid. Required consent,
+  // unchecked by default; this is the only correct disabled primary.
+  const needsConsent = withinNonRefundableWindow(trip.pickup_at);
+  const payBlocked = needsConsent && !consented;
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -76,19 +83,41 @@ export default function ConfirmAndPay() {
           ) : null}
         </Card>
 
+        {needsConsent ? (
+          <Pressable
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: consented }}
+            onPress={() => setConsented((c) => !c)}
+            style={styles.consentRow}
+          >
+            <View style={[styles.checkbox, consented && styles.checkboxOn]}>
+              {consented ? <View style={styles.checkboxTick} /> : null}
+            </View>
+            <Text style={styles.consentText}>
+              This pickup is within 48 hours, so it's non-refundable once paid. We'll still change
+              your time free, up to 2 hours before pickup.
+            </Text>
+          </Pressable>
+        ) : null}
+
         {error ? <Text style={styles.error}>{error}</Text> : null}
       </View>
 
       <View style={styles.footer}>
         <Pressable
           accessibilityRole="button"
+          disabled={payBlocked}
           onPress={pay}
-          style={({ pressed }) => [styles.applePay, pressed && { opacity: 0.85 }]}
+          style={({ pressed }) => [
+            styles.applePay,
+            pressed && { opacity: 0.85 },
+            payBlocked && { opacity: 0.45 },
+          ]}
         >
           <Text style={styles.applePayText}> Pay</Text>
         </Pressable>
         <Text style={styles.or}>or pay with a card</Text>
-        <Button size="lg" fullWidth onPress={pay}>
+        <Button size="lg" fullWidth disabled={payBlocked} onPress={pay}>
           {busy ? 'Paying…' : `Pay ${dollars(trip.price_cents)} now`}
         </Button>
         <IncludedRow onDark style={styles.included}>
@@ -173,6 +202,42 @@ const styles = StyleSheet.create({
   error: {
     fontFamily: font.body400,
     fontSize: 14,
+    color: color.foam,
+  },
+  consentRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: space.s3,
+    marginTop: space.s2,
+  },
+  checkbox: {
+    width: 26,
+    height: 26,
+    borderRadius: 7,
+    borderWidth: 2,
+    borderColor: 'rgba(168,205,226,0.45)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+    flexShrink: 0,
+  },
+  checkboxOn: {
+    backgroundColor: color.green,
+    borderColor: color.green,
+  },
+  checkboxTick: {
+    width: 7,
+    height: 12,
+    borderRightWidth: 2,
+    borderBottomWidth: 2,
+    borderColor: color.white,
+    transform: [{ rotate: '45deg' }, { translateY: -1 }],
+  },
+  consentText: {
+    flex: 1,
+    fontFamily: font.body400,
+    fontSize: 14,
+    lineHeight: 21,
     color: color.foam,
   },
   footer: {

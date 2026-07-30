@@ -18,10 +18,12 @@ import {
   fetchMyTrips,
   SPINE_LABELS,
   SPINE_ORDER,
+  STATUS_LABELS,
   type CustomerTrip,
 } from '@/lib/booking';
 import { claimFrom, firstName, formatTime } from '@/lib/format';
-import { callDispatch } from '@/lib/links';
+import { callDispatch, DISPATCH_PHONE } from '@/lib/links';
+import { cancelDeadline, formatDeadline, policyState } from '@/lib/policy';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
 
 function dateLine(t: CustomerTrip): string {
@@ -50,6 +52,10 @@ export default function TripDetail() {
   const driverHere = trip.driver_state === 'arrived';
   const onTrip = trip.driver_state === 'on_trip';
   const claim = claimFrom(trip.meet_point);
+  const upcoming =
+    trip.status !== 'complete' && trip.status !== 'cancelled' && trip.status !== 'no_show';
+  // Recomputed on focus (fetch re-renders); a formatted boundary, never a countdown.
+  const pState = policyState(trip.pickup_at);
 
   const steps = SPINE_ORDER.map((s) => ({ title: SPINE_LABELS[s] }));
 
@@ -73,7 +79,7 @@ export default function TripDetail() {
             {trip.origin} <Text style={styles.arrow}>→</Text> {trip.destination}
           </Text>
           <Badge tone={trip.status === 'complete' ? 'confirmed' : 'on-dark'}>
-            {SPINE_LABELS[trip.status] ?? trip.status}
+            {STATUS_LABELS[trip.status] ?? trip.status}
           </Badge>
         </View>
         <Text style={styles.dateLine}>{dateLine(trip)}</Text>
@@ -82,6 +88,51 @@ export default function TripDetail() {
             was {formatTime(trip.pickup_at_was)} → now {formatTime(trip.pickup_at)} — we watched
             your flight.
           </Text>
+        ) : null}
+
+        {/* ——— 7a · flight delayed — we moved the pickup ——— */}
+        {upcoming && trip.pickup_at_was ? (
+          <Card tone="dark-raised" texture pad={20} style={styles.block}>
+            <Text style={styles.eyebrow}>
+              FLIGHT UPDATE{trip.flight_number ? ` · ${trip.flight_number}` : ''}
+            </Text>
+            <Text style={styles.blockTitle}>
+              Your flight's running late.{'\n'}We moved your pickup for you.
+            </Text>
+            <Text style={styles.blockBody}>
+              Nothing to do — {trip.driver_name ?? 'your driver'} is watching the same flight and
+              will be there when you land.
+            </Text>
+            <View style={styles.wasNowRow}>
+              <View style={styles.wasNowCol}>
+                <Text style={styles.wasNowLabel}>WAS</Text>
+                <Text style={styles.wasNowOld}>{formatTime(trip.pickup_at_was)}</Text>
+              </View>
+              <Text style={styles.wasNowArrow}>→</Text>
+              <View style={styles.wasNowCol}>
+                <Text style={styles.wasNowLabel}>NEW PICKUP</Text>
+                <Text style={styles.wasNowNew}>{formatTime(trip.pickup_at)}</Text>
+              </View>
+            </View>
+            <IncludedRow onDark>
+              Same flat {dollars(trip.price_cents)} — delays never change your price.
+            </IncludedRow>
+            <IncludedRow onDark>Waiting is included, however long the belt takes.</IncludedRow>
+          </Card>
+        ) : null}
+
+        {/* ——— cancelled ——— */}
+        {trip.status === 'cancelled' ? (
+          <Card tone="dark-raised" pad={20} style={styles.block}>
+            <Text style={styles.blockTitle}>This booking is cancelled.</Text>
+            {trip.paid_at ? (
+              <Text style={styles.blockBody}>
+                Your {dollars(trip.price_cents)} is on its way back to your card.
+              </Text>
+            ) : (
+              <Text style={styles.blockBody}>Nothing was charged.</Text>
+            )}
+          </Card>
         ) : null}
 
         {/* ——— status-specific block ——— */}
@@ -101,7 +152,7 @@ export default function TripDetail() {
             <Button
               size="lg"
               fullWidth
-              onPress={() => router.push(`/(customer)/trip/${trip.id}/pay` as never)}
+              onPress={() => router.push(`/trip/${trip.id}/pay` as never)}
             >
               Confirm & pay {dollars(trip.price_cents)}
             </Button>
@@ -116,6 +167,11 @@ export default function TripDetail() {
               pickup.
             </Text>
             <IncludedRow onDark>Paid in full — nothing to pay at pickup.</IncludedRow>
+            {trip.flight_number && !trip.pickup_at_was ? (
+              <IncludedRow onDark>
+                We're watching {trip.flight_number} — pickup moves on its own if it slips.
+              </IncludedRow>
+            ) : null}
           </Card>
         ) : null}
 
@@ -155,7 +211,7 @@ export default function TripDetail() {
             <Button
               size="lg"
               fullWidth
-              onPress={() => router.push(`/(customer)/trip/${trip.id}/sign` as never)}
+              onPress={() => router.push(`/trip/${trip.id}/sign` as never)}
             >
               See the sign we're holding
             </Button>
@@ -180,7 +236,7 @@ export default function TripDetail() {
               variant="secondary"
               onDark
               fullWidth
-              onPress={() => router.push(`/(customer)/trip/${trip.id}/receipt` as never)}
+              onPress={() => router.push(`/trip/${trip.id}/receipt` as never)}
             >
               See your receipt
             </Button>
@@ -218,6 +274,70 @@ export default function TripDetail() {
             </View>
           ) : null}
         </Card>
+
+        {/* ——— cancel / change · three distinct states, never greyed buttons ——— */}
+        {upcoming ? (
+          <Card tone="dark-raised" pad={20} style={styles.block}>
+            {pState === 'A' ? (
+              <>
+                <Text style={styles.blockBody}>
+                  Free cancellation until {formatDeadline(cancelDeadline(trip.pickup_at))}.
+                </Text>
+                <Text style={styles.blockBody}>
+                  Change your time or date free, up to 2 hours before pickup.
+                </Text>
+                <View style={styles.policyActions}>
+                  <Button
+                    variant="secondary"
+                    onDark
+                    onPress={() => router.push(`/trip/${trip.id}/change` as never)}
+                  >
+                    Change booking
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onDark
+                    onPress={() => router.push(`/trip/${trip.id}/cancel` as never)}
+                  >
+                    Cancel booking
+                  </Button>
+                </View>
+              </>
+            ) : pState === 'B' ? (
+              <>
+                <Text style={styles.blockBody}>
+                  {trip.paid_at
+                    ? 'This booking is now non-refundable.'
+                    : "You're not charged until a human confirms."}
+                </Text>
+                <Text style={styles.blockBody}>
+                  You can still change your time or date free, up to 2 hours before pickup.
+                </Text>
+                <View style={styles.policyActions}>
+                  <Button
+                    variant="secondary"
+                    onDark
+                    onPress={() => router.push(`/trip/${trip.id}/change` as never)}
+                  >
+                    Change booking
+                  </Button>
+                  <Button variant="ghost" onDark onPress={callDispatch}>
+                    Call us
+                  </Button>
+                </View>
+              </>
+            ) : (
+              <>
+                <Text style={styles.blockBody}>Pickup is soon. Call us for any changes.</Text>
+                <View style={styles.policyActions}>
+                  <Button variant="secondary" onDark onPress={callDispatch}>
+                    Call {DISPATCH_PHONE}
+                  </Button>
+                </View>
+              </>
+            )}
+          </Card>
+        ) : null}
 
         <Pressable accessibilityRole="button" onPress={callDispatch} hitSlop={8}>
           <Text style={styles.dispatchLine}>
@@ -280,6 +400,44 @@ const styles = StyleSheet.create({
     fontFamily: font.body600,
     fontSize: 14,
     color: color.foam,
+  },
+  wasNowRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.s4,
+    paddingVertical: space.s2,
+  },
+  wasNowCol: {
+    gap: 2,
+  },
+  wasNowLabel: {
+    fontFamily: font.body600,
+    fontSize: 11,
+    letterSpacing: ls(track.label, 11),
+    color: color.foamDim,
+  },
+  wasNowOld: {
+    fontFamily: font.display700,
+    fontSize: 22,
+    color: color.foamDim,
+    textDecorationLine: 'line-through',
+  },
+  wasNowNew: {
+    fontFamily: font.display700,
+    fontSize: 22,
+    color: color.white,
+  },
+  wasNowArrow: {
+    fontFamily: font.body400,
+    fontSize: 20,
+    color: color.foamDim,
+  },
+  policyActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.s3,
+    marginTop: space.s2,
+    flexWrap: 'wrap',
   },
   eyebrow: {
     fontFamily: font.body600,

@@ -7,7 +7,7 @@ import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Button, Card, ListRow } from '@/components/ui';
-import { fetchMyTrips, SPINE_LABELS, type CustomerTrip } from '@/lib/booking';
+import { fetchMyTrips, STATUS_LABELS, type CustomerTrip } from '@/lib/booking';
 import { formatTime } from '@/lib/format';
 import { useAuth } from '@/providers/auth';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
@@ -78,14 +78,14 @@ export default function Trips() {
                   day: 'numeric',
                 })} · ${formatTime(t.pickup_at)}`}
                 trailing={
-                  SPINE_LABELS[t.status] ? (
+                  STATUS_LABELS[t.status] ? (
                     <Badge tone={t.status === 'complete' ? 'confirmed' : 'on-dark'}>
-                      {SPINE_LABELS[t.status]}
+                      {STATUS_LABELS[t.status]}
                     </Badge>
                   ) : undefined
                 }
                 chevron
-                onPress={() => router.push(`/(customer)/trip/${t.id}` as never)}
+                onPress={() => router.push(`/trip/${t.id}` as never)}
               />
             ))}
           </Card>

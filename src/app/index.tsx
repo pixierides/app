@@ -68,7 +68,7 @@ export default function Home() {
             <Pressable
               accessibilityRole="button"
               style={styles.chipFilled}
-              onPress={() => router.push('/(customer)/trips')}
+              onPress={() => router.push('/trips')}
             >
               <Text style={styles.chipFilledText}>Your trips</Text>
             </Pressable>
@@ -104,7 +104,7 @@ export default function Home() {
               onDark
               fullWidth
               style={{ marginTop: space.s3 }}
-              onPress={() => router.push(`/(customer)/trip/${nextTrip.id}` as never)}
+              onPress={() => router.push(`/trip/${nextTrip.id}` as never)}
             >
               See this trip
             </Button>
