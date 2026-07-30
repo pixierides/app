@@ -1,0 +1,334 @@
+/**
+ * The trip, one surface per status — never one screen with greyed controls.
+ *   requested        → in review (spine at Requested)
+ *   confirmed        → "Let's lock it in" CTA → pay (26a)
+ *   paid             → "You're all set." locked in
+ *   driver_assigned  → driver card (10b) · landed / take your time (61a) ·
+ *                      the sign (4b) · in transit
+ *   complete         → receipt link (12a)
+ * Pickup moves render as was → now pairs. Recomputed on focus.
+ */
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useCallback, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Badge, Button, Card, IncludedRow, TripStatus } from '@/components/ui';
+import {
+  dollars,
+  fetchMyTrips,
+  SPINE_LABELS,
+  SPINE_ORDER,
+  type CustomerTrip,
+} from '@/lib/booking';
+import { claimFrom, firstName, formatTime } from '@/lib/format';
+import { callDispatch } from '@/lib/links';
+import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+
+function dateLine(t: CustomerTrip): string {
+  const d = new Date(t.pickup_at);
+  const day = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  const bits = [day, formatTime(t.pickup_at)];
+  if (t.car_seats) bits.push(t.car_seats.split(' · ')[0]);
+  if (t.flight_number) bits.push(`${t.flight_number}${t.status === 'paid' ? ' watched' : ''}`);
+  return bits.join(' · ');
+}
+
+export default function TripDetail() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  const [trip, setTrip] = useState<CustomerTrip | null>(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      fetchMyTrips().then((trips) => setTrip(trips.find((t) => t.id === id) ?? null));
+    }, [id]),
+  );
+
+  if (!trip) return <SafeAreaView style={styles.screen} />;
+
+  const spineIndex = Math.max(0, SPINE_ORDER.indexOf(trip.status));
+  const landed = !!trip.flight_landed_at;
+  const driverHere = trip.driver_state === 'arrived';
+  const onTrip = trip.driver_state === 'on_trip';
+  const claim = claimFrom(trip.meet_point);
+
+  const steps = SPINE_ORDER.map((s) => ({ title: SPINE_LABELS[s] }));
+
+  return (
+    <SafeAreaView style={styles.screen}>
+      <ScrollView contentContainerStyle={styles.scroll}>
+        <View style={styles.top}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Back"
+            onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))}
+            hitSlop={12}
+            style={styles.back}
+          >
+            <Text style={styles.backGlyph}>‹</Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.headerRow}>
+          <Text style={styles.route}>
+            {trip.origin} <Text style={styles.arrow}>→</Text> {trip.destination}
+          </Text>
+          <Badge tone={trip.status === 'complete' ? 'confirmed' : 'on-dark'}>
+            {SPINE_LABELS[trip.status] ?? trip.status}
+          </Badge>
+        </View>
+        <Text style={styles.dateLine}>{dateLine(trip)}</Text>
+        {trip.pickup_at_was ? (
+          <Text style={styles.wasNow}>
+            was {formatTime(trip.pickup_at_was)} → now {formatTime(trip.pickup_at)} — we watched
+            your flight.
+          </Text>
+        ) : null}
+
+        {/* ——— status-specific block ——— */}
+        {trip.status === 'requested' ? (
+          <Card tone="dark-raised" texture pad={20} style={styles.block}>
+            <Text style={styles.blockTitle}>A person is looking at it now.</Text>
+            <Text style={styles.blockBody}>
+              You'll hear within the hour. You're not charged until a human confirms.
+            </Text>
+          </Card>
+        ) : null}
+
+        {trip.status === 'confirmed' ? (
+          <Card tone="dark-raised" texture pad={20} style={styles.block}>
+            <Text style={styles.eyebrow}>DISPATCH CONFIRMED YOUR TRIP</Text>
+            <Text style={styles.blockTitle}>Let's lock it in.</Text>
+            <Button
+              size="lg"
+              fullWidth
+              onPress={() => router.push(`/(customer)/trip/${trip.id}/pay` as never)}
+            >
+              Confirm & pay {dollars(trip.price_cents)}
+            </Button>
+          </Card>
+        ) : null}
+
+        {trip.status === 'paid' ? (
+          <Card tone="dark-raised" texture pad={20} style={styles.block}>
+            <Text style={styles.blockTitle}>Your ride is locked in.</Text>
+            <Text style={styles.blockBody}>
+              We'll notify you here with your driver's name and car, about two hours before
+              pickup.
+            </Text>
+            <IncludedRow onDark>Paid in full — nothing to pay at pickup.</IncludedRow>
+          </Card>
+        ) : null}
+
+        {trip.status === 'driver_assigned' && !driverHere && !onTrip ? (
+          <Card tone="dark-raised" texture pad={20} style={styles.block}>
+            <Text style={styles.eyebrow}>
+              {landed && trip.flight_number
+                ? `${trip.flight_number} · LANDED ${formatTime(trip.flight_landed_at!).toUpperCase()}`
+                : 'YOUR DRIVER'}
+            </Text>
+            <Text style={styles.blockTitle}>
+              {trip.driver_name
+                ? `${trip.driver_name} is your driver ${landed ? 'tonight' : ''}`.trim() + '.'
+                : 'Your driver is set.'}
+            </Text>
+            {trip.vehicle ? (
+              <Text style={styles.blockBody}>
+                {trip.vehicle}. {claim ? `He'll be at baggage ${claim} holding a sign with your name.` : "He'll be holding a sign with your name."}
+              </Text>
+            ) : null}
+            {trip.car_seats ? <IncludedRow onDark>Booster already fitted</IncludedRow> : null}
+          </Card>
+        ) : null}
+
+        {driverHere ? (
+          <Card tone="dark-raised" texture pad={20} style={styles.block}>
+            <Text style={styles.eyebrow}>
+              {trip.flight_number && trip.flight_landed_at
+                ? `${trip.flight_number} · LANDED ${formatTime(trip.flight_landed_at).toUpperCase()}`
+                : 'LANDED'}
+            </Text>
+            <Text style={styles.blockTitle}>Take your time.</Text>
+            <Text style={styles.blockBody}>
+              {trip.driver_name ?? 'Your driver'} is waiting
+              {claim ? ` at ${claim}` : ''}. Get your bags, find a restroom. He waits for you.
+            </Text>
+            <Button
+              size="lg"
+              fullWidth
+              onPress={() => router.push(`/(customer)/trip/${trip.id}/sign` as never)}
+            >
+              See the sign we're holding
+            </Button>
+          </Card>
+        ) : null}
+
+        {onTrip ? (
+          <Card tone="dark-raised" texture pad={20} style={styles.block}>
+            <Text style={styles.eyebrow}>IN TRANSIT</Text>
+            <Text style={styles.blockTitle}>On the way to {trip.destination}.</Text>
+            <Text style={styles.blockBody}>
+              {trip.driver_name ?? 'Your driver'} has you. Sit back — the price is settled and the
+              route is his job now.
+            </Text>
+          </Card>
+        ) : null}
+
+        {trip.status === 'complete' ? (
+          <Card tone="dark-raised" texture pad={20} style={styles.block}>
+            <Text style={styles.blockTitle}>Welcome to Orlando.</Text>
+            <Button
+              variant="secondary"
+              onDark
+              fullWidth
+              onPress={() => router.push(`/(customer)/trip/${trip.id}/receipt` as never)}
+            >
+              See your receipt
+            </Button>
+          </Card>
+        ) : null}
+
+        {/* ——— the spine ——— */}
+        <View style={styles.spineWrap}>
+          <TripStatus steps={steps} current={spineIndex} onDark />
+        </View>
+
+        {/* ——— itinerary ——— */}
+        <Card tone="dark-raised" pad={20} style={styles.block}>
+          <View style={styles.kvRow}>
+            <Text style={styles.kvLabel}>Flat price</Text>
+            <Text style={styles.kvValue}>
+              {dollars(trip.price_cents)}
+              {trip.paid_at ? ' paid' : ''}
+            </Text>
+          </View>
+          <View style={styles.kvRow}>
+            <Text style={styles.kvLabel}>Pickup</Text>
+            <Text style={styles.kvValue}>{formatTime(trip.pickup_at)}</Text>
+          </View>
+          {trip.meet_point ? (
+            <View style={styles.kvRow}>
+              <Text style={styles.kvLabel}>Meet at</Text>
+              <Text style={styles.kvValue}>{trip.meet_point}</Text>
+            </View>
+          ) : null}
+          {trip.car_seats ? (
+            <View style={styles.kvRow}>
+              <Text style={styles.kvLabel}>Car seats</Text>
+              <Text style={styles.kvValue}>{trip.car_seats}</Text>
+            </View>
+          ) : null}
+        </Card>
+
+        <Pressable accessibilityRole="button" onPress={callDispatch} hitSlop={8}>
+          <Text style={styles.dispatchLine}>
+            Need a person? Call 407-373-8735
+          </Text>
+        </Pressable>
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+    backgroundColor: color.sea,
+  },
+  scroll: {
+    paddingHorizontal: space.s5,
+    paddingBottom: space.s6,
+    gap: space.s4,
+  },
+  top: {
+    height: 44,
+    justifyContent: 'center',
+  },
+  back: {
+    width: 44,
+    height: 44,
+    justifyContent: 'center',
+  },
+  backGlyph: {
+    color: color.foam,
+    fontSize: 28,
+    lineHeight: 30,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: space.s3,
+    flexWrap: 'wrap',
+  },
+  route: {
+    fontFamily: font.display700,
+    fontSize: fs.h3 + 2,
+    letterSpacing: ls(track.h2, fs.h3 + 2),
+    color: color.white,
+    flexShrink: 1,
+  },
+  arrow: {
+    fontFamily: font.body400,
+    color: color.foamDim,
+  },
+  dateLine: {
+    fontFamily: font.body400,
+    fontSize: 14,
+    color: color.foam,
+  },
+  wasNow: {
+    fontFamily: font.body600,
+    fontSize: 14,
+    color: color.foam,
+  },
+  eyebrow: {
+    fontFamily: font.body600,
+    fontSize: fs.label,
+    letterSpacing: ls(track.label, fs.label),
+    color: color.foamDim,
+  },
+  block: {
+    gap: space.s3,
+  },
+  blockTitle: {
+    fontFamily: font.display700,
+    fontSize: fs.h3 + 2,
+    lineHeight: (fs.h3 + 2) * lh.tight,
+    letterSpacing: ls(track.h2, fs.h3 + 2),
+    color: color.white,
+  },
+  blockBody: {
+    fontFamily: font.body400,
+    fontSize: 15,
+    lineHeight: 15 * 1.5,
+    color: color.foam,
+  },
+  spineWrap: {
+    paddingVertical: space.s2,
+  },
+  kvRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: space.s3,
+    minHeight: 24,
+  },
+  kvLabel: {
+    fontFamily: font.body400,
+    fontSize: 14,
+    color: color.foamDim,
+  },
+  kvValue: {
+    fontFamily: font.body600,
+    fontSize: 14,
+    color: color.foam,
+    flexShrink: 1,
+    textAlign: 'right',
+  },
+  dispatchLine: {
+    fontFamily: font.body400,
+    fontSize: 13,
+    color: color.foamDim,
+    textAlign: 'center',
+    paddingVertical: space.s2,
+  },
+});
