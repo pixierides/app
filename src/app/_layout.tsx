@@ -4,6 +4,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '@/providers/auth';
+import { BookingProvider } from '@/providers/booking';
 import { useAppFonts } from '@/theme/fonts';
 import { color } from '@/theme/tokens';
 
@@ -21,13 +22,15 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <StatusBar style="light" />
-        <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: color.sea },
-          }}
-        />
+        <BookingProvider>
+          <StatusBar style="light" />
+          <Stack
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: color.sea },
+            }}
+          />
+        </BookingProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );
