@@ -1,0 +1,69 @@
+/* Pixie Rides — color tokens (locked from brand guide v1.2) */
+:root{
+  /* --- base palette --- */
+  /* Sea family (navy · structure) */
+  --sea:#08344F;      /* primary navy · backgrounds, headings, body text on light */
+  --sea-2:#0E4A6E;    /* deep accent navy · raised dark surfaces */
+  --sea-3:#175E88;    /* lightest navy · hovers, bubbles */
+
+  /* Sky family (surfaces) */
+  --sky:#EAF4FA;      /* default light background */
+  --sky-2:#DCEBF5;    /* raised / alternating surface */
+  --sky-3:#C9DFED;    /* borders, dividers */
+
+  /* Action */
+  --orange:#F97316;   /* the single action / brand accent · ACTION ONLY */
+  --orange-hi:#EA580C;/* hover / pressed */
+  --on-orange:#2B1206;/* text/icons on orange · NEVER white on orange */
+
+  /* Confirmed / included */
+  --green:#4E9E7A;    /* success / included FILLS (tick backgrounds, badges) */
+  --green-text:#367254;/* green as small TEXT on light (darker, legible) */
+
+  /* Text & tone */
+  --ink:#08344F;      /* = sea · primary text on light */
+  --ink-2:#3D6480;    /* secondary text */
+  --foam:#A8CDE2;     /* body text on navy */
+  --foam-dim:#7BA6C2; /* muted labels on navy */
+  --white:#FFFFFF;    /* form/card surfaces, wordmark on navy */
+
+  /* --- semantic aliases --- */
+  --bg-page:var(--sky);
+  --bg-raised:var(--sky-2);
+  --bg-dark:var(--sea);
+  --bg-dark-raised:var(--sea-2);
+  --surface-card:var(--white);
+  --divider:var(--sky-3);
+
+  --text-heading:var(--sea);
+  --text-body:var(--ink-2);
+  --text-primary:var(--ink);
+  --text-on-dark:var(--foam);
+  --text-on-dark-dim:var(--foam-dim);
+
+  --action:var(--orange);
+  --action-hover:var(--orange-hi);
+  --action-text:var(--on-orange);
+
+  --confirm-fill:var(--green);
+  --confirm-text:var(--green-text);
+}
+
+/* --- dark theme (app-first inversion) ---
+   The brand is navy-first, so "dark mode" deepens the field and keeps
+   orange as the single action. Sky tints become navy surfaces; ink becomes foam. */
+[data-theme="dark"]{
+  --bg-page:#06283C;         /* one step below Sea for the true canvas */
+  --bg-raised:var(--sea);    /* raised surfaces lift toward Sea */
+  --surface-card:var(--sea-2);
+  --divider:rgba(168,205,226,.14);
+
+  --text-heading:var(--white);
+  --text-body:var(--foam);
+  --text-primary:var(--sky);
+  --text-on-dark:var(--foam);
+  --text-on-dark-dim:var(--foam-dim);
+
+  /* action + confirm stay identical — orange still means "act" */
+  --confirm-text:#8FD3B4;    /* green steps brighter to read on navy */
+}

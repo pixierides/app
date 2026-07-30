@@ -1,0 +1,6 @@
+/* Pixie Rides — webfonts.
+   Both families are free Google Fonts. We load them from Google's CDN so
+   consumers get the exact ships-on-site faces without vendoring binaries.
+   If you need offline/self-hosted binaries, drop woff2 files in assets/fonts/
+   and replace this @import with @font-face rules pointing at them. */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600;700&display=swap');

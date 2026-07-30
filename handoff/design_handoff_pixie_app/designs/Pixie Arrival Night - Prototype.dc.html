@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/pixie-rides-design-system-4577853d-1df0-4285-a2d8-dc8818666949/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/pixie-rides-design-system-4577853d-1df0-4285-a2d8-dc8818666949/tokens/colors.css">
+<link rel="stylesheet" href="_ds/pixie-rides-design-system-4577853d-1df0-4285-a2d8-dc8818666949/tokens/typography.css">
+<link rel="stylesheet" href="_ds/pixie-rides-design-system-4577853d-1df0-4285-a2d8-dc8818666949/tokens/geometry.css">
+<link rel="stylesheet" href="_ds/pixie-rides-design-system-4577853d-1df0-4285-a2d8-dc8818666949/styles.css">
+<script src="_ds/pixie-rides-design-system-4577853d-1df0-4285-a2d8-dc8818666949/_ds_bundle.js"></script>
+<style>
+  body{margin:0;background:var(--sky-2)}
+  *{box-sizing:border-box}
+  a{color:var(--sea-2);text-decoration-thickness:1px;text-underline-offset:2px}
+  a:hover{color:var(--sea-3)}
+  .ph{position:relative;width:376px;flex:none;background:#0a0a0a;border-radius:46px;padding:12px;box-shadow:0 34px 66px rgba(8,52,79,.34),0 6px 16px rgba(0,0,0,.24)}
+  .ph i{position:absolute;top:12px;left:50%;transform:translateX(-54px);width:108px;height:31px;background:#0a0a0a;border-radius:16px;z-index:40}
+  .sc{position:relative;width:352px;height:748px;border-radius:36px;overflow:hidden;background:var(--sea)}
+  .pane{position:absolute;inset:0;display:flex;flex-direction:column}
+  .sb{flex:0 0 auto;height:46px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 26px 6px;font-family:var(--font-body);font-weight:600;font-size:14px}
+  .body{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+  .dots{position:absolute;inset:0;background-image:var(--dot-warm);background-size:20px 20px;opacity:.4}
+  .h1{font-family:var(--font-display);font-weight:800;font-size:26px;letter-spacing:-0.03em;line-height:1.06}
+  .eyebrow{font-family:var(--font-body);font-weight:600;font-size:11.5px;letter-spacing:.16em;text-transform:uppercase}
+  .card{background:var(--white);border-radius:14px;box-shadow:var(--shadow-card)}
+  .dcard{background:var(--sea-2);border-radius:14px}
+  .p{font-family:var(--font-body);font-size:14px;line-height:1.5}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:26px;padding:40px 24px 56px;font-family:var(--font-body)">
+
+  <div style="display:flex;flex-direction:column;align-items:center;gap:7px;text-align:center;max-width:48ch">
+    <div class="eyebrow" style="color:var(--ink-2)">Clickable prototype · the v1 spine</div>
+    <div class="h1" style="font-size:27px;color:var(--sea)">Arrival night, end to end.</div>
+    <div class="p" style="color:var(--ink-2)">Seventeen screens from opening the app cold to the receipt — booking, the account wall, paying, the sign at baggage claim. Every current rule applied: nothing by text, no countdowns, one flat price.</div>
+  </div>
+
+  <div class="ph"><i></i><div class="sc">
+
+    <sc-if value="{{ s0 }}" hint-placeholder-val="{{ true }}">
+    <div class="pane" style="background:var(--sea)"><span class="dots"></span>
+      <div class="sb" style="position:relative;z-index:2;color:var(--foam)"><span>9:38</span><span style="display:flex;gap:6px;align-items:center"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor"/></svg></span></div>
+      <div class="body" style="position:relative;z-index:2;gap:15px;padding:8px 22px 22px">
+        <div style="flex:none;display:flex;align-items:center;justify-content:space-between">
+          <img src="assets/logo-white.svg" alt="Pixie Rides" style="height:18px;width:auto" />
+          <button type="button" onClick="{{ toSignIn }}" style="font-family:var(--font-body);font-weight:600;font-size:13px;color:var(--foam);background:transparent;border:1.5px solid rgba(234,244,250,.35);border-radius:999px;padding:7px 14px;cursor:pointer">Sign in</button>
+        </div>
+        <div>
+          <div class="h1" style="font-size:27px;color:#fff">Someone will be<br>holding your name.</div>
+          <div class="p" style="color:var(--foam);margin-top:8px">Flat prices, car seats free, and we watch your flight. Get a price in about a minute.</div>
+        </div>
+        <div class="dcard" style="padding:14px 16px;display:flex;flex-direction:column;gap:11px">
+          <div style="background:var(--sea);border-radius:12px;padding:11px 14px"><div class="eyebrow" style="font-size:10.5px;color:var(--foam)">Pickup</div><div style="font-family:var(--font-body);font-weight:600;font-size:15px;color:#fff;margin-top:2px">MCO — Orlando Intl</div></div>
+          <div style="background:var(--sea);border-radius:12px;padding:11px 14px"><div class="eyebrow" style="font-size:10.5px;color:var(--foam)">Drop-off</div><div style="font-family:var(--font-body);font-size:15px;color:var(--foam);margin-top:2px">Hotel, resort or port</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:9px">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.IncludedRow" on-dark="{{ true }}" hint-size="100%,auto">Taxes, tolls and parking are in the price</x-import>
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.IncludedRow" on-dark="{{ true }}" hint-size="100%,auto">Car seats free, fitted before we leave</x-import>
+        </div>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:9px">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="primary" size="lg" full-width="{{ true }}" on-click="{{ next }}" hint-size="100%,58px">See my price</x-import>
+          <div style="font-family:var(--font-body);font-size:12.5px;color:var(--foam);text-align:center">Booked before? <span role="button" onClick="{{ toSignIn }}" style="cursor:pointer;color:#fff;text-decoration:underline">Sign in to see your trips</span></div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ s1 }}" hint-placeholder-val="{{ false }}">
+    <div class="pane" style="background:var(--sky)">
+      <div class="sb" style="color:var(--ink)"><span>9:39</span><span style="display:flex;gap:6px;align-items:center"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor"/></svg></span></div>
+      <div class="body" style="gap:14px;padding:6px 22px 20px">
+        <div style="display:flex;gap:6px"><span style="flex:1;height:4px;border-radius:3px;background:var(--sea)"></span><span style="flex:1;height:4px;border-radius:3px;background:var(--sky-3)"></span><span style="flex:1;height:4px;border-radius:3px;background:var(--sky-3)"></span></div>
+        <div>
+          <div class="eyebrow" style="color:var(--ink-2)">Step 1 of 3</div>
+          <div class="h1" style="color:var(--sea);margin-top:6px">Where are we<br>picking you up?</div>
+        </div>
+        <div class="card" style="padding:2px 14px">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.ListRow" title="MCO — Orlando Intl" subtitle="Pickup" chevron="{{ true }}" hint-size="100%,56px"></x-import>
+          <div style="height:1px;background:var(--sky-3)"></div>
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.ListRow" title="Grand Floridian" subtitle="Drop-off" chevron="{{ true }}" hint-size="100%,56px"></x-import>
+          <div style="height:1px;background:var(--sky-3)"></div>
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.ListRow" title="Fri, Aug 8 · 11:40pm" subtitle="When" chevron="{{ true }}" hint-size="100%,56px"></x-import>
+        </div>
+        <div style="position:relative;flex:1;min-height:90px;border-radius:14px;overflow:hidden;background:var(--sea-2)">
+          <span class="dots" style="opacity:.5"></span>
+          <svg viewBox="0 0 300 160" width="100%" height="100%" style="position:absolute;inset:0"><path d="M30 130 C 96 130, 126 56, 200 44 S 262 22, 272 18" fill="none" stroke="rgba(249,115,22,.85)" stroke-width="3" stroke-linecap="round"></path><circle cx="30" cy="130" r="6.5" fill="#F97316"></circle><circle cx="272" cy="18" r="6.5" fill="var(--sea-2)" stroke="rgba(249,115,22,.55)" stroke-width="3"></circle></svg>
+        </div>
+        <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="primary" size="lg" full-width="{{ true }}" on-click="{{ next }}" hint-size="100%,58px">Next</x-import>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ s2 }}" hint-placeholder-val="{{ false }}">
+    <div class="pane" style="background:var(--sky)">
+      <div class="sb" style="color:var(--ink)"><span>9:40</span><span style="display:flex;gap:6px;align-items:center"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor"/></svg></span></div>
+      <div class="body" style="gap:14px;padding:6px 22px 20px">
+        <div style="display:flex;gap:6px"><span style="flex:1;height:4px;border-radius:3px;background:var(--sea)"></span><span style="flex:1;height:4px;border-radius:3px;background:var(--sea)"></span><span style="flex:1;height:4px;border-radius:3px;background:var(--sky-3)"></span></div>
+        <div>
+          <div class="eyebrow" style="color:var(--ink-2)">Step 2 of 3</div>
+          <div class="h1" style="color:var(--sea);margin-top:6px">Who's travelling,<br>and which flight?</div>
+        </div>
+        <div class="card" style="padding:14px 16px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font-family:var(--font-body);font-weight:600;font-size:15px;color:var(--ink)">Adults</span>
+            <span style="display:flex;align-items:center;gap:14px"><span style="width:30px;height:30px;border-radius:50%;background:var(--sky-2);display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;color:var(--sea)">−</span><span style="font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--ink);min-width:14px;text-align:center">2</span><span style="width:30px;height:30px;border-radius:50%;background:var(--sky-2);display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;color:var(--sea)">+</span></span>
+          </div>
+          <div style="height:1px;background:var(--sky-3)"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font-family:var(--font-body);font-weight:600;font-size:15px;color:var(--ink)">Children</span>
+            <span style="display:flex;align-items:center;gap:14px"><span style="width:30px;height:30px;border-radius:50%;background:var(--sky-2);display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;color:var(--sea)">−</span><span style="font-family:var(--font-display);font-weight:700;font-size:18px;color:var(--ink);min-width:14px;text-align:center">1</span><span style="width:30px;height:30px;border-radius:50%;background:var(--sky-2);display:inline-flex;align-items:center;justify-content:center;font-weight:600;font-size:16px;color:var(--sea)">+</span></span>
+          </div>
+          <div style="height:1px;background:var(--sky-3)"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font-family:var(--font-body);font-weight:600;font-size:15px;color:var(--ink)">Car seats</span>
+            <span style="font-family:var(--font-body);font-size:14.5px;color:var(--green-text);font-weight:600">1 booster · free</span>
+          </div>
+        </div>
+        <div class="card" style="padding:12px 15px">
+          <div class="eyebrow" style="font-size:10.5px;color:var(--ink-2)">Flight</div>
+          <div style="font-family:var(--font-body);font-weight:600;font-size:16px;color:var(--ink);margin-top:3px">DL 1487 · lands 11:22pm</div>
+        </div>
+        <x-import component-from-global-scope="PixieRidesDesignSystem_457785.IncludedRow" hint-size="100%,auto">We watch it — your pickup moves if you land late.</x-import>
+        <div style="margin-top:auto">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="primary" size="lg" full-width="{{ true }}" on-click="{{ next }}" hint-size="100%,58px">See my price</x-import>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ s3 }}" hint-placeholder-val="{{ false }}">
+    <div class="pane" style="background:var(--sky)">
+      <div class="sb" style="color:var(--ink)"><span>9:41</span><span style="display:flex;gap:6px;align-items:center"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor"/></svg></span></div>
+      <div class="body" style="gap:15px;padding:6px 22px 20px">
+        <div style="display:inline-flex;align-items:center;gap:10px;font-family:var(--font-display);font-weight:700;font-size:17px;letter-spacing:-0.02em;color:var(--ink)"><span>MCO</span><span aria-hidden="true" style="color:var(--ink-2);font-family:var(--font-body);font-weight:400;font-size:14px">→</span><span>Grand Floridian</span></div>
+        <div class="h1" style="font-size:27px;color:var(--sea)">Here's your flat price.</div>
+        <div class="card" style="padding:20px;display:flex;align-items:flex-end;justify-content:space-between">
+          <span style="font-family:var(--font-display);font-weight:800;font-size:56px;letter-spacing:-0.05em;color:var(--orange);line-height:.86">$129</span>
+          <span style="text-align:right;font-family:var(--font-body);font-size:12.5px;line-height:1.35;color:var(--ink-2);max-width:12ch">taxes, tolls &amp; parking in</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:11px">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.IncludedRow" hint-size="100%,auto">Booster seat fitted before we leave.</x-import>
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.IncludedRow" hint-size="100%,auto">A real person holds your name at claim.</x-import>
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.IncludedRow" hint-size="100%,auto">No account needed to get this far.</x-import>
+        </div>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:9px">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="primary" size="lg" full-width="{{ true }}" on-click="{{ next }}" hint-size="100%,58px">Request this ride</x-import>
+          <div style="font-family:var(--font-body);font-size:13px;color:var(--ink-2);text-align:center">You're not charged until a human confirms.</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ s4 }}" hint-placeholder-val="{{ false }}">
+    <div class="pane" style="background:var(--sky)">
+      <div class="sb" style="color:var(--ink)"><span>9:41</span><span style="display:flex;gap:6px;align-items:center"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor"/></svg></span></div>
+      <div class="body" style="gap:14px;padding:6px 22px 20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--sky-2);border-radius:12px;padding:11px 14px">
+          <span style="font-family:var(--font-body);font-weight:600;font-size:13.5px;color:var(--ink-2)">MCO → Grand Floridian</span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--sea)">$129</span>
+        </div>
+        <div class="h1" style="font-size:27px;color:var(--sea)">Where do we<br>reach you?</div>
+        <div class="card" style="padding:2px 14px">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.ListRow" title="Dana Reyes" subtitle="Your name" chevron="{{ true }}" hint-size="100%,56px"></x-import>
+          <div style="height:1px;background:var(--sky-3)"></div>
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.ListRow" title="(407) 555 0134" subtitle="Mobile — this is how you sign in" chevron="{{ true }}" hint-size="100%,56px"></x-import>
+        </div>
+        <div style="background:var(--sky-2);border-radius:14px;padding:13px 15px;font-family:var(--font-body);font-size:13.5px;line-height:1.45;color:var(--ink-2)">This is the name we'll hold up at baggage claim, so give us the one on the booking.</div>
+        <x-import component-from-global-scope="PixieRidesDesignSystem_457785.IncludedRow" hint-size="100%,auto">No card yet — requesting is free.</x-import>
+        <div style="margin-top:auto">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="primary" size="lg" full-width="{{ true }}" on-click="{{ next }}" hint-size="100%,58px">Next</x-import>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ s5 }}" hint-placeholder-val="{{ false }}">
+    <div class="pane" style="background:var(--sky)">
+      <div class="sb" style="color:var(--ink)"><span>9:41</span><span style="display:flex;gap:6px;align-items:center"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor"/></svg></span></div>
+      <div class="body" style="gap:14px;padding:10px 22px 20px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <span aria-hidden="true" style="font-family:var(--font-body);font-size:24px;color:var(--ink-2);line-height:1">‹</span>
+          <span class="eyebrow" style="font-size:12px;color:var(--ink-2)">One last check</span>
+        </div>
+        <div>
+          <div class="h1" style="color:var(--sea)">Is this the right<br>number?</div>
+          <div class="p" style="color:var(--ink-2);margin-top:8px">It's how you sign in and the only way back to this trip. Read it once before you send.</div>
+        </div>
+        <div class="card" style="padding:22px 20px;text-align:center">
+          <div style="font-family:var(--font-display);font-weight:800;font-size:34px;letter-spacing:-0.01em;color:var(--sea);line-height:1">(407) 555 0134</div>
+          <div style="font-family:var(--font-body);font-size:13px;color:var(--ink-2);margin-top:11px">Dana Reyes</div>
+        </div>
+        <div style="background:var(--sky-2);border-radius:14px;padding:13px 15px;font-family:var(--font-body);font-size:13.5px;line-height:1.45;color:var(--ink-2)">We don't send trip details by text or email — if this number is wrong, we have no way to reach you and you'd have to call us.</div>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:9px">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="primary" size="lg" full-width="{{ true }}" on-click="{{ next }}" hint-size="100%,58px">That's right — send my request</x-import>
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="ghost" size="md" full-width="{{ true }}" on-click="{{ prev }}" hint-size="100%,50px">Change the number</x-import>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ s6 }}" hint-placeholder-val="{{ false }}">
+    <div class="pane" style="background:var(--sea)"><span class="dots"></span>
+      <div class="sb" style="position:relative;z-index:2;color:var(--foam)"><span>9:41</span><span style="display:flex;gap:6px;align-items:center"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor"/></svg></span></div>
+      <div class="body" style="position:relative;z-index:2;gap:14px;padding:14px 22px 22px">
+        <span style="flex:none;width:38px;height:38px;border-radius:50%;background:var(--green);display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:15px;border-right:3px solid #fff;border-bottom:3px solid #fff;transform:rotate(45deg) translate(-2px,-2px)"></span></span>
+        <div>
+          <div class="eyebrow" style="font-size:12px;color:var(--foam)">Request received</div>
+          <div class="h1" style="color:#fff;margin-top:5px">Your request is<br>in review.</div>
+          <div class="p" style="color:var(--foam);margin-top:8px">A person is looking at it now. Sign in and you'll see it confirm, pay, meet your driver, and get the sign we'll be holding.</div>
+        </div>
+        <div class="dcard" style="padding:14px 16px;display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:16px;letter-spacing:-0.02em;color:#fff"><span>MCO</span><span aria-hidden="true" style="color:var(--foam);font-family:var(--font-body);font-weight:400;font-size:13px">→</span><span>Grand Floridian</span></span>
+            <span style="font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--foam)">$129</span>
+          </div>
+          <div style="font-family:var(--font-body);font-size:13px;color:var(--foam)">Fri, Aug 8 · 11:40pm · flight DL 1487</div>
+        </div>
+        <div class="dcard" style="padding:13px 15px;font-family:var(--font-body);font-size:13.5px;line-height:1.45;color:var(--foam)">Signing in takes a code sent to (407) 555 0134 — the number you just gave us.</div>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:9px">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="primary" size="lg" full-width="{{ true }}" on-click="{{ toSignIn }}" hint-size="100%,58px">Sign in to track this request</x-import>
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="ghost" size="md" on-dark="{{ true }}" full-width="{{ true }}" on-click="{{ restart }}" hint-size="100%,50px">Back to home</x-import>
+          <div style="font-family:var(--font-body);font-size:12.5px;line-height:1.4;color:var(--foam);text-align:center">Signing in is the only way to see this trip.</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ s7 }}" hint-placeholder-val="{{ false }}">
+    <div class="pane" style="background:var(--sky)">
+      <div class="sb" style="color:var(--ink)"><span>9:42</span><span style="display:flex;gap:6px;align-items:center"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor"/></svg></span></div>
+      <div class="body" style="gap:15px;padding:8px 22px 20px">
+        <span role="button" onClick="{{ prev }}" style="cursor:pointer;font-family:var(--font-body);font-size:22px;color:var(--ink-2);line-height:1">‹</span>
+        <div>
+          <div class="h1" style="font-size:27px;color:var(--sea)">What's your mobile<br>number?</div>
+          <div class="p" style="color:var(--ink-2);margin-top:8px">We'll text you a six-digit code. No password to remember, ever.</div>
+        </div>
+        <div class="card" style="padding:14px 16px;display:flex;align-items:center;gap:12px">
+          <span style="font-family:var(--font-body);font-weight:600;font-size:16px;color:var(--ink-2)">+1</span>
+          <span style="width:1px;height:22px;background:var(--sky-3)"></span>
+          <span style="font-family:var(--font-display);font-weight:700;font-size:20px;letter-spacing:-0.01em;color:var(--ink)">(407) 555 0134</span>
+        </div>
+        <div style="background:var(--sky-2);border-radius:14px;padding:13px 15px;font-family:var(--font-body);font-size:13.5px;line-height:1.45;color:var(--ink-2)">Just requested a ride? Use the same number and it'll be waiting inside.</div>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:9px">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="primary" size="lg" full-width="{{ true }}" on-click="{{ next }}" hint-size="100%,58px">Text me a code</x-import>
+          <div style="font-family:var(--font-body);font-size:12.5px;color:var(--ink-2);text-align:center">First time? The same number works — we make your account as you sign in.</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ s8 }}" hint-placeholder-val="{{ false }}">
+    <div class="pane" style="background:var(--sky)">
+      <div class="sb" style="color:var(--ink)"><span>9:43</span><span style="display:flex;gap:6px;align-items:center"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor"/></svg></span></div>
+      <div class="body" style="gap:15px;padding:8px 22px 20px">
+        <span role="button" onClick="{{ prev }}" style="cursor:pointer;font-family:var(--font-body);font-size:22px;color:var(--ink-2);line-height:1">‹</span>
+        <div>
+          <div class="h1" style="font-size:27px;color:var(--sea)">Enter your code.</div>
+          <div class="p" style="color:var(--ink-2);margin-top:8px">Sent to (407) 555 0134 just now.</div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <span style="flex:1;height:60px;border-radius:12px;background:var(--white);box-shadow:var(--shadow-card);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:24px;color:var(--ink)">4</span>
+          <span style="flex:1;height:60px;border-radius:12px;background:var(--white);box-shadow:var(--shadow-card);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:24px;color:var(--ink)">1</span>
+          <span style="flex:1;height:60px;border-radius:12px;background:var(--white);box-shadow:var(--shadow-card);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:24px;color:var(--ink)">8</span>
+          <span style="flex:1;height:60px;border-radius:12px;background:var(--white);box-shadow:var(--shadow-card);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:24px;color:var(--ink)">2</span>
+          <span style="flex:1;height:60px;border-radius:12px;background:var(--white);box-shadow:var(--shadow-card);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:24px;color:var(--ink)">0</span>
+          <span style="flex:1;height:60px;border-radius:12px;background:var(--white);border:2px solid var(--sea);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:24px;color:var(--ink-2)">|</span>
+        </div>
+        <div style="font-family:var(--font-body);font-size:13.5px;color:var(--ink-2);text-align:center">Didn't get it? <span style="color:var(--sea);font-weight:600;text-decoration:underline">Send again</span></div>
+        <div style="margin-top:auto">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="primary" size="lg" full-width="{{ true }}" on-click="{{ next }}" hint-size="100%,58px">Sign in</x-import>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ s9 }}" hint-placeholder-val="{{ false }}">
+    <div class="pane" style="background:var(--sea)"><span class="dots"></span>
+      <div class="sb" style="position:relative;z-index:2;color:var(--foam)"><span>9:43</span><span style="display:flex;gap:6px;align-items:center"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor"/></svg></span></div>
+      <div class="body" style="position:relative;z-index:2;gap:14px;padding:12px 22px 22px">
+        <div>
+          <div class="eyebrow" style="font-size:12px;color:var(--foam)">Signed in · Dana</div>
+          <div class="h1" style="color:#fff;margin-top:5px">Your request was<br>already here.</div>
+          <div class="p" style="color:var(--foam);margin-top:8px">Same number, so we matched it to your account. Nothing to re-enter.</div>
+        </div>
+        <div class="dcard" style="padding:14px 16px;display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:16px;letter-spacing:-0.02em;color:#fff"><span>MCO</span><span aria-hidden="true" style="color:var(--foam);font-family:var(--font-body);font-weight:400;font-size:13px">→</span><span>Grand Floridian</span></span>
+            <span style="font-family:var(--font-display);font-weight:700;font-size:17px;color:var(--foam)">$129</span>
+          </div>
+          <div style="font-family:var(--font-body);font-size:13px;color:var(--foam)">Fri, Aug 8 · 11:40pm · booster · DL 1487</div>
+        </div>
+        <x-import component-from-global-scope="PixieRidesDesignSystem_457785.TripStatus" steps="{{ tripSteps }}" current="{{ 0 }}" on-dark="{{ true }}" hint-size="100%,210px"></x-import>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:9px">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="secondary" size="lg" on-dark="{{ true }}" full-width="{{ true }}" on-click="{{ next }}" hint-size="100%,56px">See this trip</x-import>
+          <div style="font-family:var(--font-body);font-size:12.5px;color:var(--foam);text-align:center">You're not charged until a human confirms.</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ s10 }}" hint-placeholder-val="{{ false }}">
+    <div class="pane" style="background:var(--sky)">
+      <div class="sb" style="color:var(--ink)"><span>9:56</span><span style="display:flex;gap:6px;align-items:center"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor"/></svg></span></div>
+      <div class="body" style="gap:14px;padding:6px 22px 20px">
+        <div>
+          <div class="eyebrow" style="color:var(--green-text)">Dispatch confirmed your trip</div>
+          <div class="h1" style="font-size:27px;color:var(--sea);margin-top:6px">Let's lock it in.</div>
+        </div>
+        <div class="card" style="padding:18px 20px;display:flex;align-items:flex-end;justify-content:space-between">
+          <div><div style="font-family:var(--font-body);font-weight:600;font-size:12.5px;color:var(--ink-2)">Flat price</div><div style="font-family:var(--font-display);font-weight:800;font-size:44px;letter-spacing:-0.05em;color:var(--orange);line-height:.9;margin-top:3px">$129</div></div>
+          <div style="text-align:right;font-family:var(--font-body);font-size:12.5px;line-height:1.35;color:var(--ink-2);max-width:13ch">paid in full now</div>
+        </div>
+        <div style="background:var(--sky-2);border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+          <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--sea)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
+          <span style="font-family:var(--font-body);font-size:14px;color:var(--ink)">We're holding your driver until <strong>10:16am</strong>.</span>
+        </div>
+        <button type="button" onClick="{{ next }}" style="height:52px;width:100%;border:0;border-radius:12px;background:#000;color:#fff;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer;font-family:var(--font-body);font-weight:600;font-size:16px"><svg width="17" height="20" viewBox="0 0 17 20" fill="#fff"><path d="M14.2 10.6c0-2 1.6-3 1.7-3.1-1-1.4-2.4-1.6-2.9-1.6-1.3-.1-2.5.8-3.2.8-.7 0-1.7-.7-2.8-.7-1.4 0-2.7.8-3.5 2.1-1.5 2.6-.4 6.4 1.1 8.5.7 1 1.6 2.2 2.7 2.1 1.1 0 1.5-.7 2.8-.7 1.3 0 1.6.7 2.8.7 1.1 0 1.9-1.1 2.6-2.1.5-.8.8-1.5 1-2.3-.1 0-2.3-.9-2.3-3.7ZM11.6 3.9c.6-.7 1-1.7.9-2.7-.9 0-2 .6-2.6 1.3-.6.6-1 1.6-.9 2.6 1 .1 2-.5 2.6-1.2Z"></path></svg> Pay</button>
+        <div style="text-align:center;font-family:var(--font-body);font-size:13px;color:var(--ink-2)">or pay with a card</div>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:9px">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="primary" size="lg" full-width="{{ true }}" on-click="{{ next }}" hint-size="100%,58px">Pay $129 now</x-import>
+          <div style="font-family:var(--font-body);font-size:13px;color:var(--ink-2);text-align:center">Paid in full — nothing to pay at pickup.</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ s11 }}" hint-placeholder-val="{{ false }}">
+    <div class="pane" style="background:var(--sea)"><span class="dots"></span>
+      <div class="sb" style="position:relative;z-index:2;color:var(--foam)"><span>9:57</span><span style="display:flex;gap:6px;align-items:center"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor"/></svg></span></div>
+      <div class="body" style="position:relative;z-index:2;gap:15px;padding:14px 22px 22px">
+        <span style="flex:none;width:38px;height:38px;border-radius:50%;background:var(--green);display:inline-flex;align-items:center;justify-content:center"><span style="width:9px;height:15px;border-right:3px solid #fff;border-bottom:3px solid #fff;transform:rotate(45deg) translate(-2px,-2px)"></span></span>
+        <div>
+          <div class="h1" style="font-size:27px;color:#fff">You're all set.</div>
+          <div class="p" style="color:var(--foam);margin-top:8px">Your ride is locked in. We'll notify you here with your driver's name and car, about two hours before pickup.</div>
+        </div>
+        <div class="dcard" style="padding:14px 16px;display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="display:inline-flex;align-items:center;gap:9px;font-family:var(--font-display);font-weight:700;font-size:16px;letter-spacing:-0.02em;color:#fff"><span>MCO</span><span aria-hidden="true" style="color:var(--foam);font-family:var(--font-body);font-weight:400;font-size:13px">→</span><span>Grand Floridian</span></span>
+            <span style="font-family:var(--font-body);font-weight:600;font-size:14px;color:var(--foam)">$129 paid</span>
+          </div>
+          <div style="font-family:var(--font-body);font-size:13px;color:var(--foam)">Fri, Aug 8 · 11:40pm · booster · DL 1487 watched</div>
+        </div>
+        <x-import component-from-global-scope="PixieRidesDesignSystem_457785.TripStatus" steps="{{ tripSteps }}" current="{{ 2 }}" on-dark="{{ true }}" hint-size="100%,210px"></x-import>
+        <div style="margin-top:auto">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="secondary" size="lg" on-dark="{{ true }}" full-width="{{ true }}" on-click="{{ next }}" hint-size="100%,56px">See this trip</x-import>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ s12 }}" hint-placeholder-val="{{ false }}">
+    <div class="pane" style="background:var(--sea)"><span class="dots" style="opacity:.35"></span>
+      <div class="sb" style="position:relative;z-index:2;color:var(--foam)"><span>9:41</span><span style="display:flex;gap:6px;align-items:center"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor"/></svg></span></div>
+      <div class="body" style="position:relative;z-index:2;padding:26px 20px 22px">
+        <div style="text-align:center">
+          <div style="font-family:var(--font-display);font-weight:800;font-size:52px;letter-spacing:-0.04em;color:#fff;line-height:1">9:41</div>
+          <div style="font-family:var(--font-body);font-size:14px;margin-top:4px;color:var(--foam)">Friday, August 8</div>
+        </div>
+        <div role="button" onClick="{{ next }}" style="cursor:pointer;margin-top:34px;background:rgba(234,244,250,.14);backdrop-filter:blur(8px);border-radius:18px;padding:15px 17px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:9px">
+            <span style="flex:none;width:20px;height:20px;border-radius:5px;background:var(--sea-3);display:inline-flex;align-items:center;justify-content:center"><img src="assets/mark.svg" alt="" style="width:12px;height:12px" /></span>
+            <span style="flex:1;font-family:var(--font-body);font-weight:600;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--foam)">Pixie Rides</span>
+            <span style="font-family:var(--font-body);font-size:12px;color:var(--foam)">now</span>
+          </div>
+          <div style="font-family:var(--font-body);font-weight:600;font-size:16px;color:#fff">Marcus is your driver tonight</div>
+          <div style="font-family:var(--font-body);font-size:14px;line-height:1.45;color:var(--foam)">White Chevy Suburban, FL 8XK-221. He'll be at baggage claim 4 holding a sign with your name.</div>
+          <div style="font-family:var(--font-body);font-weight:600;font-size:13.5px;color:#fff;text-decoration:underline;margin-top:2px">Open your trip →</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ s13 }}" hint-placeholder-val="{{ false }}">
+    <div class="pane" style="background:var(--sea)"><span class="dots"></span>
+      <div class="sb" style="position:relative;z-index:2;color:var(--foam)"><span>11:26</span><span style="display:flex;gap:6px;align-items:center"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor"/></svg></span></div>
+      <div class="body" style="position:relative;z-index:2;gap:13px;padding:12px 22px 20px">
+        <div>
+          <div class="eyebrow" style="font-size:12px;color:var(--foam)">DL 1487 · landed 11:22pm</div>
+          <div class="h1" style="color:#fff;margin-top:5px">Take your time.</div>
+          <div class="p" style="color:var(--foam);margin-top:8px">Marcus arrives 11:44pm — before you're out. Get your bags, find a restroom. He waits for you.</div>
+        </div>
+        <div class="dcard" style="padding:14px 16px;display:flex;align-items:center;gap:12px">
+          <span style="flex:none;width:44px;height:44px;border-radius:50%;background:var(--sea-3);display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:17px;color:#fff">M</span>
+          <div style="min-width:0;flex:1">
+            <div style="font-family:var(--font-body);font-weight:600;font-size:15px;color:#fff">Marcus</div>
+            <div style="font-family:var(--font-body);font-size:12.5px;color:var(--foam);margin-top:1px">White Chevy Suburban · FL 8XK-221</div>
+          </div>
+        </div>
+        <div class="dcard" style="padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.IncludedRow" on-dark="{{ true }}" hint-size="100%,auto">Booster already fitted</x-import>
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.IncludedRow" on-dark="{{ true }}" hint-size="100%,auto">Waiting is included — no meter</x-import>
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.IncludedRow" on-dark="{{ true }}" hint-size="100%,auto">Paid in full — nothing at pickup</x-import>
+        </div>
+        <div class="dcard" style="padding:14px 16px">
+          <div class="eyebrow" style="font-size:10.5px;color:var(--foam)">When you have your bags</div>
+          <div style="font-family:var(--font-display);font-weight:700;font-size:17px;letter-spacing:-0.02em;color:#fff;margin-top:5px">Baggage claim 4 · door A</div>
+        </div>
+        <div style="margin-top:auto">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="secondary" size="lg" on-dark="{{ true }}" full-width="{{ true }}" on-click="{{ next }}" hint-size="100%,56px">Show me the sign</x-import>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ s14 }}" hint-placeholder-val="{{ false }}">
+    <div class="pane" style="background:var(--sea)"><span class="dots"></span>
+      <div class="sb" style="position:relative;z-index:2;color:var(--foam)"><span>11:44</span><span style="display:flex;gap:6px;align-items:center"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor"/></svg></span></div>
+      <div class="body" style="position:relative;z-index:2;gap:16px;padding:10px 20px 20px">
+        <div class="eyebrow" style="font-size:11.5px;color:var(--foam);text-align:center">Baggage claim 4 · door A</div>
+        <x-import component-from-global-scope="PixieRidesDesignSystem_457785.NameSign" name="Dana Reyes" foot="DL 1487 · landed 11:22pm" hint-size="100%,220px"></x-import>
+        <div style="text-align:center">
+          <div class="h1" style="font-size:24px;color:#fff">Look up.</div>
+          <div class="p" style="color:var(--foam);margin-top:7px">Marcus is holding your name. White Chevy Suburban, FL 8XK-221 — booster's already in.</div>
+        </div>
+        <div style="margin-top:auto">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="secondary" size="lg" on-dark="{{ true }}" full-width="{{ true }}" on-click="{{ next }}" hint-size="100%,56px">I see him</x-import>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ s15 }}" hint-placeholder-val="{{ false }}">
+    <div class="pane" style="background:var(--sea)">
+      <div class="sb" style="position:relative;z-index:5;color:var(--foam)"><span>11:56</span><span style="display:flex;gap:6px;align-items:center"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor"/></svg></span></div>
+      <div style="position:relative;flex:0 0 auto;height:274px;background:var(--sea)">
+        <span class="dots" style="opacity:.45"></span>
+        <svg viewBox="0 0 352 274" width="100%" height="100%" style="position:absolute;inset:0"><path d="M36 42 C 112 64, 134 152, 214 170 S 306 226, 320 234" fill="none" stroke="rgba(249,115,22,.28)" stroke-width="3" stroke-linecap="round"></path><path d="M36 42 C 112 64, 134 152, 206 166" fill="none" stroke="rgba(249,115,22,.95)" stroke-width="3" stroke-linecap="round"></path><circle cx="36" cy="42" r="7" fill="var(--sea)" stroke="#F97316" stroke-width="3"></circle><circle cx="206" cy="166" r="7" fill="#F97316"></circle><circle cx="320" cy="234" r="7" fill="var(--sea)" stroke="rgba(249,115,22,.5)" stroke-width="3"></circle></svg>
+        <div class="eyebrow" style="position:absolute;left:20px;top:10px;font-size:12px;color:var(--foam)">On the way · MCO → Grand Floridian</div>
+      </div>
+      <div class="body" style="gap:13px;padding:16px 22px 20px;background:var(--sea-2)">
+        <div>
+          <div class="eyebrow" style="font-size:11.5px;color:var(--foam)">Arriving about 12:08am</div>
+          <div class="h1" style="font-size:25px;color:#fff;margin-top:5px">12 minutes to<br>your hotel.</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <span style="flex:none;width:42px;height:42px;border-radius:50%;background:var(--sea-3);display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:16px;color:#fff">M</span>
+          <div style="min-width:0;flex:1"><div style="font-family:var(--font-body);font-weight:600;font-size:15px;color:#fff">Marcus is driving</div><div style="font-family:var(--font-body);font-size:12.5px;color:var(--foam);margin-top:1px">White Chevy Suburban · FL 8XK-221</div></div>
+        </div>
+        <div style="font-family:var(--font-body);font-size:13.5px;color:var(--foam);line-height:1.45">Booster fitted · already paid — nothing owed at drop-off.</div>
+        <div style="margin-top:auto">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="secondary" size="lg" on-dark="{{ true }}" full-width="{{ true }}" on-click="{{ next }}" hint-size="100%,56px">See my receipt</x-import>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <sc-if value="{{ s16 }}" hint-placeholder-val="{{ false }}">
+    <div class="pane" style="background:var(--sky)">
+      <div class="sb" style="color:var(--ink)"><span>12:12</span><span style="display:flex;gap:6px;align-items:center"><svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor" aria-hidden="true"><rect x="0" y="8" width="3" height="4" rx="1"/><rect x="4.5" y="5.5" width="3" height="6.5" rx="1"/><rect x="9" y="3" width="3" height="9" rx="1"/><rect x="13.5" y="0" width="3" height="12" rx="1"/></svg><svg width="24" height="12" viewBox="0 0 24 12" aria-hidden="true"><rect x="0.5" y="0.5" width="20" height="11" rx="3" fill="none" stroke="currentColor" stroke-opacity=".5"/><rect x="2" y="2" width="16" height="8" rx="1.5" fill="currentColor"/><rect x="21.5" y="4" width="1.5" height="4" rx="1" fill="currentColor"/></svg></span></div>
+      <div class="body" style="gap:13px;padding:10px 22px 18px">
+        <div>
+          <div class="eyebrow" style="color:var(--green-text)">Trip complete · 12:08am</div>
+          <div class="h1" style="font-size:25px;color:var(--sea);margin-top:5px">You're home. Marcus<br>got you there.</div>
+        </div>
+        <div class="card" style="padding:16px 18px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;font-family:var(--font-body);font-size:14px;color:var(--ink-2)"><span>Flat fare</span><span style="font-weight:600;color:var(--ink)">$129.00</span></div>
+          <div style="display:flex;justify-content:space-between;font-family:var(--font-body);font-size:14px;color:var(--ink-2)"><span>Taxes, tolls &amp; parking</span><span style="color:var(--green-text);font-weight:600">included</span></div>
+          <div style="display:flex;justify-content:space-between;font-family:var(--font-body);font-size:14px;color:var(--ink-2)"><span>Booster seat</span><span style="color:var(--green-text);font-weight:600">free</span></div>
+          <div style="display:flex;justify-content:space-between;font-family:var(--font-body);font-size:14px;color:var(--ink-2)"><span>Gratuity</span><span style="color:var(--green-text);font-weight:600">included</span></div>
+          <div style="height:1px;background:var(--sky-3);margin:2px 0"></div>
+          <div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-family:var(--font-body);font-weight:600;font-size:15px;color:var(--ink)">Total paid</span><span style="font-family:var(--font-display);font-weight:800;font-size:22px;letter-spacing:-0.03em;color:var(--sea)">$129.00</span></div>
+          <div style="font-family:var(--font-body);font-size:12px;color:var(--ink-2)">Exactly the price you paid on Aug 5 · Visa ···· 4021.</div>
+        </div>
+        <div class="card" style="padding:13px 18px;display:flex;align-items:center;justify-content:space-between">
+          <div style="min-width:0"><div style="font-family:var(--font-body);font-weight:600;font-size:15px;color:var(--ink)">How was Marcus?</div><div style="font-family:var(--font-body);font-size:12.5px;color:var(--ink-2);margin-top:1px">Tap a star to say thanks</div></div>
+          <span style="flex:none;display:flex;gap:6px;color:var(--ink-2);font-size:21px;line-height:1">★ ★ ★ ★ ★</span>
+        </div>
+        <div style="margin-top:auto;display:flex;flex-direction:column;gap:9px">
+          <x-import component-from-global-scope="PixieRidesDesignSystem_457785.Button" variant="ghost" size="md" full-width="{{ true }}" on-click="{{ restart }}" hint-size="100%,50px">View in Trips</x-import>
+          <div style="font-family:var(--font-body);font-size:12.5px;color:var(--ink-2);text-align:center">Six trips a year to Orlando? Your details are saved for next time.</div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+  </div></div>
+
+  <sc-if value="{{ showControls }}" hint-placeholder-val="{{ true }}">
+  <div style="display:flex;flex-direction:column;align-items:center;gap:12px;width:376px">
+    <div style="display:flex;align-items:center;gap:10px;width:100%">
+      <button type="button" onClick="{{ prev }}" style="flex:none;width:46px;height:46px;border:2px solid var(--sea);border-radius:12px;background:transparent;color:var(--sea);cursor:pointer;font-family:var(--font-body);font-weight:600;font-size:18px">‹</button>
+      <div style="flex:1;min-width:0;text-align:center">
+        <div class="eyebrow" style="font-size:10.5px;color:var(--ink-2)">{{ stepCounter }}</div>
+        <div style="font-family:var(--font-body);font-weight:600;font-size:14.5px;color:var(--sea);margin-top:2px">{{ stepLabel }}</div>
+      </div>
+      <button type="button" onClick="{{ next }}" style="flex:none;width:46px;height:46px;border:0;border-radius:12px;background:var(--sea);color:#fff;cursor:pointer;font-family:var(--font-body);font-weight:600;font-size:18px">›</button>
+    </div>
+    <div style="font-family:var(--font-body);font-size:12.5px;line-height:1.45;color:var(--ink-2);text-align:center;max-width:42ch">{{ stepNote }}</div>
+    <div style="display:flex;gap:3px;width:100%">{{ rail }}</div>
+    <button type="button" onClick="{{ restart }}" style="border:0;background:transparent;color:var(--ink-2);cursor:pointer;font-family:var(--font-body);font-size:12.5px;text-decoration:underline">Start over</button>
+  </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:460,&quot;height&quot;:1080},&quot;showControls&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Prototype&quot;}}">
+const STEPS = [
+  ['Home · signed out', 'Sign-in sits in the corner from the first screen — the likeliest visitor has booked before.'],
+  ['Where', 'No account needed. Everything up to the price is open to anyone.'],
+  ['Who & which flight', 'Car seats free, and the flight that gets watched.'],
+  ['Flat price', '$129, all in. The price is the reward for finishing the form, not for making an account.'],
+  ['Your details', 'Name and mobile only. The name here is the one that goes on the sign.'],
+  ['Check your number', 'Prevention: there is no fallback channel, so one wrong digit severs the trip entirely.'],
+  ['Request in review', 'The wall. No link, no text — signing in is the only way back to this trip.'],
+  ['Sign in · number', 'Same number as the request; that is what makes the next screen work.'],
+  ['Sign in · code', 'Six digits, no password. The only text this product ever sends.'],
+  ['Already here', 'Matched by phone number. Nothing re-entered.'],
+  ['Confirmed · pay', 'A person confirmed. The hold is a time, not a countdown — "until 10:16pm".'],
+  ['Locked in', 'Spine advances to Paid. Next contact is a push, two hours out.'],
+  ['Push · driver assigned', 'A notification, never an SMS. Trip detail never leaves the account.'],
+  ['Landed · take your time', 'He arrived before she was out. Waiting is free and it says so.'],
+  ['The name-sign', 'The whole reason the brand exists, on the customer\u2019s own phone.'],
+  ['On the way', 'Calm by design — kids asleep in the back.'],
+  ['Receipt', 'Exactly the price quoted on Aug 5. Gratuity included; no tip prompt.'],
+];
+
+class Component extends DCLogic {
+  state = { step: 0 };
+
+  componentDidMount() {
+    const raw = localStorage.getItem('pixie-arrival-step');
+    const n = raw === null ? null : parseInt(raw, 10);
+    if (n !== null && !isNaN(n) && n >= 0 && n < STEPS.length) this.setState({ step: n });
+    this._onKey = (e) => {
+      if (e.key === 'ArrowRight') this.go(1);
+      else if (e.key === 'ArrowLeft') this.go(-1);
+    };
+    window.addEventListener('keydown', this._onKey);
+  }
+
+  componentWillUnmount() { window.removeEventListener('keydown', this._onKey); }
+
+  go(d) {
+    this.setState(s => {
+      const step = Math.min(STEPS.length - 1, Math.max(0, s.step + d));
+      try { localStorage.setItem('pixie-arrival-step', String(step)); } catch (e) {}
+      return { step };
+    });
+  }
+
+  jump(step) {
+    try { localStorage.setItem('pixie-arrival-step', String(step)); } catch (e) {}
+    this.setState({ step });
+  }
+
+  renderVals() {
+    const step = this.state.step;
+    const on = {};
+    for (let i = 0; i < STEPS.length; i++) on['s' + i] = step === i;
+    const rail = React.createElement('div', { style: { display: 'flex', gap: 3, width: '100%' } },
+      STEPS.map((_, i) => React.createElement('button', {
+        key: i, type: 'button', title: STEPS[i][0], onClick: () => this.jump(i),
+        style: {
+          flex: 1, height: 5, border: 0, padding: 0, borderRadius: 3, cursor: 'pointer',
+          background: i === step ? 'var(--sea)' : (i < step ? 'var(--sea-3)' : 'var(--sky-3)'),
+        },
+      })));
+    return {
+      ...on,
+      showControls: this.props.showControls ?? true,
+      next: () => this.go(1),
+      prev: () => this.go(-1),
+      restart: () => this.jump(0),
+      toSignIn: () => this.jump(7),
+      rail,
+      stepCounter: (step + 1) + ' of ' + STEPS.length,
+      stepLabel: STEPS[step][0],
+      stepNote: STEPS[step][1],
+      tripSteps: [
+        { title: 'Requested', detail: 'Aug 5, 9:41am \u00b7 we\u2019ve got it' },
+        { title: 'Confirmed', detail: 'by a person, within 15 min' },
+        { title: 'Paid', detail: '$129 in full \u00b7 ride locked in' },
+        { title: 'Driver assigned', detail: 'name & car, 2 hours before' },
+        { title: 'Complete', detail: 'we hold your name at claim 4' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

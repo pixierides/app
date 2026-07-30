@@ -1,0 +1,33 @@
+/* Pixie Rides — type tokens */
+:root{
+  --font-display:'Bricolage Grotesque',system-ui,sans-serif; /* 600–800 headlines */
+  --font-body:'Instrument Sans',system-ui,sans-serif;        /* 400–600 UI/body */
+
+  /* tracking */
+  --track-display:-0.022em;  /* H1 */
+  --track-h2:-0.02em;
+  --track-accent:-0.02em;
+  --track-price:-0.05em;     /* the number */
+  --track-label:0.16em;      /* eyebrow / uppercase */
+
+  /* weights */
+  --w-body:400;      /* @kind font */
+  --w-medium:500;    /* @kind font */
+  --w-semibold:600;  /* @kind font */
+  --w-bold:700;      /* @kind font */
+  --w-price:800;     /* @kind font */
+
+  /* web type scale (px) */
+  --fs-h1:62px;
+  --fs-h1-mobile:38px;
+  --fs-h2:44px;
+  --fs-h2-mobile:30px;
+  --fs-accent:27px;
+  --fs-h3:20px;
+  --fs-body:18px;
+  --fs-body-sm:17px;
+  --fs-label:12px;
+  --fs-price:52px;
+  --lh-tight:1.04;   /* @kind font */
+  --lh-body:1.6;     /* @kind font */
+}

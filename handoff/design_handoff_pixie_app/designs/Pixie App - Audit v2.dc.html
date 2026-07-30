@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/pixie-rides-design-system-4577853d-1df0-4285-a2d8-dc8818666949/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/pixie-rides-design-system-4577853d-1df0-4285-a2d8-dc8818666949/tokens/colors.css">
+<link rel="stylesheet" href="_ds/pixie-rides-design-system-4577853d-1df0-4285-a2d8-dc8818666949/tokens/typography.css">
+<link rel="stylesheet" href="_ds/pixie-rides-design-system-4577853d-1df0-4285-a2d8-dc8818666949/tokens/geometry.css">
+<link rel="stylesheet" href="_ds/pixie-rides-design-system-4577853d-1df0-4285-a2d8-dc8818666949/styles.css">
+<script src="_ds/pixie-rides-design-system-4577853d-1df0-4285-a2d8-dc8818666949/_ds_bundle.js"></script>
+<script src="./doc-page.js"></script>
+<style>
+  doc-page:not(:defined){visibility:hidden}
+  a{color:var(--sea-2);text-decoration:none}
+  a:hover{color:var(--sea-3)}
+</style>
+</helmet>
+
+<doc-page margin="0.7in">
+
+<div slot="header" style="display:flex;justify-content:space-between;align-items:baseline;padding:0 0 8px;border-bottom:1px solid var(--sky-3);font-family:var(--font-body);font-size:9pt;color:var(--ink-2)">
+  <span style="font-weight:600;letter-spacing:.14em;text-transform:uppercase">Pixie Rides · audit v2</span>
+  <span>94 screens · 64 turns · July 2026</span>
+</div>
+
+<div style="font-family:var(--font-body);font-weight:600;font-size:9.5pt;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);margin:0 0 10px">Re-audit · against the rules you set</div>
+
+<h1 style="font-family:var(--font-display);font-weight:800;font-size:30pt;line-height:1.05;letter-spacing:-0.03em;color:var(--sea);margin:0 0 14px;max-width:8.5in">Account-only broke four screens. The rest held.</h1>
+
+<p style="font-family:var(--font-body);font-size:11.5pt;line-height:1.55;color:var(--ink-2);margin:0 0 22px;max-width:6.6in">Nine rules have been decided since the first audit. All 94 screens re-read against them. The eight numbered findings below are what's left; everything from v1 that was swept is confirmed still fixed. One rule — <strong style="color:var(--sea)">no account, no access</strong> — did most of the damage, because it changes what a screen is allowed to show rather than what it says.</p>
+
+<div style="background:var(--sky-2);border-radius:14px;padding:16px 18px;margin:0 0 26px;break-inside:avoid">
+  <div style="font-family:var(--font-body);font-weight:600;font-size:9.5pt;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-2);margin-bottom:10px">The rules being audited against</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px 22px;font-family:var(--font-body);font-size:10pt;line-height:1.45;color:var(--ink-2)">
+    <div><strong style="color:var(--sea)">1.</strong> No account, no access in the app</div>
+    <div><strong style="color:var(--sea)">2.</strong> Direct to driver on trip day, dispatch otherwise</div>
+    <div><strong style="color:var(--sea)">3.</strong> 15 min = human confirm · 20 min = driver hold</div>
+    <div><strong style="color:var(--sea)">4.</strong> Cheaper change refunds the difference at re-confirm</div>
+    <div><strong style="color:var(--sea)">5.</strong> Airline cancellation waives the fee automatically</div>
+    <div><strong style="color:var(--sea)">6.</strong> Spine: Requested → Confirmed → Paid → Driver assigned → Complete</div>
+    <div><strong style="color:var(--sea)">7.</strong> Driver-app orange = the one action that advances the run</div>
+    <div><strong style="color:var(--sea)">8.</strong> The sign carries the booker's first and last name</div>
+    <div style="grid-column:1/-1"><strong style="color:var(--sea)">9.</strong> Sign mode is full-screen landscape, with the flight and its landed time</div>
+  </div>
+</div>
+
+<h2 style="font-family:var(--font-display);font-weight:800;font-size:17pt;letter-spacing:-0.02em;color:var(--sea);margin:0 0 4px;padding-top:8px;border-top:2px solid var(--sea)">Must fix — account-only contradicts these</h2>
+<p style="font-family:var(--font-body);font-size:10.5pt;line-height:1.5;color:var(--ink-2);margin:6px 0 20px;max-width:6.4in">Each of these was designed under the old assumption that a signed-out client could still see their trip.</p>
+
+<div style="break-inside:avoid;margin:0 0 22px;padding:16px 18px;background:var(--white);border-radius:14px;box-shadow:0 1px 3px rgba(8,52,79,.08)">
+  <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:7px">
+    <span style="flex:none;font-family:var(--font-body);font-weight:700;font-size:8.5pt;padding:3px 7px;background:var(--sea);color:var(--white);border-radius:5px">01</span>
+    <span style="font-family:var(--font-display);font-weight:700;font-size:13.5pt;letter-spacing:-0.02em;color:var(--sea)">Two different screens now answer "request received"</span>
+  </div>
+  <p style="font-family:var(--font-body);font-size:10.5pt;line-height:1.55;color:var(--ink-2);margin:0 0 9px"><strong style="color:var(--sea)">6a</strong> hands a signed-out client a <em>"Track this trip"</em> button and treats the account as a nicety — "Want it saved for next time?". <strong style="color:var(--sea)">64b</strong> says the opposite: this is exactly where the app stops. They can't both ship, and 6a is the one that's wrong now.</p>
+  <div style="font-family:var(--font-body);font-size:9.5pt;line-height:1.7;color:var(--ink-2)">
+    <div><span style="font-weight:600;color:var(--sea)">Conflict:</span> 6a vs 64b</div>
+    <div style="margin-top:7px;color:var(--green-text);font-weight:600">Fix: retire 6a. 64b is the screen — same reassurance, same recap, but "Sign in to track this request" instead of a track button that can't work.</div>
+  </div>
+</div>
+
+<div style="break-inside:avoid;margin:0 0 22px;padding:16px 18px;background:var(--white);border-radius:14px;box-shadow:0 1px 3px rgba(8,52,79,.08)">
+  <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:7px">
+    <span style="flex:none;font-family:var(--font-body);font-weight:700;font-size:8.5pt;padding:3px 7px;background:var(--sea);color:var(--white);border-radius:5px">02</span>
+    <span style="font-family:var(--font-display);font-weight:700;font-size:13.5pt;letter-spacing:-0.02em;color:var(--sea)">There is no such thing as "create an account" any more</span>
+  </div>
+  <p style="font-family:var(--font-body);font-size:10.5pt;line-height:1.55;color:var(--ink-2);margin:0 0 9px"><strong style="color:var(--sea)">33a</strong> offers "New to Pixie? Create an account" as a separate path, and "Sign in with email" as an alternative. But under the model in turn 64 the phone number <em>is</em> the account: requesting creates the record, the six-digit code claims it. A new client who taps "create an account" has nothing to create, and an email sign-in can't match a request that only knows a mobile number.</p>
+  <div style="font-family:var(--font-body);font-size:9.5pt;line-height:1.7;color:var(--ink-2)">
+    <div><span style="font-weight:600;color:var(--sea)">Where:</span> 33a · echoed by 6a and 62c's "save your trips"</div>
+    <div style="margin-top:7px;color:var(--green-text);font-weight:600">Fix: one field, one path. Drop both alternates; the sub-line becomes "First time? The same number works — we'll make your account as you sign in."</div>
+  </div>
+</div>
+
+<div style="break-inside:avoid;margin:0 0 22px;padding:16px 18px;background:var(--white);border-radius:14px;box-shadow:0 1px 3px rgba(8,52,79,.08)">
+  <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:7px">
+    <span style="flex:none;font-family:var(--font-body);font-weight:700;font-size:8.5pt;padding:3px 7px;background:var(--sea);color:var(--white);border-radius:5px">03</span>
+    <span style="font-family:var(--font-display);font-weight:700;font-size:13.5pt;letter-spacing:-0.02em;color:var(--sea)">A forgot-password screen for a product with no passwords</span>
+  </div>
+  <p style="font-family:var(--font-body);font-size:10.5pt;line-height:1.55;color:var(--ink-2);margin:0 0 9px"><strong style="color:var(--sea)">54a</strong> leads with "No password needed" and then offers "Email a reset link" underneath — a reset for a credential that doesn't exist. Its one genuinely useful line is the last one: <em>changed your number? Call dispatch.</em> That case is real and it's the only thing on the screen worth keeping.</p>
+  <div style="font-family:var(--font-body);font-size:9.5pt;line-height:1.7;color:var(--ink-2)">
+    <div><span style="font-weight:600;color:var(--sea)">Where:</span> 54a</div>
+    <div style="margin-top:7px;color:var(--green-text);font-weight:600">Fix: delete the reset path and rename the screen "Can't get the code" — resend, then call dispatch. It stops being an auth screen and becomes a recovery one.</div>
+  </div>
+</div>
+
+<div style="break-inside:avoid;margin:0 0 22px;padding:16px 18px;background:var(--white);border-radius:14px;box-shadow:0 1px 3px rgba(8,52,79,.08)">
+  <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:7px">
+    <span style="flex:none;font-family:var(--font-body);font-weight:700;font-size:8.5pt;padding:3px 7px;background:var(--sea);color:var(--white);border-radius:5px">04</span>
+    <span style="font-family:var(--font-display);font-weight:700;font-size:13.5pt;letter-spacing:-0.02em;color:var(--sea)">The two original home screens have nowhere to sign in</span>
+  </div>
+  <p style="font-family:var(--font-body);font-size:10.5pt;line-height:1.55;color:var(--ink-2);margin:0 0 9px"><strong style="color:var(--sea)">1a</strong> puts sign-in behind the Account tab; <strong style="color:var(--sea)">1b</strong> buries it in a top-left menu. Rule 1 makes the chip a first-screen requirement, because the likeliest visitor is a returning customer with a trip they can't otherwise reach. 1a and 1b are turn-1 explorations, so the risk is low — but they're still the only two full home-screen concepts in the file.</p>
+  <div style="font-family:var(--font-body);font-size:9.5pt;line-height:1.7;color:var(--ink-2)">
+    <div><span style="font-weight:600;color:var(--sea)">Superseded by:</span> 64a</div>
+    <div style="margin-top:7px;color:var(--green-text);font-weight:600">Fix: mark 1a/1b as superseded, or add the chip to both so nobody builds from an old shell.</div>
+  </div>
+</div>
+
+<h2 style="font-family:var(--font-display);font-weight:800;font-size:17pt;letter-spacing:-0.02em;color:var(--sea);margin:26px 0 4px;padding-top:8px;border-top:2px solid var(--sea);break-before:page">Drift — smaller, but they'll be asked about</h2>
+
+<div style="break-inside:avoid;margin:0 0 18px;padding:14px 0 0;border-top:1px solid var(--sky-3)">
+  <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:5px">
+    <span style="flex:none;font-family:var(--font-body);font-weight:700;font-size:8.5pt;padding:3px 7px;background:var(--sky-2);color:var(--sea);border-radius:5px">05</span>
+    <span style="font-family:var(--font-display);font-weight:700;font-size:12.5pt;letter-spacing:-0.02em;color:var(--sea)">The cancellation waiver is automatic on one screen and manual on the other</span>
+  </div>
+  <p style="font-family:var(--font-body);font-size:10.5pt;line-height:1.55;color:var(--ink-2);margin:0"><strong style="color:var(--sea)">20a</strong> now says the fee doesn't apply and "you don't have to ask." <strong style="color:var(--sea)">46a</strong> still says "message us and we'll move your ride… or refund you in full." Same policy, two levels of effort. <span style="color:var(--green-text);font-weight:600">46a should match 20a: we detect it and waive it; message us only if you want a different flight.</span></p>
+</div>
+
+<div style="break-inside:avoid;margin:0 0 18px;padding:14px 0 0;border-top:1px solid var(--sky-3)">
+  <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:5px">
+    <span style="flex:none;font-family:var(--font-body);font-weight:700;font-size:8.5pt;padding:3px 7px;background:var(--sky-2);color:var(--sea);border-radius:5px">06</span>
+    <span style="font-family:var(--font-display);font-weight:700;font-size:12.5pt;letter-spacing:-0.02em;color:var(--sea)">Receipts are emailed to an address nobody ever collected</span>
+  </div>
+  <p style="font-family:var(--font-body);font-size:10.5pt;line-height:1.55;color:var(--ink-2);margin:0"><strong style="color:var(--sea)">45a</strong> shows "Receipt after each ride — emailed to dana@reyes.family" as on by default. But booking (<strong style="color:var(--sea)">64a–b</strong>) collects a name and a mobile, and sign-in is a texted code — there is no screen anywhere that asks for an email. <span style="color:var(--green-text);font-weight:600">Either receipts text a link like everything else, or Account gains an optional email field and 45a reads "not set — add one" until it's filled.</span></p>
+</div>
+
+<div style="break-inside:avoid;margin:0 0 18px;padding:14px 0 0;border-top:1px solid var(--sky-3)">
+  <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:5px">
+    <span style="flex:none;font-family:var(--font-body);font-weight:700;font-size:8.5pt;padding:3px 7px;background:var(--sky-2);color:var(--sea);border-radius:5px">07</span>
+    <span style="font-family:var(--font-display);font-weight:700;font-size:12.5pt;letter-spacing:-0.02em;color:var(--sea)">Two sign modes still exist</span>
+  </div>
+  <p style="font-family:var(--font-body);font-size:10.5pt;line-height:1.55;color:var(--ink-2);margin:0">Rule 9 made the sign full-screen landscape (<strong style="color:var(--sea)">63c</strong>), but <strong style="color:var(--sea)">28b</strong> is still there as a portrait card with "Done — they found me." A driver shown both will ask which one is the app. <span style="color:var(--green-text);font-weight:600">Retire 28b; 63c's tap-to-exit replaces its button.</span></p>
+</div>
+
+<div style="break-inside:avoid;margin:0 0 18px;padding:14px 0 0;border-top:1px solid var(--sky-3)">
+  <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:5px">
+    <span style="flex:none;font-family:var(--font-body);font-weight:700;font-size:8.5pt;padding:3px 7px;background:var(--sky-2);color:var(--sea);border-radius:5px">08</span>
+    <span style="font-family:var(--font-display);font-weight:700;font-size:12.5pt;letter-spacing:-0.02em;color:var(--sea)">The link and the app now grant different access, and it's nowhere written down</span>
+  </div>
+  <p style="font-family:var(--font-body);font-size:10.5pt;line-height:1.55;color:var(--ink-2);margin:0"><strong style="color:var(--sea)">62b</strong> gives a signed-out traveller the price, the spine, the driver and change options — from a URL. <strong style="color:var(--sea)">64b</strong> says the app can show a signed-out traveller nothing. Both are defensible (the URL is a credential, the app has no way to know who's holding the phone) but stated side by side they read as a contradiction. <span style="color:var(--green-text);font-weight:600">Write the rule once: the texted link is read access to one trip; the app is the account. Then 62b is the exception on purpose, not an oversight.</span></p>
+</div>
+
+<h2 style="font-family:var(--font-display);font-weight:800;font-size:17pt;letter-spacing:-0.02em;color:var(--sea);margin:26px 0 4px;padding-top:8px;border-top:2px solid var(--sea)">Still open from v1</h2>
+
+<div style="display:grid;gap:11px;margin:14px 0 0">
+  <div style="background:var(--sky-2);border-radius:14px;padding:13px 16px;break-inside:avoid">
+    <div style="font-family:var(--font-display);font-weight:700;font-size:12pt;letter-spacing:-0.02em;color:var(--sea);margin-bottom:3px">A cheaper change still has no screen</div>
+    <p style="font-family:var(--font-body);font-size:10pt;line-height:1.5;color:var(--ink-2);margin:0">Rule 4 is decided — refund the difference at re-confirm — but <strong>17b</strong> only handles +$35. The mirror screen doesn't exist, and it's the one that involves giving money back.</p>
+  </div>
+  <div style="background:var(--sky-2);border-radius:14px;padding:13px 16px;break-inside:avoid">
+    <div style="font-family:var(--font-display);font-weight:700;font-size:12pt;letter-spacing:-0.02em;color:var(--sea);margin-bottom:3px">Group (16) and cruise (17), parked as v1.1</div>
+    <p style="font-family:var(--font-body);font-size:10pt;line-height:1.5;color:var(--ink-2);margin:0">Unchanged since v1: <strong>53a/53b</strong> stop at the price, <strong>49a/49b</strong> have no price reveal, no receipt and no ship-delayed screen.</p>
+  </div>
+  <div style="background:var(--sky-2);border-radius:14px;padding:13px 16px;break-inside:avoid">
+    <div style="font-family:var(--font-display);font-weight:700;font-size:12pt;letter-spacing:-0.02em;color:var(--sea);margin-bottom:3px">New: what if the number isn't hers?</div>
+    <p style="font-family:var(--font-body);font-size:10pt;line-height:1.5;color:var(--ink-2);margin:0">Claim-by-phone is elegant when it works. It has three failure modes with no screens: a request typed with a typo'd number, a trip booked by a spouse or assistant on their own phone, and a customer who changes number between trips. The last one 54a half-covers.</p>
+  </div>
+</div>
+
+<h2 style="font-family:var(--font-display);font-weight:800;font-size:17pt;letter-spacing:-0.02em;color:var(--sea);margin:26px 0 4px;padding-top:8px;border-top:2px solid var(--sea)">Confirmed still clean</h2>
+<p style="font-family:var(--font-body);font-size:10.5pt;line-height:1.5;color:var(--ink-2);margin:6px 0 16px;max-width:6.4in">Re-checked, not assumed — including everything swept after v1.</p>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:11px 20px;break-inside:avoid">
+  <div style="display:flex;gap:9px;align-items:flex-start">
+    <span style="flex:none;margin-top:3px;width:15px;height:15px;border-radius:50%;background:var(--green);display:inline-flex;align-items:center;justify-content:center"><span style="width:4px;height:7px;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(45deg) translate(-1px,-1px)"></span></span>
+    <span style="font-family:var(--font-body);font-size:10pt;line-height:1.45;color:var(--ink-2)"><strong style="color:var(--sea)">Messaging.</strong> Every remaining "Message Marcus" is trip-day (58a, 8a, 49b, 61a, 2a); 10b routes to dispatch.</span>
+  </div>
+  <div style="display:flex;gap:9px;align-items:flex-start">
+    <span style="flex:none;margin-top:3px;width:15px;height:15px;border-radius:50%;background:var(--green);display:inline-flex;align-items:center;justify-content:center"><span style="width:4px;height:7px;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(45deg) translate(-1px,-1px)"></span></span>
+    <span style="font-family:var(--font-body);font-size:10pt;line-height:1.45;color:var(--ink-2)"><strong style="color:var(--sea)">15 vs 20 minutes.</strong> No screen uses 15 for the hold any more; the two numbers no longer collide.</span>
+  </div>
+  <div style="display:flex;gap:9px;align-items:flex-start">
+    <span style="flex:none;margin-top:3px;width:15px;height:15px;border-radius:50%;background:var(--green);display:inline-flex;align-items:center;justify-content:center"><span style="width:4px;height:7px;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(45deg) translate(-1px,-1px)"></span></span>
+    <span style="font-family:var(--font-body);font-size:10pt;line-height:1.45;color:var(--ink-2)"><strong style="color:var(--sea)">The spine.</strong> One wording everywhere it renders, including the two new prototypes.</span>
+  </div>
+  <div style="display:flex;gap:9px;align-items:flex-start">
+    <span style="flex:none;margin-top:3px;width:15px;height:15px;border-radius:50%;background:var(--green);display:inline-flex;align-items:center;justify-content:center"><span style="width:4px;height:7px;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(45deg) translate(-1px,-1px)"></span></span>
+    <span style="font-family:var(--font-body);font-size:10pt;line-height:1.45;color:var(--ink-2)"><strong style="color:var(--sea)">The sign.</strong> "Dana Reyes" on all nine sign surfaces; no "The Reyes Family" left on a sign, and party naming is untouched where it belongs.</span>
+  </div>
+  <div style="display:flex;gap:9px;align-items:flex-start">
+    <span style="flex:none;margin-top:3px;width:15px;height:15px;border-radius:50%;background:var(--green);display:inline-flex;align-items:center;justify-content:center"><span style="width:4px;height:7px;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(45deg) translate(-1px,-1px)"></span></span>
+    <span style="font-family:var(--font-body);font-size:10pt;line-height:1.45;color:var(--ink-2)"><strong style="color:var(--sea)">Driver money.</strong> Fifteen driver screens now, still zero fares or payouts — including the three new ones.</span>
+  </div>
+  <div style="display:flex;gap:9px;align-items:flex-start">
+    <span style="flex:none;margin-top:3px;width:15px;height:15px;border-radius:50%;background:var(--green);display:inline-flex;align-items:center;justify-content:center"><span style="width:4px;height:7px;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(45deg) translate(-1px,-1px)"></span></span>
+    <span style="font-family:var(--font-body);font-size:10pt;line-height:1.45;color:var(--ink-2)"><strong style="color:var(--sea)">Driver orange.</strong> One run-advancing action per screen — 63a's "I've arrived," 63b's sign, 28a's start trip. Never two.</span>
+  </div>
+  <div style="display:flex;gap:9px;align-items:flex-start">
+    <span style="flex:none;margin-top:3px;width:15px;height:15px;border-radius:50%;background:var(--green);display:inline-flex;align-items:center;justify-content:center"><span style="width:4px;height:7px;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(45deg) translate(-1px,-1px)"></span></span>
+    <span style="font-family:var(--font-body);font-size:10pt;line-height:1.45;color:var(--ink-2)"><strong style="color:var(--sea)">$129, and the delay maths.</strong> Flat price holds through both delays; the receipt itemises the changes at $0.00.</span>
+  </div>
+  <div style="display:flex;gap:9px;align-items:flex-start">
+    <span style="flex:none;margin-top:3px;width:15px;height:15px;border-radius:50%;background:var(--green);display:inline-flex;align-items:center;justify-content:center"><span style="width:4px;height:7px;border-right:2px solid #fff;border-bottom:2px solid #fff;transform:rotate(45deg) translate(-1px,-1px)"></span></span>
+    <span style="font-family:var(--font-body);font-size:10pt;line-height:1.45;color:var(--ink-2)"><strong style="color:var(--sea)">Nothing charged before a human confirms.</strong> Held on every new screen too, including 64b's wall.</span>
+  </div>
+</div>
+
+<h2 style="font-family:var(--font-display);font-weight:800;font-size:17pt;letter-spacing:-0.02em;color:var(--sea);margin:26px 0 4px;padding-top:8px;border-top:2px solid var(--sea)">What I'd do</h2>
+
+<div style="background:var(--sea);border-radius:14px;padding:20px 22px;margin:14px 0 0;break-inside:avoid;position:relative;overflow:hidden">
+  <span style="position:absolute;inset:0;background-image:var(--dot-warm);background-size:16px 16px;opacity:.45"></span>
+  <div style="position:relative;z-index:2;display:grid;gap:9px">
+    <div style="font-family:var(--font-body);font-size:10.5pt;line-height:1.5;color:var(--foam)"><strong style="color:var(--white)">1. Retire, don't rewrite.</strong> 01, 03, 04 and 07 are deletions — 6a, 54a, 1a/1b and 28b are superseded by screens that already exist. That's the cheapest hour in this document.</div>
+    <div style="font-family:var(--font-body);font-size:10.5pt;line-height:1.5;color:var(--foam)"><strong style="color:var(--white)">2. Fix 33a properly.</strong> 02 is the only must-fix that needs new copy, and it's the first screen a returning customer sees.</div>
+    <div style="font-family:var(--font-body);font-size:10.5pt;line-height:1.5;color:var(--foam)"><strong style="color:var(--white)">3. Answer the email question.</strong> 06 is small but it decides whether Account has an email field at all.</div>
+    <div style="font-family:var(--font-body);font-size:10.5pt;line-height:1.5;color:var(--foam)"><strong style="color:var(--white)">4. Then the claim-by-phone edges.</strong> Wrong number, someone else's phone, changed number. Elegant mechanics fail quietly, and this one currently has no failure screens at all.</div>
+  </div>
+</div>
+
+<p style="font-family:var(--font-body);font-size:9.5pt;line-height:1.5;color:var(--ink-2);margin:20px 0 0;padding-top:12px;border-top:1px solid var(--sky-3)">Supersedes the v1 audit. Screen ids are option ids in <em>Pixie App Wireframes</em>; turns 62–64 and the three prototypes are included in the read.</p>
+
+</doc-page>
+</x-dc>
+</body>
+</html>
