@@ -23,6 +23,13 @@ export const SPINE_LABELS: Record<string, string> = {
   complete: 'Complete',
 };
 
+/** Badge labels for the states outside the spine. */
+export const STATUS_LABELS: Record<string, string> = {
+  ...SPINE_LABELS,
+  cancelled: 'Cancelled',
+  no_show: 'No-show',
+};
+
 export const SPINE_ORDER: TripStatus[] = [
   'requested',
   'confirmed',
