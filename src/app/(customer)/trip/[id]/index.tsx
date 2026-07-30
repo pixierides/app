@@ -82,7 +82,9 @@ export default function TripDetail() {
             {STATUS_LABELS[trip.status] ?? trip.status}
           </Badge>
         </View>
-        <Text style={styles.dateLine}>{dateLine(trip)}</Text>
+        <Text style={styles.dateLine}>
+          {dateLine(trip)} · {trip.reference}
+        </Text>
         {trip.pickup_at_was ? (
           <Text style={styles.wasNow}>
             was {formatTime(trip.pickup_at_was)} → now {formatTime(trip.pickup_at)} — we watched

@@ -71,6 +71,7 @@ export default function Receipt() {
             <Text style={styles.totalValue}>{dollars(trip.price_cents)}</Text>
           </View>
           {paidLine ? <Text style={styles.paidLine}>{paidLine}</Text> : null}
+          <Text style={styles.paidLine}>Booking {trip.reference}</Text>
         </Card>
 
         <IncludedRow onDark>

@@ -19,3 +19,11 @@ export function navigateTo(destination: string) {
 export function callDispatch() {
   Linking.openURL(`tel:${DISPATCH_PHONE.replace(/-/g, '')}`);
 }
+
+export function callNumber(e164: string) {
+  Linking.openURL(`tel:${e164}`);
+}
+
+export function emailTo(address: string) {
+  Linking.openURL(`mailto:${address}`);
+}

@@ -41,6 +41,7 @@ export const SPINE_ORDER: TripStatus[] = [
 export type CustomerTrip = {
   id: string;
   created_at: string;
+  reference: string;
   customer_name: string;
   origin: string;
   destination: string;
@@ -107,7 +108,7 @@ export async function fetchMyTrips(): Promise<CustomerTrip[]> {
   const { data, error } = await supabase
     .from('trips')
     .select(
-      'id, created_at, customer_name, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, flight_landed_at, adults, children, car_seats, price_cents, paid_at, status, driver_state, driver_name, vehicle, hold_until',
+      'id, created_at, reference, customer_name, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, flight_landed_at, adults, children, car_seats, price_cents, paid_at, status, driver_state, driver_name, vehicle, hold_until',
     )
     .order('pickup_at', { ascending: true });
   if (error) throw error;

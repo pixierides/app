@@ -9,8 +9,11 @@ import type { DriverRunState } from './trips';
 export type DispatchTrip = {
   id: string;
   created_at: string;
+  reference: string;
+  source: 'web' | 'app';
   customer_name: string;
   customer_phone: string;
+  customer_email: string | null;
   party_label: string | null;
   origin: string;
   destination: string;
@@ -60,7 +63,7 @@ export async function fetchDispatchTrips(): Promise<DispatchTrip[]> {
   const { data, error } = await supabase
     .from('trips')
     .select(
-      'id, created_at, customer_name, customer_phone, party_label, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, adults, children, car_seats, notes, price_cents, paid_at, hold_until, status, driver_state, driver_id, driver_name, vehicle, written_off',
+      'id, created_at, reference, source, customer_name, customer_phone, customer_email, party_label, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, adults, children, car_seats, notes, price_cents, paid_at, hold_until, status, driver_state, driver_id, driver_name, vehicle, written_off',
     )
     .order('pickup_at', { ascending: true });
   if (error) throw error;

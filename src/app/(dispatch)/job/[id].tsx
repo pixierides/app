@@ -26,6 +26,7 @@ import {
   type Driver,
 } from '@/lib/dispatch';
 import { firstName, formatTime, partyLine } from '@/lib/format';
+import { callNumber, emailTo } from '@/lib/links';
 import { formatDeadline } from '@/lib/policy';
 import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
 
@@ -148,10 +149,13 @@ export default function DispatchJob() {
             </Badge>
           </View>
           <Text style={styles.meta}>
-            {trip.origin} → {trip.destination} · {dateLine}
+            {trip.reference}
+            {trip.source === 'web' ? ' · web booking' : ''} · {trip.origin} →{' '}
+            {trip.destination} · {dateLine}
           </Text>
           <Text style={styles.meta}>
             {partyLine(trip.adults, trip.children)} · gave {trip.customer_phone}
+            {trip.customer_email ? ` · ${trip.customer_email}` : ''}
           </Text>
           {open && !trip.paid_at ? (
             <Text style={styles.cutoffLine}>
@@ -248,6 +252,28 @@ export default function DispatchJob() {
                 Release the driver
               </Button>
             </Card>
+          ) : null}
+
+          {/* ——— booking details (web bookings carry addresses + extras) ——— */}
+          {trip.notes ? (
+            <Card tone="dark-raised" pad={20} style={styles.block}>
+              <Text style={styles.eyebrow}>DETAILS</Text>
+              <Text style={styles.blockBodyDim}>{trip.notes}</Text>
+            </Card>
+          ) : null}
+
+          {/* ——— contact — a web customer has no app: phone and email only ——— */}
+          {open ? (
+            <View style={styles.contactRow}>
+              <Button variant="secondary" onDark onPress={() => callNumber(trip.customer_phone)}>
+                Call {firstName(trip.customer_name)}
+              </Button>
+              {trip.customer_email ? (
+                <Button variant="secondary" onDark onPress={() => emailTo(trip.customer_email!)}>
+                  Email
+                </Button>
+              ) : null}
+            </View>
           ) : null}
 
           {/* ——— 68b · what we've tried ——— */}
@@ -449,6 +475,11 @@ const styles = StyleSheet.create({
     color: color.foamDim,
   },
   attemptButtons: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: space.s3,
+  },
+  contactRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: space.s3,

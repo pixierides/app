@@ -53,6 +53,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (!cancelled) {
           setProfile((data as Profile) ?? null);
           setProfileLoading(false);
+          // Verified sign-in claims any unclaimed trips on this number —
+          // the same mechanism for app and web bookings. Best-effort.
+          if ((data as Profile | null)?.role === 'customer') {
+            supabase.rpc('claim_my_trips').then(() => {}, () => {});
+          }
         }
       });
     return () => {

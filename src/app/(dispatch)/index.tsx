@@ -91,8 +91,9 @@ export default function DispatchConsole() {
   const toAssign = open.filter((t) => t.status === 'paid' && !t.driver_id);
   const inMotion = open.filter((t) => t.status === 'driver_assigned');
 
+  // Quiet source marker: a web customer has no app — phone and email only.
   const route = (t: DispatchTrip) =>
-    `${t.origin} → ${t.destination}${t.flight_number ? ` · ${t.flight_number}` : ''}`;
+    `${t.source === 'web' ? 'web · ' : ''}${t.reference} · ${t.origin} → ${t.destination}${t.flight_number ? ` · ${t.flight_number}` : ''}`;
 
   return (
     <SafeAreaView style={styles.screen}>
