@@ -8,6 +8,7 @@
  */
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import { DEV_OTP, devLoginFor } from '@/lib/dev-login';
 import { supabase, type Profile } from '@/lib/supabase';
 
 type AuthState = {
@@ -60,11 +61,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [session?.user?.id]);
 
   const signInWithPhone = useCallback(async (phone: string) => {
+    // Dev backdoor: pretend the text was sent; the code screen handles it.
+    if (devLoginFor(phone)) return {};
     const { error } = await supabase.auth.signInWithOtp({ phone });
     return error ? { error: error.message } : {};
   }, []);
 
   const verifyCode = useCallback(async (phone: string, code: string) => {
+    const dev = devLoginFor(phone);
+    if (dev) {
+      if (code !== DEV_OTP) return { error: 'Invalid dev code' };
+      const { error } = await supabase.auth.signInWithPassword({
+        email: dev.email,
+        password: dev.password,
+      });
+      return error ? { error: error.message } : {};
+    }
     const { error } = await supabase.auth.verifyOtp({ phone, token: code, type: 'sms' });
     return error ? { error: error.message } : {};
   }, []);
