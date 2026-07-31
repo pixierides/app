@@ -18,10 +18,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui';
 import { useAuth } from '@/providers/auth';
 import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 const CODE_LEN = 6;
 
 export default function Code() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const { phone, display } = useLocalSearchParams<{ phone: string; display?: string }>();
   const { verifyCode, signInWithPhone } = useAuth();
   const [code, setCode] = useState('');
@@ -134,10 +138,10 @@ export default function Code() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
   flex: {
     flex: 1,
@@ -153,7 +157,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backGlyph: {
-    color: color.foam,
+    color: t.textBody,
     fontSize: 28,
     lineHeight: 30,
   },
@@ -168,13 +172,13 @@ const styles = StyleSheet.create({
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
     letterSpacing: ls(track.h2, fs.h2),
-    color: color.white,
+    color: t.textHeading,
   },
   sub: {
     fontFamily: font.body400,
     fontSize: 16,
     lineHeight: 16 * 1.5,
-    color: color.foam,
+    color: t.textBody,
   },
   boxes: {
     flexDirection: 'row',
@@ -186,19 +190,19 @@ const styles = StyleSheet.create({
     maxWidth: 52,
     height: 58,
     borderRadius: radius.input,
-    backgroundColor: color.sea2,
+    backgroundColor: t.surfaceCard,
     borderWidth: 1.5,
-    borderColor: 'rgba(168,205,226,0.18)',
+    borderColor: t.divider,
     alignItems: 'center',
     justifyContent: 'center',
   },
   boxActive: {
-    borderColor: color.foam,
+    borderColor: t.textHeading,
   },
   digit: {
     fontFamily: font.display700,
     fontSize: 24,
-    color: color.white,
+    color: t.textHeading,
   },
   hiddenInput: {
     position: 'absolute',
@@ -209,7 +213,7 @@ const styles = StyleSheet.create({
   error: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
   },
   resendRow: {
     flexDirection: 'row',
@@ -218,12 +222,12 @@ const styles = StyleSheet.create({
   resendLabel: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foamDim,
+    color: t.textDim,
   },
   resendLink: {
     fontFamily: font.body600,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
     textDecorationLine: 'underline',
   },
   footer: {
@@ -231,3 +235,5 @@ const styles = StyleSheet.create({
     paddingBottom: space.s4,
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

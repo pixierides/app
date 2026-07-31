@@ -13,11 +13,15 @@ import { formatTime } from '@/lib/format';
 import { callDispatch, DISPATCH_PHONE } from '@/lib/links';
 import { changePickup, policyState } from '@/lib/policy';
 import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 /** Offsets (minutes) drawn as taps around the current pickup. */
 const OFFSETS = [-45, -30, -15, 15, 30, 45, 60, 90];
 
 export default function ChangePickup() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const { id } = useLocalSearchParams<{ id: string }>();
   const [trip, setTrip] = useState<CustomerTrip | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
@@ -128,10 +132,10 @@ export default function ChangePickup() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
   top: {
     height: 44,
@@ -144,7 +148,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backGlyph: {
-    color: color.foam,
+    color: t.textBody,
     fontSize: 28,
     lineHeight: 30,
   },
@@ -159,13 +163,13 @@ const styles = StyleSheet.create({
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
     letterSpacing: ls(track.h2, fs.h2),
-    color: color.white,
+    color: t.textHeading,
   },
   sub: {
     fontFamily: font.body400,
     fontSize: 16,
     lineHeight: 24,
-    color: color.foam,
+    color: t.textBody,
   },
   chips: {
     flexDirection: 'row',
@@ -178,31 +182,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s4,
     borderRadius: radius.pill,
     borderWidth: 1.5,
-    borderColor: 'rgba(168,205,226,0.3)',
+    borderColor: t.divider,
     alignItems: 'center',
     justifyContent: 'center',
   },
   chipOn: {
-    backgroundColor: color.sea2,
-    borderColor: color.foam,
+    backgroundColor: t.surfaceCard,
+    borderColor: t.textHeading,
   },
   chipText: {
     fontFamily: font.body600,
     fontSize: 15,
-    color: color.foamDim,
+    color: t.textDim,
   },
   chipTextOn: {
-    color: color.white,
+    color: t.textHeading,
   },
   error: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
   },
   routeNote: {
     fontFamily: font.body400,
     fontSize: 13,
-    color: color.foamDim,
+    color: t.textDim,
     textDecorationLine: 'underline',
     marginTop: space.s2,
   },
@@ -211,3 +215,5 @@ const styles = StyleSheet.create({
     paddingBottom: space.s4,
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

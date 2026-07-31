@@ -7,6 +7,7 @@ import { Tabs } from 'expo-router';
 import { CircleUser, ClipboardList, Inbox, CarFront } from 'lucide-react-native';
 import { RoleGate } from '@/components/RoleGate';
 import { TabBar } from '@/components/ui';
+import { useTheme } from '@/providers/theme';
 import { color } from '@/theme/tokens';
 
 const TABS = [
@@ -16,13 +17,13 @@ const TABS = [
   { name: 'account', label: 'Account', Icon: CircleUser },
 ] as const;
 
-export default function DispatchLayout() {
+function DispatchTabs() {
+  const th = useTheme();
   return (
-    <RoleGate role="dispatch">
-      <Tabs
+    <Tabs
         screenOptions={{
           headerShown: false,
-          sceneStyle: { backgroundColor: color.sea },
+          sceneStyle: { backgroundColor: th.bgPage },
         }}
         tabBar={({ state, navigation }) => {
           const activeRoute = state.routes[state.index]?.name;
@@ -52,6 +53,13 @@ export default function DispatchLayout() {
         {/* Job detail lives inside the tab navigator but gets no tab. */}
         <Tabs.Screen name="job/[id]" options={{ href: null }} />
       </Tabs>
+  );
+}
+
+export default function DispatchLayout() {
+  return (
+    <RoleGate role="dispatch">
+      <DispatchTabs />
     </RoleGate>
   );
 }

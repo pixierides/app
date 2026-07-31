@@ -8,14 +8,18 @@ import { View, ActivityIndicator, StyleSheet } from 'react-native';
 import { useAuth } from '@/providers/auth';
 import type { AppRole } from '@/lib/supabase';
 import { color } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 export function RoleGate({ role, children }: { role: AppRole; children: React.ReactNode }) {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const { session, profile, profileLoading } = useAuth();
 
   if (session === undefined || (session && (profileLoading || !profile))) {
     return (
       <View style={styles.splash}>
-        <ActivityIndicator color={color.foam} />
+        <ActivityIndicator color={th.textDim} />
       </View>
     );
   }
@@ -24,11 +28,13 @@ export function RoleGate({ role, children }: { role: AppRole; children: React.Re
   return <>{children}</>;
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   splash: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

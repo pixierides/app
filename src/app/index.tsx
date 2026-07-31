@@ -21,8 +21,12 @@ import { formatTime } from '@/lib/format';
 import { useAuth } from '@/providers/auth';
 import { useBooking } from '@/providers/booking';
 import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 export default function Home() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const { session, profile, profileLoading } = useAuth();
   const { draft, update } = useBooking();
   const [nextTrip, setNextTrip] = useState<CustomerTrip | null>(null);
@@ -50,7 +54,7 @@ export default function Home() {
   if (session === undefined || (session && (profileLoading || !profile))) {
     return (
       <View style={styles.splash}>
-        <ActivityIndicator color={color.foam} />
+        <ActivityIndicator color={th.textDim} />
       </View>
     );
   }
@@ -63,7 +67,7 @@ export default function Home() {
     <SafeAreaView style={styles.screen}>
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.topRow}>
-          <Logo variant="white" size={13} />
+          <Logo variant="auto" size={13} />
           {isCustomer ? (
             <Pressable
               accessibilityRole="button"
@@ -89,7 +93,7 @@ export default function Home() {
         </Text>
 
         {nextTrip ? (
-          <Card tone="dark-raised" texture pad={20} style={styles.nextCard}>
+          <Card tone="surface" texture pad={20} style={styles.nextCard}>
             <Text style={styles.eyebrow}>YOUR NEXT RIDE</Text>
             <View style={styles.nextRow}>
               <RouteChip from={nextTrip.origin} to={nextTrip.destination} onDark />
@@ -152,16 +156,16 @@ export default function Home() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
   splash: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
   scroll: {
     paddingHorizontal: space.s5,
@@ -179,46 +183,46 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s4,
     borderRadius: radius.pill,
     borderWidth: 1.5,
-    borderColor: 'rgba(168,205,226,0.4)',
+    borderColor: t.divider,
     alignItems: 'center',
     justifyContent: 'center',
   },
   chipText: {
     fontFamily: font.body600,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
   },
   chipFilled: {
     height: 44,
     paddingHorizontal: space.s4,
     borderRadius: radius.pill,
-    backgroundColor: color.sea2,
+    backgroundColor: t.surfaceCard,
     alignItems: 'center',
     justifyContent: 'center',
   },
   chipFilledText: {
     fontFamily: font.body600,
     fontSize: 14,
-    color: color.sky,
+    color: t.textPrimary,
   },
   h1: {
     fontFamily: font.display700,
     fontSize: fs.h1,
     lineHeight: fs.h1 * lh.tight,
     letterSpacing: ls(track.display, fs.h1),
-    color: color.white,
+    color: t.textHeading,
   },
   sub: {
     fontFamily: font.body400,
     fontSize: fs.bodySm,
     lineHeight: fs.bodySm * 1.5,
-    color: color.foam,
+    color: t.textBody,
   },
   eyebrow: {
     fontFamily: font.body600,
     fontSize: fs.label,
     letterSpacing: ls(track.label, fs.label),
-    color: color.foamDim,
+    color: t.textDim,
   },
   nextCard: {
     gap: space.s3,
@@ -231,12 +235,12 @@ const styles = StyleSheet.create({
   nextPrice: {
     fontFamily: font.display700,
     fontSize: 20,
-    color: color.white,
+    color: t.textHeading,
   },
   nextMeta: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
   },
   form: {
     gap: space.s4,
@@ -247,12 +251,14 @@ const styles = StyleSheet.create({
   foot: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foamDim,
+    color: t.textDim,
     textAlign: 'center',
   },
   footLink: {
     fontFamily: font.body600,
-    color: color.foam,
+    color: t.textBody,
     textDecorationLine: 'underline',
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

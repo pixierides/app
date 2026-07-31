@@ -6,19 +6,22 @@
  */
 import React from 'react';
 import Svg, { Path } from 'react-native-svg';
+import { useTheme } from '@/providers/theme';
 import { color } from '@/theme/tokens';
 import { TEXT_D, MARK_D, FULL_VB, MARK_VB } from './logo-paths';
 
 export function Logo({
-  variant = 'navy',
+  variant = 'auto',
   size = 26,
   showText = true,
 }: {
-  variant?: 'navy' | 'white';
+  variant?: 'auto' | 'navy' | 'white';
   size?: number;
   showText?: boolean;
 }) {
-  const fill = variant === 'white' ? color.white : color.sea;
+  const t = useTheme();
+  const resolved = variant === 'auto' ? (t.mode === 'dark' ? 'white' : 'navy') : variant;
+  const fill = resolved === 'white' ? color.white : color.sea;
   if (!showText) {
     return (
       <Svg

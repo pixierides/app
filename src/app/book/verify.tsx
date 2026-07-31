@@ -12,10 +12,14 @@ import { submitRideRequest } from '@/lib/booking';
 import { useAuth } from '@/providers/auth';
 import { pickupFromDraft, seatsLabel, useBooking } from '@/providers/booking';
 import { color, font, radius, space } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 const CODE_LEN = 6;
 
 export default function BookVerify() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const { phone, display } = useLocalSearchParams<{ phone: string; display?: string }>();
   const { verifyCode, signInWithPhone } = useAuth();
   const { draft, reset } = useBooking();
@@ -119,18 +123,18 @@ export default function BookVerify() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   sub: {
     fontFamily: font.body400,
     fontSize: 16,
     lineHeight: 24,
-    color: color.foam,
+    color: t.textBody,
   },
   note: {
     fontFamily: font.body400,
     fontSize: 14,
     lineHeight: 21,
-    color: color.foamDim,
+    color: t.textDim,
   },
   boxes: {
     flexDirection: 'row',
@@ -142,19 +146,19 @@ const styles = StyleSheet.create({
     maxWidth: 52,
     height: 58,
     borderRadius: radius.input,
-    backgroundColor: color.sea2,
+    backgroundColor: t.surfaceCard,
     borderWidth: 1.5,
-    borderColor: 'rgba(168,205,226,0.18)',
+    borderColor: t.divider,
     alignItems: 'center',
     justifyContent: 'center',
   },
   boxActive: {
-    borderColor: color.foam,
+    borderColor: t.textHeading,
   },
   digit: {
     fontFamily: font.display700,
     fontSize: 24,
-    color: color.white,
+    color: t.textHeading,
   },
   hiddenInput: {
     position: 'absolute',
@@ -165,7 +169,7 @@ const styles = StyleSheet.create({
   error: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
   },
   resendRow: {
     flexDirection: 'row',
@@ -174,12 +178,14 @@ const styles = StyleSheet.create({
   resendLabel: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foamDim,
+    color: t.textDim,
   },
   resendLink: {
     fontFamily: font.body600,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
     textDecorationLine: 'underline',
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

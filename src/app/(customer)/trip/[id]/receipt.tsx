@@ -10,8 +10,12 @@ import { Card, IncludedRow, RouteChip } from '@/components/ui';
 import { dollars, fetchMyTrips, type CustomerTrip } from '@/lib/booking';
 import { formatTime } from '@/lib/format';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 export default function Receipt() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const { id } = useLocalSearchParams<{ id: string }>();
   const [trip, setTrip] = useState<CustomerTrip | null>(null);
 
@@ -46,7 +50,7 @@ export default function Receipt() {
         <Text style={styles.h1}>Your receipt.</Text>
         <RouteChip from={trip.origin} to={trip.destination} onDark />
 
-        <Card tone="white" pad={20} style={styles.card}>
+        <Card tone="surface" pad={20} style={styles.card}>
           <View style={styles.row}>
             <Text style={styles.rowLabel}>Flat fare</Text>
             <Text style={styles.rowValue}>{dollars(trip.price_cents)}</Text>
@@ -83,10 +87,10 @@ export default function Receipt() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
   scroll: {
     paddingHorizontal: space.s5,
@@ -103,7 +107,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backGlyph: {
-    color: color.foam,
+    color: t.textBody,
     fontSize: 28,
     lineHeight: 30,
   },
@@ -112,7 +116,7 @@ const styles = StyleSheet.create({
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
     letterSpacing: ls(track.h2, fs.h2),
-    color: color.white,
+    color: t.textHeading,
   },
   card: {
     gap: space.s3,
@@ -127,27 +131,27 @@ const styles = StyleSheet.create({
   rowLabel: {
     fontFamily: font.body400,
     fontSize: 15,
-    color: color.ink2,
+    color: t.textBody,
   },
   rowValue: {
     fontFamily: font.body600,
     fontSize: 15,
-    color: color.ink,
+    color: t.textPrimary,
   },
   rowIncluded: {
     fontFamily: font.body600,
     fontSize: 14,
-    color: color.greenText,
+    color: t.confirmText,
   },
   totalRule: {
     height: 1.5,
-    backgroundColor: color.sky3,
+    backgroundColor: t.divider,
     marginVertical: space.s1,
   },
   totalLabel: {
     fontFamily: font.body600,
     fontSize: 16,
-    color: color.ink,
+    color: t.textPrimary,
   },
   totalValue: {
     fontFamily: font.display800,
@@ -158,12 +162,14 @@ const styles = StyleSheet.create({
   paidLine: {
     fontFamily: font.body400,
     fontSize: 13,
-    color: color.ink2,
+    color: t.textBody,
   },
   noTip: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foamDim,
+    color: t.textDim,
     textAlign: 'center',
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

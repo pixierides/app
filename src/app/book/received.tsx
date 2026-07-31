@@ -10,6 +10,8 @@ import { Button, Card, RouteChip } from '@/components/ui';
 import { dollars, fetchMyTrips, type CustomerTrip } from '@/lib/booking';
 import { formatTime } from '@/lib/format';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 function tripDateLine(t: CustomerTrip): string {
   const d = new Date(t.pickup_at);
@@ -20,6 +22,8 @@ function tripDateLine(t: CustomerTrip): string {
 }
 
 export default function BookReceived() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const { tripId } = useLocalSearchParams<{ tripId: string }>();
   const [trip, setTrip] = useState<CustomerTrip | null>(null);
 
@@ -38,7 +42,7 @@ export default function BookReceived() {
         </Text>
 
         {trip ? (
-          <Card tone="dark-raised" texture pad={20} style={styles.card}>
+          <Card tone="surface" texture pad={20} style={styles.card}>
             <View style={styles.cardRow}>
               <RouteChip from={trip.origin} to={trip.destination} onDark />
               <Text style={styles.price}>{dollars(trip.price_cents)}</Text>
@@ -62,10 +66,10 @@ export default function BookReceived() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
   body: {
     flex: 1,
@@ -77,20 +81,20 @@ const styles = StyleSheet.create({
     fontFamily: font.body600,
     fontSize: fs.label,
     letterSpacing: ls(track.label, fs.label),
-    color: color.foamDim,
+    color: t.textDim,
   },
   h1: {
     fontFamily: font.display700,
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
     letterSpacing: ls(track.h2, fs.h2),
-    color: color.white,
+    color: t.textHeading,
   },
   sub: {
     fontFamily: font.body400,
     fontSize: 16,
     lineHeight: 24,
-    color: color.foam,
+    color: t.textBody,
   },
   card: {
     gap: space.s3,
@@ -104,12 +108,12 @@ const styles = StyleSheet.create({
   price: {
     fontFamily: font.display700,
     fontSize: 20,
-    color: color.white,
+    color: t.textHeading,
   },
   meta: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
   },
   footer: {
     paddingHorizontal: space.s5,
@@ -119,7 +123,9 @@ const styles = StyleSheet.create({
   caption: {
     fontFamily: font.body400,
     fontSize: 13,
-    color: color.foamDim,
+    color: t.textDim,
     textAlign: 'center',
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

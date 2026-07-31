@@ -17,8 +17,12 @@ import { Button, Input } from '@/components/ui';
 import { formatUsPhone, toE164 } from '@/lib/phone';
 import { useAuth } from '@/providers/auth';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 export default function SignIn() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const { signInWithPhone } = useAuth();
   const [phone, setPhone] = useState('');
   const [sending, setSending] = useState(false);
@@ -96,10 +100,10 @@ export default function SignIn() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
   flex: {
     flex: 1,
@@ -115,7 +119,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backGlyph: {
-    color: color.foam,
+    color: t.textBody,
     fontSize: 28,
     lineHeight: 30,
   },
@@ -130,19 +134,19 @@ const styles = StyleSheet.create({
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
     letterSpacing: ls(track.h2, fs.h2),
-    color: color.white,
+    color: t.textHeading,
   },
   sub: {
     fontFamily: font.body400,
     fontSize: 16,
     lineHeight: 16 * 1.5,
-    color: color.foam,
+    color: t.textBody,
     marginBottom: space.s2,
   },
   prefix: {
     fontFamily: font.body600,
     fontSize: 16,
-    color: color.foamDim,
+    color: t.textDim,
   },
   field: {
     marginTop: space.s2,
@@ -150,7 +154,7 @@ const styles = StyleSheet.create({
   error: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
   },
   footer: {
     paddingHorizontal: space.s5,
@@ -161,7 +165,9 @@ const styles = StyleSheet.create({
     fontFamily: font.body400,
     fontSize: 13,
     lineHeight: 13 * 1.5,
-    color: color.foamDim,
+    color: t.textDim,
     textAlign: 'center',
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

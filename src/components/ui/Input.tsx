@@ -1,7 +1,7 @@
 /**
- * Pixie Rides text input. Port of components/forms/Input.jsx.
- * 50px tall, 16px text, 12px radius, Sky-3 hairline, white fill.
- * Separates by background + shadow, not heavy borders.
+ * Pixie Rides text input — brand guide v2, both modes.
+ * 50px tall, 16px text (never below — iOS zooms), 12px radius.
+ * White fill in light mode, Sea 2 in dark. Labels stay visible.
  */
 import React from 'react';
 import {
@@ -12,42 +12,39 @@ import {
   type ViewStyle,
   type TextInputProps,
 } from 'react-native';
-import { color, font, ls, radius, shadow, track } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { font, ls, radius, track } from '@/theme/tokens';
 
 export type InputProps = {
   label?: string;
   hint?: string;
   leading?: React.ReactNode;
+  /** Accepted for compatibility; colors now come from the theme. */
   onDark?: boolean;
   style?: ViewStyle;
 } & TextInputProps;
 
-export function Input({ label, hint, leading, onDark = false, style, ...rest }: InputProps) {
+export function Input({ label, hint, leading, onDark: _onDark, style, ...rest }: InputProps) {
+  const t = useTheme();
   return (
     <View style={[styles.wrap, style]}>
       {label ? (
-        <Text style={[styles.label, { color: onDark ? color.foamDim : color.ink2 }]}>
-          {label.toUpperCase()}
-        </Text>
+        <Text style={[styles.label, { color: t.textDim }]}>{label.toUpperCase()}</Text>
       ) : null}
       <View
         style={[
           styles.field,
-          onDark
-            ? { backgroundColor: color.sea2, borderColor: 'rgba(168,205,226,0.18)' }
-            : { backgroundColor: color.white, borderColor: color.sky3 },
+          { backgroundColor: t.inputBg, borderColor: t.inputBorder, boxShadow: t.shadowCard },
         ]}
       >
         {leading ? <View style={styles.leading}>{leading}</View> : null}
         <TextInput
-          style={[styles.input, { color: onDark ? color.sky : color.ink }]}
-          placeholderTextColor={onDark ? color.foamDim : color.ink2}
+          style={[styles.input, { color: t.textPrimary }]}
+          placeholderTextColor={t.placeholder}
           {...rest}
         />
       </View>
-      {hint ? (
-        <Text style={[styles.hint, { color: onDark ? color.foamDim : color.ink2 }]}>{hint}</Text>
-      ) : null}
+      {hint ? <Text style={[styles.hint, { color: t.textDim }]}>{hint}</Text> : null}
     </View>
   );
 }
@@ -70,7 +67,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     borderRadius: radius.input,
     borderWidth: 1.5,
-    boxShadow: shadow.card,
   },
   leading: {
     flexDirection: 'row',

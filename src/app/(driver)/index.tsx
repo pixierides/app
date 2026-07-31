@@ -8,12 +8,17 @@ import { useCallback, useState } from 'react';
 import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Button, Card, ListRow, RouteChip } from '@/components/ui';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { fetchDriverRuns, type DriverRun } from '@/lib/trips';
 import { firstName, formatTime, inMinutes } from '@/lib/format';
 import { useAuth } from '@/providers/auth';
 import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 export default function DriverHome() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const { profile, signOut } = useAuth();
   const [runs, setRuns] = useState<DriverRun[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -43,7 +48,7 @@ export default function DriverHome() {
         contentContainerStyle={styles.scroll}
         refreshControl={
           <RefreshControl
-            tintColor={color.foam}
+            tintColor={th.textDim}
             refreshing={refreshing}
             onRefresh={async () => {
               setRefreshing(true);
@@ -60,7 +65,7 @@ export default function DriverHome() {
 
         {runs === null ? null : next ? (
           <>
-            <Card tone="dark-raised" texture pad={20} style={styles.nextCard}>
+            <Card tone="surface" texture pad={20} style={styles.nextCard}>
               <Text style={styles.eyebrow}>
                 NEXT PICKUP · {inMinutes(next.pickup_at).toUpperCase()}
               </Text>
@@ -85,7 +90,7 @@ export default function DriverHome() {
             {later.length > 0 ? (
               <View style={styles.laterWrap}>
                 <Text style={styles.sectionLabel}>LATER TONIGHT</Text>
-                <Card tone="dark-raised" pad={8}>
+                <Card tone="surface" pad={8}>
                   {later.map((r) => (
                     <ListRow
                       key={r.id}
@@ -116,6 +121,9 @@ export default function DriverHome() {
           </View>
         )}
 
+        <Card tone="surface" pad={20}>
+          <ThemeToggle />
+        </Card>
         <View style={styles.footer}>
           <Button variant="ghost" onDark onPress={signOut}>
             Sign out
@@ -126,10 +134,10 @@ export default function DriverHome() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
   scroll: {
     paddingHorizontal: space.s5,
@@ -147,7 +155,7 @@ const styles = StyleSheet.create({
     fontFamily: font.display700,
     fontSize: fs.h3 + 4,
     letterSpacing: ls(track.h2, fs.h3 + 4),
-    color: color.white,
+    color: t.textHeading,
   },
   nextCard: {
     gap: space.s3,
@@ -156,7 +164,7 @@ const styles = StyleSheet.create({
     fontFamily: font.body600,
     fontSize: fs.label,
     letterSpacing: ls(track.label, fs.label),
-    color: color.foamDim,
+    color: t.textDim,
   },
   routeRow: {
     flexDirection: 'row',
@@ -169,12 +177,12 @@ const styles = StyleSheet.create({
     fontFamily: font.display700,
     fontSize: 22,
     letterSpacing: ls(track.h2, 22),
-    color: color.white,
+    color: t.textHeading,
   },
   party: {
     fontFamily: font.body400,
     fontSize: 15,
-    color: color.foam,
+    color: t.textBody,
   },
   laterWrap: {
     gap: space.s3,
@@ -183,12 +191,12 @@ const styles = StyleSheet.create({
     fontFamily: font.body600,
     fontSize: fs.label,
     letterSpacing: ls(track.label, fs.label),
-    color: color.foamDim,
+    color: t.textDim,
   },
   flight: {
     fontFamily: font.body600,
     fontSize: 13,
-    color: color.foamDim,
+    color: t.textDim,
   },
   empty: {
     flex: 1,
@@ -201,16 +209,18 @@ const styles = StyleSheet.create({
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
     letterSpacing: ls(track.h2, fs.h2),
-    color: color.white,
+    color: t.textHeading,
   },
   emptySub: {
     fontFamily: font.body400,
     fontSize: 16,
     lineHeight: 16 * 1.5,
-    color: color.foam,
+    color: t.textBody,
   },
   footer: {
     alignItems: 'center',
     paddingTop: space.s4,
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

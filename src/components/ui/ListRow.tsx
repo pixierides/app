@@ -1,18 +1,18 @@
 /**
- * Tappable list row. Port of components/data/ListRow.jsx.
- * ≥44px target. Icon slot, title + subtitle, optional trailing node/chevron.
- * Separation by background, not borders.
+ * Tappable list row — brand guide v2, both modes.
+ * ≥44px target. Separation by background, not borders.
  */
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, type ViewStyle } from 'react-native';
-import { color, font } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { font } from '@/theme/tokens';
 
 export function ListRow({
   leading,
   title,
   subtitle,
   trailing,
-  onDark = false,
+  onDark: _onDark,
   chevron = false,
   onPress,
   style,
@@ -21,13 +21,13 @@ export function ListRow({
   title: string;
   subtitle?: string;
   trailing?: React.ReactNode;
+  /** Accepted for compatibility; colors now come from the theme. */
   onDark?: boolean;
   chevron?: boolean;
   onPress?: () => void;
   style?: ViewStyle;
 }) {
-  const titleC = onDark ? color.sky : color.ink;
-  const subC = onDark ? color.foamDim : color.ink2;
+  const t = useTheme();
   const Wrapper: any = onPress ? Pressable : View;
   return (
     <Wrapper
@@ -40,20 +40,18 @@ export function ListRow({
       ]}
     >
       {leading ? (
-        <View
-          style={[styles.leading, { backgroundColor: onDark ? color.sea2 : color.sky2 }]}
-        >
-          {leading}
-        </View>
+        <View style={[styles.leading, { backgroundColor: t.bgRaised }]}>{leading}</View>
       ) : null}
       <View style={styles.body}>
-        <Text numberOfLines={1} style={[styles.title, { color: titleC }]}>
+        <Text numberOfLines={1} style={[styles.title, { color: t.textPrimary }]}>
           {title}
         </Text>
-        {subtitle ? <Text style={[styles.subtitle, { color: subC }]}>{subtitle}</Text> : null}
+        {subtitle ? (
+          <Text style={[styles.subtitle, { color: t.textDim }]}>{subtitle}</Text>
+        ) : null}
       </View>
       {trailing ? <View style={styles.trailing}>{trailing}</View> : null}
-      {chevron ? <Text style={[styles.chevron, { color: subC }]}>›</Text> : null}
+      {chevron ? <Text style={[styles.chevron, { color: t.textDim }]}>›</Text> : null}
     </Wrapper>
   );
 }

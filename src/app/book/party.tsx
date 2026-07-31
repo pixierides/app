@@ -8,6 +8,8 @@ import { BookScaffold } from '@/components/BookScaffold';
 import { Button, Input } from '@/components/ui';
 import { parseClock, seatsLabel, useBooking } from '@/providers/booking';
 import { color, font, radius, space } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 function Stepper({
   label,
@@ -24,6 +26,8 @@ function Stepper({
   max: number;
   onChange: (v: number) => void;
 }) {
+  const th = useTheme();
+  const styles = themed[th.mode];
   return (
     <View style={styles.stepperRow}>
       <Text style={styles.stepperLabel}>{label}</Text>
@@ -64,6 +68,8 @@ const DAYS: { key: string; label: string }[] = [
 ];
 
 export default function BookParty() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const { draft, update } = useBooking();
   const timeOk = parseClock(draft.landsAt) !== null;
 
@@ -143,9 +149,9 @@ export default function BookParty() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   card: {
-    backgroundColor: color.sea2,
+    backgroundColor: t.surfaceCard,
     borderRadius: radius.card,
     paddingHorizontal: space.s4,
     paddingVertical: space.s2,
@@ -159,7 +165,7 @@ const styles = StyleSheet.create({
   stepperLabel: {
     fontFamily: font.body600,
     fontSize: 16,
-    color: color.sky,
+    color: t.textPrimary,
   },
   stepperControls: {
     flexDirection: 'row',
@@ -171,7 +177,7 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: radius.pill,
     borderWidth: 1.5,
-    borderColor: 'rgba(168,205,226,0.3)',
+    borderColor: t.divider,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -182,12 +188,12 @@ const styles = StyleSheet.create({
   stepGlyph: {
     fontFamily: font.body600,
     fontSize: 20,
-    color: color.foam,
+    color: t.textBody,
   },
   stepValue: {
     fontFamily: font.body600,
     fontSize: 16,
-    color: color.white,
+    color: t.textHeading,
     minWidth: 24,
     textAlign: 'center',
   },
@@ -200,20 +206,22 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s4,
     borderRadius: radius.pill,
     borderWidth: 1.5,
-    borderColor: 'rgba(168,205,226,0.3)',
+    borderColor: t.divider,
     alignItems: 'center',
     justifyContent: 'center',
   },
   dayChipOn: {
-    backgroundColor: color.sea2,
-    borderColor: color.foam,
+    backgroundColor: t.surfaceCard,
+    borderColor: t.textHeading,
   },
   dayChipText: {
     fontFamily: font.body600,
     fontSize: 14,
-    color: color.foamDim,
+    color: t.textDim,
   },
   dayChipTextOn: {
-    color: color.white,
+    color: t.textHeading,
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

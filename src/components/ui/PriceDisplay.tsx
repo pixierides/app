@@ -6,6 +6,7 @@
  */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTheme } from '@/providers/theme';
 import { color, font, ls, track } from '@/theme/tokens';
 
 export function PriceDisplay({
@@ -21,6 +22,7 @@ export function PriceDisplay({
   onDark?: boolean;
   align?: 'left' | 'center';
 }) {
+  const t = useTheme();
   return (
     <View style={[styles.wrap, align === 'center' && { alignItems: 'center' }]}>
       <Text
@@ -32,7 +34,7 @@ export function PriceDisplay({
         {amount}
       </Text>
       {caption ? (
-        <Text style={[styles.caption, { color: onDark ? color.foamDim : color.ink2 }]}>
+        <Text style={[styles.caption, { color: t.textDim }]}>
           {caption}
         </Text>
       ) : null}

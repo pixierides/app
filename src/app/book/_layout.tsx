@@ -1,12 +1,13 @@
 import { Stack } from 'expo-router';
-import { color } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
 
 export default function BookLayout() {
+  const th = useTheme();
   return (
     <Stack
       screenOptions={{
         headerShown: false,
-        contentStyle: { backgroundColor: color.sea },
+        contentStyle: { backgroundColor: th.bgPage },
       }}
     />
   );

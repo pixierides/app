@@ -12,6 +12,8 @@ import { Badge, Card, ListRow } from '@/components/ui';
 import { fetchDispatchTrips, type DispatchTrip } from '@/lib/dispatch';
 import { formatTime } from '@/lib/format';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 function proximity(pickupAtIso: string): string {
   const pickup = new Date(pickupAtIso);
@@ -26,6 +28,8 @@ function proximity(pickupAtIso: string): string {
 }
 
 export default function Requests() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const [trips, setTrips] = useState<DispatchTrip[] | null>(null);
 
   useFocusEffect(
@@ -52,7 +56,7 @@ export default function Requests() {
         <View style={styles.shell}>
           <Text style={styles.h1}>Requests.</Text>
           {trips === null ? null : rows.length ? (
-            <Card tone="dark-raised" pad={8}>
+            <Card tone="surface" pad={8}>
               {rows.map((t) => (
                 <ListRow
                   key={t.id}
@@ -74,10 +78,10 @@ export default function Requests() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
   scrollOuter: {
     paddingBottom: space.s6,
@@ -95,13 +99,15 @@ const styles = StyleSheet.create({
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
     letterSpacing: ls(track.h2, fs.h2),
-    color: color.white,
+    color: t.textHeading,
   },
   empty: {
     fontFamily: font.body400,
     fontSize: 16,
     lineHeight: 24,
-    color: color.foam,
+    color: t.textBody,
     paddingVertical: space.s4,
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

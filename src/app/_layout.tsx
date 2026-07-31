@@ -5,10 +5,25 @@ import { useEffect } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AuthProvider } from '@/providers/auth';
 import { BookingProvider } from '@/providers/booking';
+import { ThemeProvider, useTheme } from '@/providers/theme';
 import { useAppFonts } from '@/theme/fonts';
-import { color } from '@/theme/tokens';
 
 SplashScreen.preventAutoHideAsync();
+
+function ThemedApp() {
+  const th = useTheme();
+  return (
+    <>
+      <StatusBar style={th.mode === 'dark' ? 'light' : 'dark'} />
+      <Stack
+        screenOptions={{
+          headerShown: false,
+          contentStyle: { backgroundColor: th.bgPage },
+        }}
+      />
+    </>
+  );
+}
 
 export default function RootLayout() {
   const [fontsLoaded] = useAppFonts();
@@ -21,17 +36,13 @@ export default function RootLayout() {
 
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <BookingProvider>
-          <StatusBar style="light" />
-          <Stack
-            screenOptions={{
-              headerShown: false,
-              contentStyle: { backgroundColor: color.sea },
-            }}
-          />
-        </BookingProvider>
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <BookingProvider>
+            <ThemedApp />
+          </BookingProvider>
+        </AuthProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

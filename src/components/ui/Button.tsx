@@ -1,13 +1,14 @@
 /**
- * Pixie Rides primary action button. Port of components/forms/Button.jsx.
- * Orange = "act / book" — the one loud thing on screen. Never decorative.
- * Text on orange is always On-Orange (#2B1206), never white (fails contrast).
+ * Pixie Rides primary action button — brand guide v2, both modes.
+ * Orange = "act" and is identical in both modes; text on orange is always
+ * On-Orange, never white. Secondary is a ghost — never two filled side by side.
  *
- * Product rule: never render a disabled button — show the action that IS
- * available. `disabled` exists solely for the 72d consent box.
+ * Product rule: never render a disabled button — `disabled` exists solely for
+ * the consent-gated confirm.
  */
 import React from 'react';
 import { Pressable, Text, StyleSheet, type ViewStyle, type PressableProps } from 'react-native';
+import { useTheme } from '@/providers/theme';
 import { color, font, radius } from '@/theme/tokens';
 
 type Variant = 'primary' | 'secondary' | 'ghost';
@@ -19,6 +20,7 @@ const PADS: Record<Size, number> = { sm: 20, md: 28, lg: 32 };
 export type ButtonProps = {
   variant?: Variant;
   size?: Size;
+  /** Accepted for compatibility; colors now come from the theme. */
   onDark?: boolean;
   fullWidth?: boolean;
   disabled?: boolean;
@@ -29,34 +31,33 @@ export type ButtonProps = {
 export function Button({
   variant = 'primary',
   size = 'md',
-  onDark = false,
+  onDark: _onDark,
   fullWidth = false,
   disabled = false,
   children,
   style,
   ...rest
 }: ButtonProps) {
+  const t = useTheme();
   const h = HEIGHTS[size];
 
   const variantView: ViewStyle =
     variant === 'primary'
       ? { backgroundColor: color.orange }
       : variant === 'secondary'
-        ? onDark
-          ? { backgroundColor: 'transparent', borderWidth: 2, borderColor: 'rgba(234,244,250,0.45)' }
-          : { backgroundColor: 'transparent', borderWidth: 2, borderColor: color.sea }
+        ? {
+            backgroundColor: 'transparent',
+            borderWidth: 2,
+            borderColor: t.mode === 'dark' ? 'rgba(234,244,250,0.45)' : color.sea,
+          }
         : { backgroundColor: 'transparent' };
 
   const textColor =
     variant === 'primary'
       ? color.onOrange
       : variant === 'secondary'
-        ? onDark
-          ? color.sky
-          : color.sea
-        : onDark
-          ? color.foam
-          : color.ink2;
+        ? t.textHeading
+        : t.textBody;
 
   return (
     <Pressable

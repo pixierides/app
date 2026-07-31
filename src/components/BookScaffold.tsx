@@ -15,6 +15,8 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 export function BookScaffold({
   eyebrow,
@@ -29,6 +31,8 @@ export function BookScaffold({
   footer?: React.ReactNode;
   showBack?: boolean;
 }) {
+  const th = useTheme();
+  const styles = themed[th.mode];
   return (
     <SafeAreaView style={styles.screen}>
       <KeyboardAvoidingView
@@ -59,10 +63,10 @@ export function BookScaffold({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
   flex: {
     flex: 1,
@@ -78,7 +82,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backGlyph: {
-    color: color.foam,
+    color: t.textBody,
     fontSize: 28,
     lineHeight: 30,
   },
@@ -92,14 +96,14 @@ const styles = StyleSheet.create({
     fontFamily: font.body600,
     fontSize: fs.label,
     letterSpacing: ls(track.label, fs.label),
-    color: color.foamDim,
+    color: t.textDim,
   },
   h1: {
     fontFamily: font.display700,
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
     letterSpacing: ls(track.h2, fs.h2),
-    color: color.white,
+    color: t.textHeading,
   },
   footer: {
     paddingHorizontal: space.s5,
@@ -107,3 +111,5 @@ const styles = StyleSheet.create({
     gap: space.s3,
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

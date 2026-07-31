@@ -7,12 +7,17 @@ import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Button, Card, ListRow } from '@/components/ui';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { fetchMyTrips, STATUS_LABELS, type CustomerTrip } from '@/lib/booking';
 import { formatTime } from '@/lib/format';
 import { useAuth } from '@/providers/auth';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 export default function Trips() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const { signOut } = useAuth();
   const [trips, setTrips] = useState<CustomerTrip[] | null>(null);
   const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming');
@@ -66,7 +71,7 @@ export default function Trips() {
         </View>
 
         {trips === null ? null : shown.length ? (
-          <Card tone="dark-raised" pad={8}>
+          <Card tone="surface" pad={8}>
             {shown.map((t) => (
               <ListRow
                 key={t.id}
@@ -95,6 +100,9 @@ export default function Trips() {
           </Text>
         )}
 
+        <Card tone="surface" pad={20}>
+          <ThemeToggle />
+        </Card>
         <View style={styles.footer}>
           <Button variant="ghost" onDark onPress={signOut}>
             Sign out
@@ -105,10 +113,10 @@ export default function Trips() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
   scroll: {
     paddingHorizontal: space.s5,
@@ -125,7 +133,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backGlyph: {
-    color: color.foam,
+    color: t.textBody,
     fontSize: 28,
     lineHeight: 30,
   },
@@ -134,7 +142,7 @@ const styles = StyleSheet.create({
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
     letterSpacing: ls(track.h2, fs.h2),
-    color: color.white,
+    color: t.textHeading,
   },
   tabs: {
     flexDirection: 'row',
@@ -145,26 +153,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s4,
     borderRadius: 999,
     borderWidth: 1.5,
-    borderColor: 'rgba(168,205,226,0.3)',
+    borderColor: t.divider,
     alignItems: 'center',
     justifyContent: 'center',
   },
   tabOn: {
-    backgroundColor: color.sea2,
-    borderColor: color.foam,
+    backgroundColor: t.surfaceCard,
+    borderColor: t.textHeading,
   },
   tabText: {
     fontFamily: font.body600,
     fontSize: 14,
-    color: color.foamDim,
+    color: t.textDim,
   },
   tabTextOn: {
-    color: color.white,
+    color: t.textHeading,
   },
   empty: {
     fontFamily: font.body400,
     fontSize: 16,
-    color: color.foam,
+    color: t.textBody,
     paddingVertical: space.s4,
   },
   footer: {
@@ -172,3 +180,5 @@ const styles = StyleSheet.create({
     paddingTop: space.s4,
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

@@ -25,6 +25,8 @@ import { claimFrom, firstName, formatTime } from '@/lib/format';
 import { callDispatch, DISPATCH_PHONE } from '@/lib/links';
 import { cancelDeadline, formatDeadline, policyState } from '@/lib/policy';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 function dateLine(t: CustomerTrip): string {
   const d = new Date(t.pickup_at);
@@ -36,6 +38,8 @@ function dateLine(t: CustomerTrip): string {
 }
 
 export default function TripDetail() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const { id } = useLocalSearchParams<{ id: string }>();
   const [trip, setTrip] = useState<CustomerTrip | null>(null);
 
@@ -94,7 +98,7 @@ export default function TripDetail() {
 
         {/* ——— 7a · flight delayed — we moved the pickup ——— */}
         {upcoming && trip.pickup_at_was ? (
-          <Card tone="dark-raised" texture pad={20} style={styles.block}>
+          <Card tone="surface" texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>
               FLIGHT UPDATE{trip.flight_number ? ` · ${trip.flight_number}` : ''}
             </Text>
@@ -125,7 +129,7 @@ export default function TripDetail() {
 
         {/* ——— cancelled ——— */}
         {trip.status === 'cancelled' ? (
-          <Card tone="dark-raised" pad={20} style={styles.block}>
+          <Card tone="surface" pad={20} style={styles.block}>
             <Text style={styles.blockTitle}>This booking is cancelled.</Text>
             {trip.paid_at ? (
               <Text style={styles.blockBody}>
@@ -139,7 +143,7 @@ export default function TripDetail() {
 
         {/* ——— status-specific block ——— */}
         {trip.status === 'requested' ? (
-          <Card tone="dark-raised" texture pad={20} style={styles.block}>
+          <Card tone="surface" texture pad={20} style={styles.block}>
             <Text style={styles.blockTitle}>A person is looking at it now.</Text>
             <Text style={styles.blockBody}>
               You'll hear within the hour. You're not charged until a human confirms.
@@ -148,7 +152,7 @@ export default function TripDetail() {
         ) : null}
 
         {trip.status === 'confirmed' ? (
-          <Card tone="dark-raised" texture pad={20} style={styles.block}>
+          <Card tone="surface" texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>DISPATCH CONFIRMED YOUR TRIP</Text>
             <Text style={styles.blockTitle}>Let's lock it in.</Text>
             <Button
@@ -162,7 +166,7 @@ export default function TripDetail() {
         ) : null}
 
         {trip.status === 'paid' ? (
-          <Card tone="dark-raised" texture pad={20} style={styles.block}>
+          <Card tone="surface" texture pad={20} style={styles.block}>
             <Text style={styles.blockTitle}>Your ride is locked in.</Text>
             <Text style={styles.blockBody}>
               We'll notify you here with your driver's name and car, about two hours before
@@ -178,7 +182,7 @@ export default function TripDetail() {
         ) : null}
 
         {trip.status === 'driver_assigned' && !driverHere && !onTrip ? (
-          <Card tone="dark-raised" texture pad={20} style={styles.block}>
+          <Card tone="surface" texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>
               {landed && trip.flight_number
                 ? `${trip.flight_number} · LANDED ${formatTime(trip.flight_landed_at!).toUpperCase()}`
@@ -199,7 +203,7 @@ export default function TripDetail() {
         ) : null}
 
         {driverHere ? (
-          <Card tone="dark-raised" texture pad={20} style={styles.block}>
+          <Card tone="surface" texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>
               {trip.flight_number && trip.flight_landed_at
                 ? `${trip.flight_number} · LANDED ${formatTime(trip.flight_landed_at).toUpperCase()}`
@@ -221,7 +225,7 @@ export default function TripDetail() {
         ) : null}
 
         {onTrip ? (
-          <Card tone="dark-raised" texture pad={20} style={styles.block}>
+          <Card tone="surface" texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>IN TRANSIT</Text>
             <Text style={styles.blockTitle}>On the way to {trip.destination}.</Text>
             <Text style={styles.blockBody}>
@@ -232,7 +236,7 @@ export default function TripDetail() {
         ) : null}
 
         {trip.status === 'complete' ? (
-          <Card tone="dark-raised" texture pad={20} style={styles.block}>
+          <Card tone="surface" texture pad={20} style={styles.block}>
             <Text style={styles.blockTitle}>Welcome to Orlando.</Text>
             <Button
               variant="secondary"
@@ -251,7 +255,7 @@ export default function TripDetail() {
         </View>
 
         {/* ——— itinerary ——— */}
-        <Card tone="dark-raised" pad={20} style={styles.block}>
+        <Card tone="surface" pad={20} style={styles.block}>
           <View style={styles.kvRow}>
             <Text style={styles.kvLabel}>Flat price</Text>
             <Text style={styles.kvValue}>
@@ -279,7 +283,7 @@ export default function TripDetail() {
 
         {/* ——— cancel / change · three distinct states, never greyed buttons ——— */}
         {upcoming ? (
-          <Card tone="dark-raised" pad={20} style={styles.block}>
+          <Card tone="surface" pad={20} style={styles.block}>
             {pState === 'A' ? (
               <>
                 <Text style={styles.blockBody}>
@@ -351,10 +355,10 @@ export default function TripDetail() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
   scroll: {
     paddingHorizontal: space.s5,
@@ -371,7 +375,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backGlyph: {
-    color: color.foam,
+    color: t.textBody,
     fontSize: 28,
     lineHeight: 30,
   },
@@ -386,22 +390,22 @@ const styles = StyleSheet.create({
     fontFamily: font.display700,
     fontSize: fs.h3 + 2,
     letterSpacing: ls(track.h2, fs.h3 + 2),
-    color: color.white,
+    color: t.textHeading,
     flexShrink: 1,
   },
   arrow: {
     fontFamily: font.body400,
-    color: color.foamDim,
+    color: t.textDim,
   },
   dateLine: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
   },
   wasNow: {
     fontFamily: font.body600,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
   },
   wasNowRow: {
     flexDirection: 'row',
@@ -416,23 +420,23 @@ const styles = StyleSheet.create({
     fontFamily: font.body600,
     fontSize: 11,
     letterSpacing: ls(track.label, 11),
-    color: color.foamDim,
+    color: t.textDim,
   },
   wasNowOld: {
     fontFamily: font.display700,
     fontSize: 22,
-    color: color.foamDim,
+    color: t.textDim,
     textDecorationLine: 'line-through',
   },
   wasNowNew: {
     fontFamily: font.display700,
     fontSize: 22,
-    color: color.white,
+    color: t.textHeading,
   },
   wasNowArrow: {
     fontFamily: font.body400,
     fontSize: 20,
-    color: color.foamDim,
+    color: t.textDim,
   },
   policyActions: {
     flexDirection: 'row',
@@ -445,7 +449,7 @@ const styles = StyleSheet.create({
     fontFamily: font.body600,
     fontSize: fs.label,
     letterSpacing: ls(track.label, fs.label),
-    color: color.foamDim,
+    color: t.textDim,
   },
   block: {
     gap: space.s3,
@@ -455,13 +459,13 @@ const styles = StyleSheet.create({
     fontSize: fs.h3 + 2,
     lineHeight: (fs.h3 + 2) * lh.tight,
     letterSpacing: ls(track.h2, fs.h3 + 2),
-    color: color.white,
+    color: t.textHeading,
   },
   blockBody: {
     fontFamily: font.body400,
     fontSize: 15,
     lineHeight: 15 * 1.5,
-    color: color.foam,
+    color: t.textBody,
   },
   spineWrap: {
     paddingVertical: space.s2,
@@ -475,20 +479,22 @@ const styles = StyleSheet.create({
   kvLabel: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foamDim,
+    color: t.textDim,
   },
   kvValue: {
     fontFamily: font.body600,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
     flexShrink: 1,
     textAlign: 'right',
   },
   dispatchLine: {
     fontFamily: font.body400,
     fontSize: 13,
-    color: color.foamDim,
+    color: t.textDim,
     textAlign: 'center',
     paddingVertical: space.s2,
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

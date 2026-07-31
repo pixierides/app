@@ -15,8 +15,12 @@ import { dollars, fetchMyTrips, type CustomerTrip } from '@/lib/booking';
 import { callDispatch, DISPATCH_PHONE } from '@/lib/links';
 import { cancelTrip, policyState } from '@/lib/policy';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 export default function CancelTrip() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const { id } = useLocalSearchParams<{ id: string }>();
   const [trip, setTrip] = useState<CustomerTrip | null>(null);
   const [busy, setBusy] = useState(false);
@@ -134,10 +138,10 @@ export default function CancelTrip() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
   top: {
     height: 44,
@@ -150,7 +154,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backGlyph: {
-    color: color.foam,
+    color: t.textBody,
     fontSize: 28,
     lineHeight: 30,
   },
@@ -165,18 +169,18 @@ const styles = StyleSheet.create({
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
     letterSpacing: ls(track.h2, fs.h2),
-    color: color.white,
+    color: t.textHeading,
   },
   sub: {
     fontFamily: font.body400,
     fontSize: 16,
     lineHeight: 24,
-    color: color.foam,
+    color: t.textBody,
   },
   error: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
   },
   footer: {
     paddingHorizontal: space.s5,
@@ -186,9 +190,11 @@ const styles = StyleSheet.create({
   tertiary: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foamDim,
+    color: t.textDim,
     textAlign: 'center',
     textDecorationLine: 'underline',
     paddingVertical: space.s2,
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

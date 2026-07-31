@@ -1,20 +1,14 @@
 /**
- * Small status/label chip. Port of components/data/Badge.jsx.
- * Green tone = confirmed/included. Neutral = quiet metadata.
- * Never orange — orange is action only.
+ * Small status/label chip — brand guide v2, both modes.
+ * Green as a word uses the mode's text green (#367254 light, #8FD3B4 dark);
+ * fill green never changes. Never orange — orange is action only.
  */
 import React from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
+import { useTheme } from '@/providers/theme';
 import { color, font, radius } from '@/theme/tokens';
 
 type Tone = 'neutral' | 'confirmed' | 'solid' | 'on-dark';
-
-const TONES: Record<Tone, { bg: string; fg: string }> = {
-  neutral: { bg: color.sky2, fg: color.ink2 },
-  confirmed: { bg: 'rgba(78,158,122,0.16)', fg: color.greenText },
-  solid: { bg: color.green, fg: color.white },
-  'on-dark': { bg: 'rgba(168,205,226,0.16)', fg: color.foam },
-};
 
 export function Badge({
   tone = 'neutral',
@@ -25,10 +19,18 @@ export function Badge({
   children: React.ReactNode;
   style?: ViewStyle;
 }) {
-  const t = TONES[tone];
+  const t = useTheme();
+  const tones: Record<Tone, { bg: string; fg: string }> = {
+    neutral: { bg: t.bgRaised, fg: t.textBody },
+    confirmed: { bg: 'rgba(78,158,122,0.16)', fg: t.confirmText },
+    solid: { bg: color.green, fg: color.white },
+    // Historical name — now simply the quiet chip on the current ground.
+    'on-dark': { bg: t.chipBg, fg: t.textBody },
+  };
+  const c = tones[tone];
   return (
-    <View style={[styles.base, { backgroundColor: t.bg }, style]}>
-      <Text style={[styles.label, { color: t.fg }]}>{children}</Text>
+    <View style={[styles.base, { backgroundColor: c.bg }, style]}>
+      <Text style={[styles.label, { color: c.fg }]}>{children}</Text>
     </View>
   );
 }
@@ -46,6 +48,6 @@ const styles = StyleSheet.create({
   label: {
     fontFamily: font.body600,
     fontSize: 12,
-    letterSpacing: 0.48, // 0.04em × 12px
+    letterSpacing: 0.48,
   },
 });

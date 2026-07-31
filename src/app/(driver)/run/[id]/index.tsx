@@ -24,8 +24,12 @@ import { callDispatch, navigateTo } from '@/lib/links';
 import { fetchDriverRuns, ratePassenger, setRunState, type DriverRun } from '@/lib/trips';
 import { useAuth } from '@/providers/auth';
 import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 export default function RunScreen() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const { id } = useLocalSearchParams<{ id: string }>();
   const { profile } = useAuth();
   const [runs, setRuns] = useState<DriverRun[] | null>(null);
@@ -101,7 +105,7 @@ export default function RunScreen() {
           </Text>
           <Text style={styles.h1}>You're at the airport.{'\n'}Tell them you're here.</Text>
 
-          <Card tone="white" pad={20} style={styles.infoCard}>
+          <Card tone="surface" pad={20} style={styles.infoCard}>
             <Text style={styles.cardName}>{run.party_label ?? run.customer_name}</Text>
             <Text style={styles.cardSub}>{partyLine(run.adults, run.children)}</Text>
             {run.flight_number ? (
@@ -161,7 +165,7 @@ export default function RunScreen() {
           </Text>
           <Text style={styles.h1}>They know you're here.</Text>
 
-          <Card tone="dark-raised" pad={20}>
+          <Card tone="surface" pad={20}>
             <Text style={styles.notifyLine}>
               {firstName(run.customer_name)}'s app just said “{firstName(profile?.full_name)} is
               {door ? ` at ${door}` : ' here'}” — with your car and plate.
@@ -206,7 +210,7 @@ export default function RunScreen() {
             <Text style={styles.subLine}>Started {formatTime(run.started_at)}</Text>
           ) : null}
 
-          <Card tone="white" pad={20} style={styles.infoCard}>
+          <Card tone="surface" pad={20} style={styles.infoCard}>
             <View style={styles.passengerRow}>
               <View style={styles.avatar}>
                 <Text style={styles.avatarGlyph}>{run.customer_name[0]}</Text>
@@ -243,7 +247,7 @@ export default function RunScreen() {
         <Text style={styles.eyebrow}>DROP-OFF COMPLETE</Text>
         <Text style={styles.h1}>Nice run, {firstName(profile?.full_name)}.</Text>
 
-        <Card tone="dark-raised" pad={20}>
+        <Card tone="surface" pad={20}>
           <View style={styles.kvRows}>
             <View style={styles.kvRow}>
               <Text style={styles.kvLabelDark}>Route</Text>
@@ -327,10 +331,10 @@ export default function RunScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
   scroll: {
     paddingHorizontal: space.s5,
@@ -351,7 +355,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backGlyph: {
-    color: color.foam,
+    color: t.textBody,
     fontSize: 28,
     lineHeight: 30,
   },
@@ -359,19 +363,19 @@ const styles = StyleSheet.create({
     fontFamily: font.body600,
     fontSize: fs.label,
     letterSpacing: ls(track.label, fs.label),
-    color: color.foamDim,
+    color: t.textDim,
   },
   h1: {
     fontFamily: font.display700,
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
     letterSpacing: ls(track.h2, fs.h2),
-    color: color.white,
+    color: t.textHeading,
   },
   subLine: {
     fontFamily: font.body400,
     fontSize: 15,
-    color: color.foam,
+    color: t.textBody,
   },
   infoCard: {
     gap: space.s2,
@@ -380,12 +384,12 @@ const styles = StyleSheet.create({
     fontFamily: font.display700,
     fontSize: fs.h3,
     letterSpacing: ls(track.h2, fs.h3),
-    color: color.ink,
+    color: t.textPrimary,
   },
   cardSub: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.ink2,
+    color: t.textBody,
   },
   kvRows: {
     marginTop: space.s2,
@@ -399,24 +403,24 @@ const styles = StyleSheet.create({
   kvLabel: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.ink2,
+    color: t.textBody,
   },
   kvValue: {
     fontFamily: font.body600,
     fontSize: 14,
-    color: color.ink,
+    color: t.textPrimary,
     flexShrink: 1,
     textAlign: 'right',
   },
   kvLabelDark: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foamDim,
+    color: t.textDim,
   },
   kvValueDark: {
     fontFamily: font.body600,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
     flexShrink: 1,
     textAlign: 'right',
   },
@@ -430,14 +434,14 @@ const styles = StyleSheet.create({
   caption: {
     fontFamily: font.body400,
     fontSize: 13,
-    color: color.foamDim,
+    color: t.textDim,
     textAlign: 'center',
   },
   notifyLine: {
     fontFamily: font.body400,
     fontSize: 16,
     lineHeight: 16 * 1.5,
-    color: color.foam,
+    color: t.textBody,
   },
   signPreviewWrap: {
     gap: space.s3,
@@ -454,14 +458,14 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: radius.input,
-    backgroundColor: color.sky2,
+    backgroundColor: t.bgRaised,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarGlyph: {
     fontFamily: font.display700,
     fontSize: 18,
-    color: color.sea,
+    color: t.textHeading,
   },
   passengerBody: {
     flex: 1,
@@ -475,7 +479,7 @@ const styles = StyleSheet.create({
   rateLabel: {
     fontFamily: font.body600,
     fontSize: 15,
-    color: color.foam,
+    color: t.textBody,
   },
   stars: {
     flexDirection: 'row',
@@ -486,3 +490,5 @@ const styles = StyleSheet.create({
     lineHeight: 34,
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

@@ -12,6 +12,8 @@ import { getQuote } from '@/lib/booking';
 import { useAuth } from '@/providers/auth';
 import { useBooking } from '@/providers/booking';
 import { color, font, ls, space, track } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 /** Count-up with a single overshoot beat, then settle. */
 function useCountUp(target: number | null, ms = 900): number | null {
@@ -40,6 +42,8 @@ function useCountUp(target: number | null, ms = 900): number | null {
 }
 
 export default function BookPrice() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const { session } = useAuth();
   const { draft, update } = useBooking();
   const [priceCents, setPriceCents] = useState<number | null>(draft.priceCents);
@@ -96,7 +100,7 @@ export default function BookPrice() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   priceBlock: {
     gap: space.s2,
     paddingVertical: space.s3,
@@ -111,7 +115,7 @@ const styles = StyleSheet.create({
   priceCaption: {
     fontFamily: font.body600,
     fontSize: 14,
-    color: color.foamDim,
+    color: t.textDim,
   },
   included: {
     gap: space.s3,
@@ -120,13 +124,15 @@ const styles = StyleSheet.create({
   caption: {
     fontFamily: font.body400,
     fontSize: 13,
-    color: color.foamDim,
+    color: t.textDim,
     textAlign: 'center',
   },
   errorText: {
     fontFamily: font.body400,
     fontSize: 16,
     lineHeight: 24,
-    color: color.foam,
+    color: t.textBody,
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

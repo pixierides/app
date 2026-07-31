@@ -1,21 +1,16 @@
 /**
- * The base surface. Port of components/data/Card.jsx.
- * 14px radius, soft low shadow, no hard border — separation comes from
- * background shift + shadow + space. `tone` controls the surface.
+ * The base surface — brand guide v2, both modes.
+ * Cards are borderless: background shift + soft shadow + space.
+ * tone 'surface' follows the theme (White in light, Sea 2 in dark);
+ * the dark tones stay navy in both modes for deliberate brand moments.
  */
 import React from 'react';
 import { View, StyleSheet, type ViewStyle, type ViewProps } from 'react-native';
-import { color, radius, shadow } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { color, radius } from '@/theme/tokens';
 import { DotGrid } from './DotGrid';
 
-type Tone = 'white' | 'raised' | 'dark' | 'dark-raised';
-
-const TONES: Record<Tone, ViewStyle> = {
-  white: { backgroundColor: color.white },
-  raised: { backgroundColor: color.sky2 },
-  dark: { backgroundColor: color.sea },
-  'dark-raised': { backgroundColor: color.sea2 },
-};
+type Tone = 'surface' | 'raised' | 'white' | 'dark' | 'dark-raised';
 
 export type CardProps = {
   tone?: Tone;
@@ -26,17 +21,34 @@ export type CardProps = {
 } & ViewProps;
 
 export function Card({
-  tone = 'white',
+  tone = 'surface',
   pad = 24,
   texture = false,
   children,
   style,
   ...rest
 }: CardProps) {
-  const isDark = tone === 'dark' || tone === 'dark-raised';
+  const t = useTheme();
+
+  const bg =
+    tone === 'surface'
+      ? t.surfaceCard
+      : tone === 'raised'
+        ? t.bgRaised
+        : tone === 'white'
+          ? color.white
+          : tone === 'dark'
+            ? color.sea
+            : color.sea2;
+
+  const darkGround = tone === 'dark' || tone === 'dark-raised' || t.mode === 'dark';
+
   return (
-    <View style={[styles.base, TONES[tone], { padding: pad }, style]} {...rest}>
-      {texture ? <DotGrid variant={isDark ? 'warm' : 'ink'} /> : null}
+    <View
+      style={[styles.base, { backgroundColor: bg, padding: pad, boxShadow: t.shadowCard }, style]}
+      {...rest}
+    >
+      {texture ? <DotGrid variant={darkGround ? 'warm' : 'ink'} /> : null}
       <View style={styles.content}>{children}</View>
     </View>
   );
@@ -45,7 +57,6 @@ export function Card({
 const styles = StyleSheet.create({
   base: {
     borderRadius: radius.card,
-    boxShadow: shadow.card,
     position: 'relative',
     overflow: 'hidden',
   },

@@ -6,6 +6,7 @@
  */
 import React from 'react';
 import { View, Text, StyleSheet, type ViewStyle, type TextStyle } from 'react-native';
+import { useTheme } from '@/providers/theme';
 import { color, font } from '@/theme/tokens';
 
 export function IncludedRow({
@@ -21,6 +22,7 @@ export function IncludedRow({
   style?: ViewStyle;
   textStyle?: TextStyle;
 }) {
+  const t = useTheme();
   // Tick geometry copied exactly: glyph 0.28×size wide, 0.5×size tall,
   // 2px white borders, rotated 45°.
   const glyphW = Math.round(size * 0.28);
@@ -42,7 +44,7 @@ export function IncludedRow({
           }}
         />
       </View>
-      <Text style={[styles.label, { color: onDark ? color.foam : color.ink }, textStyle]}>
+      <Text style={[styles.label, { color: t.textPrimary }, textStyle]}>
         {children}
       </Text>
     </View>

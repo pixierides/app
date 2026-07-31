@@ -15,8 +15,12 @@ import {
 } from '@/lib/dispatch';
 import { formatTime } from '@/lib/format';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 export default function Drivers() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const [drivers, setDrivers] = useState<Driver[] | null>(null);
   const [trips, setTrips] = useState<DispatchTrip[]>([]);
   const [openDriver, setOpenDriver] = useState<string | null>(null);
@@ -54,7 +58,7 @@ export default function Drivers() {
         <View style={styles.shell}>
           <Text style={styles.h1}>Drivers.</Text>
           {drivers === null ? null : drivers.length ? (
-            <Card tone="dark-raised" pad={8}>
+            <Card tone="surface" pad={8}>
               {drivers.map((d) => {
                 const runs = runsFor(d.id);
                 const tonight = tonightCount(d.id);
@@ -105,10 +109,10 @@ export default function Drivers() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
   scrollOuter: {
     paddingBottom: space.s6,
@@ -126,13 +130,13 @@ const styles = StyleSheet.create({
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
     letterSpacing: ls(track.h2, fs.h2),
-    color: color.white,
+    color: t.textHeading,
   },
   empty: {
     fontFamily: font.body400,
     fontSize: 16,
     lineHeight: 24,
-    color: color.foam,
+    color: t.textBody,
     paddingVertical: space.s4,
   },
   runRow: {
@@ -143,13 +147,15 @@ const styles = StyleSheet.create({
   runText: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
   },
   runEmpty: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foamDim,
+    color: t.textDim,
     paddingLeft: space.s6,
     paddingVertical: space.s2,
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

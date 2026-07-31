@@ -10,6 +10,7 @@
  */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
+import { useTheme } from '@/providers/theme';
 import { color, font } from '@/theme/tokens';
 
 export type TripStep = { title: string; detail?: string };
@@ -23,9 +24,10 @@ export function TripStatus({
   current?: number;
   onDark?: boolean;
 }) {
-  const line = onDark ? 'rgba(168,205,226,0.22)' : color.sky3;
-  const titleC = onDark ? color.sky : color.ink;
-  const dimC = onDark ? color.foamDim : color.ink2;
+  const t = useTheme();
+  const line = t.divider;
+  const titleC = t.textPrimary;
+  const dimC = t.textDim;
 
   return (
     <View>
@@ -45,17 +47,17 @@ export function TripStatus({
                       ? {
                           backgroundColor: 'transparent',
                           borderWidth: 2.5,
-                          borderColor: onDark ? color.white : color.sea,
-                          boxShadow: `0 0 0 5px ${onDark ? 'rgba(255,255,255,0.14)' : 'rgba(8,52,79,0.10)'}`,
+                          borderColor: t.textHeading,
+                          boxShadow: `0 0 0 5px ${t.mode === 'dark' ? 'rgba(255,255,255,0.14)' : 'rgba(8,52,79,0.10)'}`,
                         }
-                      : { backgroundColor: onDark ? color.sea2 : color.sky2 },
+                      : { backgroundColor: t.bgRaised },
                 ]}
               >
                 {done ? (
                   <View style={styles.tickGlyph} />
                 ) : cur ? (
                   <View
-                    style={[styles.curDot, { backgroundColor: onDark ? color.white : color.sea }]}
+                    style={[styles.curDot, { backgroundColor: t.textHeading }]}
                   />
                 ) : null}
               </View>

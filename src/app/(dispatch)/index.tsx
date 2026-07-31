@@ -21,6 +21,8 @@ import {
 import { firstName, formatTime } from '@/lib/format';
 import { useAuth } from '@/providers/auth';
 import { color, font, fs, lh, ls, radius, shadow, space, track } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 type TileKey = 'to_confirm' | 'unassigned' | 'rolling';
 
@@ -55,6 +57,8 @@ function lookReason(t: DispatchTrip): string | null {
 }
 
 export default function Board() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const { profile } = useAuth();
   const [trips, setTrips] = useState<DispatchTrip[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -145,7 +149,7 @@ export default function Board() {
         contentContainerStyle={styles.scrollOuter}
         refreshControl={
           <RefreshControl
-            tintColor={color.foam}
+            tintColor={th.textDim}
             refreshing={refreshing}
             onRefresh={async () => {
               setRefreshing(true);
@@ -200,7 +204,7 @@ export default function Board() {
                     {tiles.find((t) => t.key === filter)!.label.toUpperCase()}
                   </Text>
                   {filtered.length ? (
-                    <Card tone="dark-raised" pad={8}>
+                    <Card tone="surface" pad={8}>
                       {filtered.map((t) =>
                         rowFor(
                           t,
@@ -263,7 +267,7 @@ export default function Board() {
                   <View style={styles.section}>
                     <Text style={styles.sectionLabel}>NEEDS A LOOK</Text>
                     {needsLook.length ? (
-                      <Card tone="dark-raised" pad={8}>
+                      <Card tone="surface" pad={8}>
                         {needsLook.map(({ trip, reason }) =>
                           rowFor(
                             trip,
@@ -285,10 +289,10 @@ export default function Board() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
   scrollOuter: {
     paddingBottom: space.s6,
@@ -305,7 +309,7 @@ const styles = StyleSheet.create({
     fontFamily: font.body600,
     fontSize: fs.label,
     letterSpacing: ls(track.label, fs.label),
-    color: color.foamDim,
+    color: t.textDim,
   },
   headRow: {
     flexDirection: 'row',
@@ -319,7 +323,7 @@ const styles = StyleSheet.create({
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
     letterSpacing: ls(track.h2, fs.h2),
-    color: color.white,
+    color: t.textHeading,
     flexShrink: 1,
   },
   deskPill: {
@@ -329,7 +333,7 @@ const styles = StyleSheet.create({
     height: 36,
     paddingHorizontal: space.s3,
     borderRadius: radius.pill,
-    backgroundColor: color.sea2,
+    backgroundColor: t.surfaceCard,
   },
   deskDot: {
     width: 8,
@@ -340,7 +344,7 @@ const styles = StyleSheet.create({
   deskText: {
     fontFamily: font.body600,
     fontSize: 13,
-    color: color.foam,
+    color: t.textBody,
   },
   tiles: {
     flexDirection: 'row',
@@ -348,28 +352,28 @@ const styles = StyleSheet.create({
   },
   tile: {
     flex: 1,
-    backgroundColor: color.sea2,
+    backgroundColor: t.surfaceCard,
     borderRadius: radius.card,
     paddingVertical: space.s3,
     paddingHorizontal: space.s3,
     alignItems: 'center',
     gap: 2,
-    boxShadow: shadow.card,
+    boxShadow: t.shadowCard,
     borderWidth: 1.5,
     borderColor: 'transparent',
   },
   tileOn: {
-    borderColor: color.foam,
+    borderColor: t.textHeading,
   },
   tileCount: {
     fontFamily: font.display800,
     fontSize: 28,
-    color: color.white,
+    color: t.textHeading,
   },
   tileLabel: {
     fontFamily: font.body600,
     fontSize: 12,
-    color: color.foamDim,
+    color: t.textDim,
   },
   section: {
     gap: space.s2,
@@ -378,14 +382,14 @@ const styles = StyleSheet.create({
     fontFamily: font.body600,
     fontSize: fs.label,
     letterSpacing: ls(track.label, fs.label),
-    color: color.foamDim,
+    color: t.textDim,
   },
   urgentCard: {
-    backgroundColor: color.sea2,
+    backgroundColor: t.surfaceCard,
     borderRadius: radius.card,
     padding: space.s4,
     gap: space.s3,
-    boxShadow: shadow.raised,
+    boxShadow: t.shadowRaised,
   },
   urgentTop: {
     flexDirection: 'row',
@@ -398,23 +402,23 @@ const styles = StyleSheet.create({
     fontFamily: font.display700,
     fontSize: fs.h3,
     letterSpacing: ls(track.h2, fs.h3),
-    color: color.white,
+    color: t.textHeading,
     flexShrink: 1,
   },
   urgentWhen: {
     fontFamily: font.body600,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
   },
   urgentParty: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
   },
   urgentMore: {
     fontFamily: font.body400,
     fontSize: 13,
-    color: color.foamDim,
+    color: t.textDim,
     textAlign: 'center',
     textDecorationLine: 'underline',
   },
@@ -422,13 +426,15 @@ const styles = StyleSheet.create({
     fontFamily: font.body400,
     fontSize: 16,
     lineHeight: 24,
-    color: color.foam,
+    color: t.textBody,
     paddingVertical: space.s5,
   },
   emptyQuiet: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foamDim,
+    color: t.textDim,
     paddingVertical: space.s2,
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

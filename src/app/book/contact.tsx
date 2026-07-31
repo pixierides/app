@@ -13,8 +13,12 @@ import { formatUsPhone, toE164 } from '@/lib/phone';
 import { useAuth } from '@/providers/auth';
 import { pickupFromDraft, seatsLabel, useBooking } from '@/providers/booking';
 import { color, font, space } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { themes, type Theme } from '@/theme/themes';
 
 export default function BookContact() {
+  const th = useTheme();
+  const styles = themed[th.mode];
   const { session, profile, signInWithPhone } = useAuth();
   const { draft, update, reset } = useBooking();
   const [phone, setPhone] = useState(() =>
@@ -129,7 +133,7 @@ export default function BookContact() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (t: Theme) => StyleSheet.create({
   summaryRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -138,22 +142,24 @@ const styles = StyleSheet.create({
   summaryPrice: {
     fontFamily: font.display700,
     fontSize: 18,
-    color: color.white,
+    color: t.textHeading,
   },
   prefix: {
     fontFamily: font.body600,
     fontSize: 16,
-    color: color.foamDim,
+    color: t.textDim,
   },
   error: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
   },
   free: {
     fontFamily: font.body400,
     fontSize: 13,
-    color: color.foamDim,
+    color: t.textDim,
     marginTop: space.s2,
   },
 });
+
+const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

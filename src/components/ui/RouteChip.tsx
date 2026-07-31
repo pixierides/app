@@ -5,7 +5,8 @@
  */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { color, font, ls } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
+import { font, ls } from '@/theme/tokens';
 
 export function RouteChip({
   from = 'MCO',
@@ -18,9 +19,10 @@ export function RouteChip({
   onDark?: boolean;
   size?: 'sm' | 'md' | 'lg';
 }) {
+  const t = useTheme();
   const fsz = size === 'lg' ? 22 : size === 'sm' ? 15 : 18;
-  const c = onDark ? color.foam : color.ink;
-  const dim = onDark ? color.foamDim : color.ink2;
+  const c = t.textPrimary;
+  const dim = t.textDim;
   return (
     <View style={styles.row}>
       <Text style={[styles.end, { fontSize: fsz, letterSpacing: ls(-0.02, fsz), color: c }]}>
