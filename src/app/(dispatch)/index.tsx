@@ -1,32 +1,38 @@
 /**
- * 68a — the dispatch console queue. Sorted by how close the cutoff is,
- * not how old the request is: a trip tonight is an emergency, one in three
- * weeks is admin. No orange on this screen — urgency is carried by weight
- * and elevation, not colour. Money is visible: dispatch takes payment.
- * Web-first surface (responsive width), same codebase, same role routing.
+ * The Board — dispatch's glancing surface mid-shift.
+ * Wireframe content is sample data showing the shape of the data; only labels
+ * and product copy are fixed. Every number and name here traces to a query.
+ * Exactly one orange element: the inline Confirm — the single action that
+ * advances the run.
  */
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, Button, Card, ListRow } from '@/components/ui';
+import { Badge, Button, Card, IncludedRow, ListRow } from '@/components/ui';
 import { dollars } from '@/lib/booking';
 import {
+  confirmTrip,
   fetchDispatchTrips,
   pastCutoff,
   paymentCutoff,
   type DispatchTrip,
 } from '@/lib/dispatch';
 import { firstName, formatTime } from '@/lib/format';
-import { formatDeadline } from '@/lib/policy';
 import { useAuth } from '@/providers/auth';
-import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, ls, radius, shadow, space, track } from '@/theme/tokens';
 
-/** "Tonight · 13h" / "Sun · 2 days" / "Aug 29 · 3 wks" proximity chip. */
+type TileKey = 'to_confirm' | 'unassigned' | 'rolling';
+
+const ROLLING_STATES = ['en_route', 'arrived', 'on_trip'] as const;
+
+function isOpen(t: DispatchTrip): boolean {
+  return t.status !== 'complete' && t.status !== 'cancelled' && t.status !== 'no_show';
+}
+
 function proximity(pickupAtIso: string): string {
   const pickup = new Date(pickupAtIso);
-  const ms = pickup.getTime() - Date.now();
-  const h = Math.max(0, Math.round(ms / 3600_000));
+  const h = Math.max(0, Math.round((pickup.getTime() - Date.now()) / 3600_000));
   if (h < 24) return `Tonight · ${h}h`;
   const days = Math.round(h / 24);
   if (days < 7) {
@@ -36,124 +42,243 @@ function proximity(pickupAtIso: string): string {
   return `${pickup.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} · ${wks} wk${wks === 1 ? '' : 's'}`;
 }
 
-function Section({
-  title,
-  subtitle,
-  trips,
-  sub,
-}: {
-  title: string;
-  subtitle?: string;
-  trips: DispatchTrip[];
-  sub: (t: DispatchTrip) => string;
-}) {
-  if (!trips.length) return null;
-  return (
-    <View style={styles.section}>
-      <Text style={styles.sectionLabel}>{title.toUpperCase()}</Text>
-      {subtitle ? <Text style={styles.sectionSub}>{subtitle}</Text> : null}
-      <Card tone="dark-raised" pad={8}>
-        {trips.map((t) => (
-          <ListRow
-            key={t.id}
-            onDark
-            title={t.customer_name}
-            subtitle={sub(t)}
-            trailing={<Badge tone="on-dark">{proximity(t.pickup_at)}</Badge>}
-            chevron
-            onPress={() => router.push(`/job/${t.id}` as never)}
-          />
-        ))}
-      </Card>
-    </View>
-  );
+/** "flight moved" / "cutoff passed — decide" / ... reasons for Needs a look. */
+function lookReason(t: DispatchTrip): string | null {
+  if (pastCutoff(t)) return 'cutoff passed — decide';
+  if (t.pickup_at_was) return 'flight moved';
+  if (t.status === 'paid' && !t.driver_id) return 'no driver assigned';
+  if (!t.paid_at && isOpen(t)) {
+    const untilCutoff = paymentCutoff(t.pickup_at).getTime() - Date.now();
+    if (untilCutoff > 0 && untilCutoff < 12 * 3600_000) return 'cutoff approaching';
+  }
+  return null;
 }
 
-export default function DispatchConsole() {
-  const { profile, signOut } = useAuth();
+export default function Board() {
+  const { profile } = useAuth();
   const [trips, setTrips] = useState<DispatchTrip[] | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [filter, setFilter] = useState<TileKey | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const load = useCallback(async () => {
+    try {
+      setTrips(await fetchDispatchTrips());
+    } catch {
+      setTrips([]);
+    }
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      fetchDispatchTrips()
-        .then(setTrips)
-        .catch(() => setTrips([]));
-    }, []),
+      load();
+    }, [load]),
   );
 
-  const all = trips ?? [];
-  const open = all.filter(
-    (t) => t.status !== 'complete' && t.status !== 'cancelled' && t.status !== 'no_show',
-  );
-  const decide = open.filter((t) => pastCutoff(t));
-  const toConfirm = open.filter((t) => t.status === 'requested' && !pastCutoff(t));
-  const awaitingPay = open.filter((t) => t.status === 'confirmed' && !t.paid_at && !pastCutoff(t));
-  const toAssign = open.filter((t) => t.status === 'paid' && !t.driver_id);
-  const inMotion = open.filter((t) => t.status === 'driver_assigned');
+  const open = (trips ?? []).filter(isOpen);
+  const toConfirm = open.filter((t) => t.status === 'requested');
+  const unassigned = open.filter((t) => t.status === 'paid' && !t.driver_id);
+  const rolling = open.filter((t) => (ROLLING_STATES as readonly string[]).includes(t.driver_state));
 
-  // Quiet source marker: a web customer has no app — phone and email only.
-  const route = (t: DispatchTrip) =>
-    `${t.source === 'web' ? 'web · ' : ''}${t.reference} · ${t.origin} → ${t.destination}${t.flight_number ? ` · ${t.flight_number}` : ''}`;
+  // The single most urgent item: the oldest unconfirmed request.
+  const urgent = toConfirm.length
+    ? toConfirm.reduce((a, b) => (a.created_at < b.created_at ? a : b))
+    : null;
+  const oldestMin = urgent
+    ? Math.max(0, Math.round((Date.now() - new Date(urgent.created_at).getTime()) / 60000))
+    : 0;
+
+  const needsLook = open
+    .map((t) => ({ trip: t, reason: lookReason(t) }))
+    .filter((r): r is { trip: DispatchTrip; reason: string } => r.reason !== null)
+    .filter((r) => r.trip.id !== urgent?.id);
+
+  const filtered =
+    filter === 'to_confirm' ? toConfirm : filter === 'unassigned' ? unassigned : rolling;
+
+  const today = new Date();
+  const dateLabel = today
+    .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
+    .replace(',', '')
+    .toUpperCase();
+
+  const doConfirm = async (id: string) => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await confirmTrip(id);
+      await load();
+    } catch {
+      // surfaced on next load; the job screen shows errors in full
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const tiles: { key: TileKey; label: string; count: number }[] = [
+    { key: 'to_confirm', label: 'to confirm', count: toConfirm.length },
+    { key: 'unassigned', label: 'unassigned', count: unassigned.length },
+    { key: 'rolling', label: 'rolling now', count: rolling.length },
+  ];
+
+  const filterEmpty: Record<TileKey, string> = {
+    to_confirm: 'Nothing to confirm.',
+    unassigned: 'Every paid trip has a driver.',
+    rolling: 'Nobody is rolling right now.',
+  };
+
+  const rowFor = (t: DispatchTrip, subtitle: string) => (
+    <ListRow
+      key={t.id}
+      onDark
+      title={t.customer_name}
+      subtitle={subtitle}
+      trailing={<Badge tone="on-dark">{proximity(t.pickup_at)}</Badge>}
+      chevron
+      onPress={() => router.push(`/job/${t.id}` as never)}
+    />
+  );
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.scrollOuter}>
+    <SafeAreaView style={styles.screen} edges={['top']}>
+      <ScrollView
+        contentContainerStyle={styles.scrollOuter}
+        refreshControl={
+          <RefreshControl
+            tintColor={color.foam}
+            refreshing={refreshing}
+            onRefresh={async () => {
+              setRefreshing(true);
+              await load();
+              setRefreshing(false);
+            }}
+          />
+        }
+      >
         <View style={styles.shell}>
-          <View style={styles.headerRow}>
+          {/* ——— header ——— */}
+          <Text style={styles.eyebrow}>TONIGHT · {dateLabel}</Text>
+          <View style={styles.headRow}>
             <Text style={styles.h1}>
-              Dispatch{profile?.full_name ? ` · ${firstName(profile.full_name)}` : ''}
+              {open.length} run{open.length === 1 ? '' : 's'} on the board
             </Text>
-            <Badge tone="on-dark">Console</Badge>
+            <View style={styles.deskPill}>
+              <View style={styles.deskDot} />
+              <Text style={styles.deskText}>
+                {firstName(profile?.full_name) || 'Dispatch'} on desk
+              </Text>
+            </View>
           </View>
 
-          {trips === null ? null : (
+          {trips === null ? null : open.length === 0 ? (
+            <Text style={styles.empty}>The queue is empty. Nothing needs a decision.</Text>
+          ) : (
             <>
-              <Section
-                title="Decide — cutoff passed"
-                subtitle="These can never be paid. Send the car or release the driver."
-                trips={decide}
-                sub={(t) => `${route(t)} · ${dollars(t.price_cents)} written off if sent`}
-              />
-              <Section
-                title="Confirm"
-                subtitle={
-                  toConfirm.length
-                    ? `${toConfirm.length} waiting. Soonest pickup first.`
-                    : undefined
-                }
-                trips={toConfirm}
-                sub={(t) => `${route(t)} · ${dollars(t.price_cents)} on confirm`}
-              />
-              <Section
-                title="Waiting on payment"
-                trips={awaitingPay}
-                sub={(t) =>
-                  `${route(t)} · ${dollars(t.price_cents)} due by ${formatDeadline(paymentCutoff(t.pickup_at))}`
-                }
-              />
-              <Section
-                title="Assign a driver"
-                trips={toAssign}
-                sub={(t) => `${route(t)} · paid ${dollars(t.price_cents)}`}
-              />
-              <Section
-                title="In motion"
-                trips={inMotion}
-                sub={(t) =>
-                  `${route(t)} · ${t.driver_name ?? 'driver'} · pickup ${formatTime(t.pickup_at)}${t.written_off ? ' · written off' : ''}`
-                }
-              />
-              {!open.length ? (
-                <Text style={styles.empty}>The queue is empty. Nothing needs a decision.</Text>
-              ) : null}
+              {/* ——— stat tiles — not decorative: they filter ——— */}
+              <View style={styles.tiles}>
+                {tiles.map((tile) => {
+                  const on = filter === tile.key;
+                  return (
+                    <Pressable
+                      key={tile.key}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: on }}
+                      onPress={() => setFilter(on ? null : tile.key)}
+                      style={[styles.tile, on && styles.tileOn]}
+                    >
+                      <Text style={styles.tileCount}>{tile.count}</Text>
+                      <Text style={styles.tileLabel}>{tile.label}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              {filter ? (
+                /* ——— tile filter engaged ——— */
+                <View style={styles.section}>
+                  <Text style={styles.sectionLabel}>
+                    {tiles.find((t) => t.key === filter)!.label.toUpperCase()}
+                  </Text>
+                  {filtered.length ? (
+                    <Card tone="dark-raised" pad={8}>
+                      {filtered.map((t) =>
+                        rowFor(
+                          t,
+                          `${t.reference} · ${t.origin} → ${t.destination} · ${formatTime(t.pickup_at)}`,
+                        ),
+                      )}
+                    </Card>
+                  ) : (
+                    <Text style={styles.emptyQuiet}>{filterEmpty[filter]}</Text>
+                  )}
+                </View>
+              ) : (
+                <>
+                  {/* ——— waiting on you ——— */}
+                  <View style={styles.section}>
+                    <Text style={styles.sectionLabel}>
+                      WAITING ON YOU{urgent ? ` · OLDEST ${oldestMin} MIN` : ''}
+                    </Text>
+                    {urgent ? (
+                      <View style={styles.urgentCard}>
+                        <View style={styles.urgentTop}>
+                          <Text style={styles.urgentRoute}>
+                            {urgent.origin} → {urgent.destination}
+                          </Text>
+                          <Text style={styles.urgentWhen}>
+                            {new Date(urgent.pickup_at).toLocaleDateString('en-US', {
+                              weekday: 'short',
+                              month: 'short',
+                              day: 'numeric',
+                            })}{' '}
+                            · {formatTime(urgent.pickup_at)}
+                          </Text>
+                        </View>
+                        <Text style={styles.urgentParty}>
+                          {urgent.party_label ?? urgent.customer_name}
+                          {urgent.flight_number ? ` · ${urgent.flight_number}` : ''}
+                        </Text>
+                        {urgent.car_seats ? (
+                          <IncludedRow onDark>{urgent.car_seats}</IncludedRow>
+                        ) : null}
+                        <Button size="md" fullWidth onPress={() => doConfirm(urgent.id)}>
+                          {busy
+                            ? 'One moment…'
+                            : `Confirm — charges ${dollars(urgent.price_cents)}`}
+                        </Button>
+                        <Pressable
+                          accessibilityRole="button"
+                          onPress={() => router.push(`/job/${urgent.id}` as never)}
+                          hitSlop={8}
+                        >
+                          <Text style={styles.urgentMore}>Open the full request</Text>
+                        </Pressable>
+                      </View>
+                    ) : (
+                      <Text style={styles.emptyQuiet}>Nothing is waiting on you.</Text>
+                    )}
+                  </View>
+
+                  {/* ——— needs a look ——— */}
+                  <View style={styles.section}>
+                    <Text style={styles.sectionLabel}>NEEDS A LOOK</Text>
+                    {needsLook.length ? (
+                      <Card tone="dark-raised" pad={8}>
+                        {needsLook.map(({ trip, reason }) =>
+                          rowFor(
+                            trip,
+                            `${reason} · ${trip.reference} · ${trip.origin} → ${trip.destination}`,
+                          ),
+                        )}
+                      </Card>
+                    ) : (
+                      <Text style={styles.emptyQuiet}>Nothing needs a look.</Text>
+                    )}
+                  </View>
+                </>
+              )}
             </>
           )}
-
-          <View style={styles.footer}>
-            <Button variant="ghost" onDark onPress={signOut}>
-              Sign out
-            </Button>
-          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -174,18 +299,77 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     paddingHorizontal: space.s5,
     paddingTop: space.s4,
-    gap: space.s5,
+    gap: space.s4,
   },
-  headerRow: {
+  eyebrow: {
+    fontFamily: font.body600,
+    fontSize: fs.label,
+    letterSpacing: ls(track.label, fs.label),
+    color: color.foamDim,
+  },
+  headRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    gap: space.s3,
+    flexWrap: 'wrap',
   },
   h1: {
     fontFamily: font.display700,
-    fontSize: fs.h3 + 4,
-    letterSpacing: ls(track.h2, fs.h3 + 4),
+    fontSize: fs.h2,
+    lineHeight: fs.h2 * lh.tight,
+    letterSpacing: ls(track.h2, fs.h2),
     color: color.white,
+    flexShrink: 1,
+  },
+  deskPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    height: 36,
+    paddingHorizontal: space.s3,
+    borderRadius: radius.pill,
+    backgroundColor: color.sea2,
+  },
+  deskDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: color.green,
+  },
+  deskText: {
+    fontFamily: font.body600,
+    fontSize: 13,
+    color: color.foam,
+  },
+  tiles: {
+    flexDirection: 'row',
+    gap: space.s3,
+  },
+  tile: {
+    flex: 1,
+    backgroundColor: color.sea2,
+    borderRadius: radius.card,
+    paddingVertical: space.s3,
+    paddingHorizontal: space.s3,
+    alignItems: 'center',
+    gap: 2,
+    boxShadow: shadow.card,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  tileOn: {
+    borderColor: color.foam,
+  },
+  tileCount: {
+    fontFamily: font.display800,
+    fontSize: 28,
+    color: color.white,
+  },
+  tileLabel: {
+    fontFamily: font.body600,
+    fontSize: 12,
+    color: color.foamDim,
   },
   section: {
     gap: space.s2,
@@ -196,11 +380,43 @@ const styles = StyleSheet.create({
     letterSpacing: ls(track.label, fs.label),
     color: color.foamDim,
   },
-  sectionSub: {
+  urgentCard: {
+    backgroundColor: color.sea2,
+    borderRadius: radius.card,
+    padding: space.s4,
+    gap: space.s3,
+    boxShadow: shadow.raised,
+  },
+  urgentTop: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: space.s3,
+    flexWrap: 'wrap',
+  },
+  urgentRoute: {
+    fontFamily: font.display700,
+    fontSize: fs.h3,
+    letterSpacing: ls(track.h2, fs.h3),
+    color: color.white,
+    flexShrink: 1,
+  },
+  urgentWhen: {
+    fontFamily: font.body600,
+    fontSize: 14,
+    color: color.foam,
+  },
+  urgentParty: {
     fontFamily: font.body400,
     fontSize: 14,
     color: color.foam,
-    marginBottom: space.s1,
+  },
+  urgentMore: {
+    fontFamily: font.body400,
+    fontSize: 13,
+    color: color.foamDim,
+    textAlign: 'center',
+    textDecorationLine: 'underline',
   },
   empty: {
     fontFamily: font.body400,
@@ -209,8 +425,10 @@ const styles = StyleSheet.create({
     color: color.foam,
     paddingVertical: space.s5,
   },
-  footer: {
-    alignItems: 'center',
-    paddingTop: space.s4,
+  emptyQuiet: {
+    fontFamily: font.body400,
+    fontSize: 14,
+    color: color.foamDim,
+    paddingVertical: space.s2,
   },
 });
