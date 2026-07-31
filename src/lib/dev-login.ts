@@ -35,6 +35,16 @@ const DEV_LOGINS: Record<string, DevLogin> = {
     password: 'pixie-dev-2026',
     role: 'dispatch',
   },
+  '+11234567893': {
+    email: 'dev-drvt1@pixierides.dev',
+    password: 'pixie-dev-2026',
+    role: 'driver',
+  },
+  '+11234567894': {
+    email: 'dev-drvt2@pixierides.dev',
+    password: 'pixie-dev-2026',
+    role: 'driver',
+  },
 };
 
 export function devLoginFor(phoneE164: string): DevLogin | undefined {
