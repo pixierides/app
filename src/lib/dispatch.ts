@@ -47,13 +47,13 @@ export type ContactAttempt = {
 
 export type Driver = { id: string; full_name: string };
 
-/** 6pm (Orlando) the day before pickup — when the roster locks. */
+/**
+ * The one deadline: pickup − 48h. Free cancellation ends, payment is due,
+ * and dispatch decides if still unpaid — all the same moment.
+ * (The 6pm-day-before roster lock is retired as policy.)
+ */
 export function paymentCutoff(pickupAtIso: string): Date {
-  const pickup = new Date(pickupAtIso);
-  const dayBefore = new Date(pickup.getTime() - 24 * 3600_000);
-  const cutoff = new Date(dayBefore);
-  cutoff.setHours(18, 0, 0, 0);
-  return cutoff;
+  return new Date(new Date(pickupAtIso).getTime() - 48 * 3600_000);
 }
 
 export function pastCutoff(t: Pick<DispatchTrip, 'pickup_at' | 'paid_at'>): boolean {
