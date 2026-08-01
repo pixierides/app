@@ -1,0 +1,13 @@
+-- Email redesign data fixes: party_label is an internal dispatch field and
+-- must never render to a customer.
+-- (Applied to project wbslrmxwbwzswydwdxyi via MCP on 2026-07-31; mirrored.)
+--
+-- · contact_submissions + booking_contact_method (website writes it)
+-- · trips + guests (clean count, e.g. "1-4") and contact_method
+-- · backfill: guests extracted from party_label for existing web rows
+-- · ingest_web_booking(): fills guests/contact_method (structured first,
+--   legacy message parse fallback); children now inserted as NULL for web
+-- · notify_trip_confirmed(): payload carries clean guests (falls back to a
+--   composed "2 adults · 1 child" for app bookings) and contactMethod;
+--   party_label removed from the payload entirely
+-- Full SQL as applied lives in the database.
