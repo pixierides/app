@@ -51,7 +51,7 @@ export type CustomerTrip = {
   flight_number: string | null;
   flight_landed_at: string | null;
   adults: number;
-  children: number;
+  children: number | null;
   car_seats: string | null;
   price_cents: number | null;
   paid_at: string | null;

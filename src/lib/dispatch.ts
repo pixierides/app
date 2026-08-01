@@ -22,8 +22,9 @@ export type DispatchTrip = {
   meet_point: string | null;
   flight_number: string | null;
   adults: number;
-  children: number;
+  children: number | null;
   car_seats: string | null;
+  stroller: string | null;
   notes: string | null;
   price_cents: number | null;
   paid_at: string | null;
@@ -64,7 +65,7 @@ export async function fetchDispatchTrips(): Promise<DispatchTrip[]> {
   const { data, error } = await supabase
     .from('trips')
     .select(
-      'id, created_at, reference, source, customer_name, customer_phone, customer_email, party_label, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, adults, children, car_seats, notes, price_cents, paid_at, hold_until, status, driver_state, customer_id, driver_id, driver_name, vehicle, written_off',
+      'id, created_at, reference, source, customer_name, customer_phone, customer_email, party_label, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, adults, children, car_seats, stroller, notes, price_cents, paid_at, hold_until, status, driver_state, customer_id, driver_id, driver_name, vehicle, written_off',
     )
     .order('pickup_at', { ascending: true });
   if (error) throw error;

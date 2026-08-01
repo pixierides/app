@@ -154,7 +154,8 @@ export default function DispatchJob() {
             {trip.destination} · {dateLine}
           </Text>
           <Text style={styles.meta}>
-            {partyLine(trip.adults, trip.children)} · gave {trip.customer_phone}
+            {partyLine(trip.adults, trip.children)}
+            {trip.stroller ? ` · stroller: ${trip.stroller}` : ''} · gave {trip.customer_phone}
             {trip.customer_email ? ` · ${trip.customer_email}` : ''}
           </Text>
           {open && !trip.paid_at ? (

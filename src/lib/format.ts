@@ -53,9 +53,9 @@ export function firstName(full: string | null | undefined): string {
   return (full ?? '').trim().split(/\s+/)[0] || '';
 }
 
-/** "2 adults · 1 child" party line. */
-export function partyLine(adults: number, children: number): string {
+/** "2 adults · 1 child" party line. null children = unknown, so omit. */
+export function partyLine(adults: number, children: number | null): string {
   const a = `${adults} adult${adults === 1 ? '' : 's'}`;
-  if (!children) return a;
+  if (children == null || children === 0) return a;
   return `${a} · ${children} ${children === 1 ? 'child' : 'children'}`;
 }

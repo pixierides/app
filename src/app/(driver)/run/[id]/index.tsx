@@ -129,7 +129,10 @@ export default function RunScreen() {
           </Card>
 
           <View style={styles.included}>
-            {run.car_seats ? <IncludedRow onDark>Booster seat fitted & checked</IncludedRow> : null}
+            {run.car_seats ? (
+              <IncludedRow onDark>{run.car_seats.replace(' · free', '')} — fitted & checked</IncludedRow>
+            ) : null}
+            {run.stroller ? <IncludedRow onDark>Stroller: {run.stroller}</IncludedRow> : null}
             <IncludedRow onDark>
               {door ? `They're expecting you at ${door}` : "They're expecting you"}
             </IncludedRow>

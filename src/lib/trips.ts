@@ -18,8 +18,9 @@ export type DriverRun = {
   flight_number: string | null;
   flight_landed_at: string | null;
   adults: number;
-  children: number;
+  children: number | null;
   car_seats: string | null;
+  stroller: string | null;
   notes: string | null;
   driver_state: DriverRunState;
   vehicle: string | null;
