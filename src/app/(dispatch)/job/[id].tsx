@@ -112,6 +112,7 @@ export default function DispatchJob() {
             >
               <Text style={[styles.driverChipText, on && styles.driverChipTextOn]}>
                 {d.full_name}
+                {d.on_shift ? '' : ' (offline)'}
                 {d.vehicle ? ` · ${d.vehicle}` : ' · no car set'}
               </Text>
             </Pressable>

@@ -311,11 +311,13 @@ export default function Board() {
                             <View key={d.id}>
                               <ListRow
                                 title={d.full_name}
-                                subtitle={
+                                subtitle={[
+                                  d.on_shift ? 'online' : 'offline',
                                   runs.length
                                     ? `${runs.length} run${runs.length === 1 ? '' : 's'} ahead`
-                                    : 'no runs assigned'
-                                }
+                                    : 'no runs assigned',
+                                  d.vehicle ?? 'no car set',
+                                ].join(' · ')}
                                 chevron
                                 onPress={() => setOpenDriver(expanded ? null : d.id)}
                               />

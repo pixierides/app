@@ -382,11 +382,11 @@ export default function DispatchCalendar() {
                     <ListRow
                       key={d.id}
                       title={d.full_name}
-                      subtitle={
+                      subtitle={`${d.on_shift ? 'online' : 'offline'} · ${
                         near
                           ? `has a run at ${formatTime(near.pickup_at)} — within the hour`
                           : 'free around this time'
-                      }
+                      }`}
                       chevron
                       onPress={() => doAssign(d.id)}
                     />

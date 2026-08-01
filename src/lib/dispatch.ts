@@ -38,7 +38,12 @@ export type DispatchTrip = {
   written_off: boolean;
 };
 
-export type Driver = { id: string; full_name: string; vehicle: string | null };
+export type Driver = {
+  id: string;
+  full_name: string;
+  vehicle: string | null;
+  on_shift: boolean;
+};
 
 /**
  * The one deadline: pickup − 48h. Free cancellation ends, payment is due,

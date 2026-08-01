@@ -48,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfileLoading(true);
     supabase
       .from('profiles')
-      .select('id, phone, full_name, email, role, vehicle_id')
+      .select('id, phone, full_name, email, role, vehicle_id, on_shift')
       .eq('id', session.user.id)
       .single()
       .then(({ data }) => {
@@ -72,7 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!id) return;
     const { data } = await supabase
       .from('profiles')
-      .select('id, phone, full_name, email, role, vehicle_id')
+      .select('id, phone, full_name, email, role, vehicle_id, on_shift')
       .eq('id', id)
       .single();
     if (data) setProfile(data as Profile);

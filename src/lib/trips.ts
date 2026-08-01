@@ -8,8 +8,14 @@ export type DriverRunState = 'pending' | 'en_route' | 'arrived' | 'on_trip' | 'c
 
 export type DriverRun = {
   id: string;
+  reference: string;
   customer_name: string;
   party_label: string | null;
+  guests: string | null;
+  suitcases: string | null;
+  pickup_address: string | null;
+  dropoff_address: string | null;
+  customer_note: string | null;
   origin: string;
   destination: string;
   pickup_at: string;

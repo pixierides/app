@@ -33,4 +33,6 @@ export type Profile = {
   role: AppRole;
   /** The driver's currently selected car (fleet row). */
   vehicle_id: string | null;
+  /** Driver-owned shift status. Informs dispatch; never blocks assigning. */
+  on_shift: boolean;
 };

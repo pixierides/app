@@ -106,8 +106,11 @@ export default function RunScreen() {
           <Text style={styles.h1}>You're at the airport.{'\n'}Tell them you're here.</Text>
 
           <Card tone="surface" pad={20} style={styles.infoCard}>
-            <Text style={styles.cardName}>{run.party_label ?? run.customer_name}</Text>
-            <Text style={styles.cardSub}>{partyLine(run.adults, run.children)}</Text>
+            <Text style={styles.cardName}>{run.customer_name}</Text>
+            <Text style={styles.cardSub}>
+              {run.guests ? `${run.guests} guests` : partyLine(run.adults, run.children)}
+              {run.suitcases ? ` · ${run.suitcases} suitcases` : ''}
+            </Text>
             {run.flight_number ? (
               <Badge tone="confirmed">
                 {run.flight_number}
@@ -125,7 +128,23 @@ export default function RunScreen() {
                 <Text style={styles.kvLabel}>Pickup time</Text>
                 <Text style={styles.kvValue}>{formatTime(run.pickup_at)}</Text>
               </View>
+              {run.pickup_address ? (
+                <View style={styles.kvRow}>
+                  <Text style={styles.kvLabel}>Address</Text>
+                  <Text style={styles.kvValue}>{run.pickup_address}</Text>
+                </View>
+              ) : null}
+              <View style={styles.kvRow}>
+                <Text style={styles.kvLabel}>Booking</Text>
+                <Text style={styles.kvValue}>{run.reference}</Text>
+              </View>
             </View>
+            {run.customer_note ? (
+              <View style={styles.noteBox}>
+                <Text style={styles.noteLabel}>NOTE FROM THE BOOKING</Text>
+                <Text style={styles.noteText}>{run.customer_note}</Text>
+              </View>
+            ) : null}
           </Card>
 
           <View style={styles.included}>
@@ -139,7 +158,11 @@ export default function RunScreen() {
           </View>
 
           <View style={styles.secondaryRow}>
-            <Button variant="secondary" onDark onPress={() => navigateTo(run.origin)}>
+            <Button
+              variant="secondary"
+              onDark
+              onPress={() => navigateTo(run.pickup_address ?? run.origin)}
+            >
               Navigate
             </Button>
             <Button variant="secondary" onDark onPress={callDispatch}>
@@ -183,7 +206,7 @@ export default function RunScreen() {
           <Button
             size="lg"
             fullWidth
-            onPress={() => router.push(`/run/${run.id}/sign` as Href)}
+            onPress={() => router.push(`/sign/${run.id}` as Href)}
           >
             Show the name sign
           </Button>
@@ -213,21 +236,31 @@ export default function RunScreen() {
             <Text style={styles.subLine}>Started {formatTime(run.started_at)}</Text>
           ) : null}
 
+          {run.dropoff_address ? (
+            <Text style={styles.subLine}>{run.dropoff_address}</Text>
+          ) : null}
+
           <Card tone="surface" pad={20} style={styles.infoCard}>
             <View style={styles.passengerRow}>
               <View style={styles.avatar}>
                 <Text style={styles.avatarGlyph}>{run.customer_name[0]}</Text>
               </View>
               <View style={styles.passengerBody}>
-                <Text style={styles.cardName}>{run.party_label ?? run.customer_name}</Text>
-                <Text style={styles.cardSub}>{partyLine(run.adults, run.children)}</Text>
+                <Text style={styles.cardName}>{run.customer_name}</Text>
+                <Text style={styles.cardSub}>
+                  {run.guests ? `${run.guests} guests` : partyLine(run.adults, run.children)}
+                </Text>
               </View>
               <Badge tone="confirmed">on trip</Badge>
             </View>
           </Card>
 
           <View style={styles.secondaryRow}>
-            <Button variant="secondary" onDark onPress={() => navigateTo(run.destination)}>
+            <Button
+              variant="secondary"
+              onDark
+              onPress={() => navigateTo(run.dropoff_address ?? run.destination)}
+            >
               Navigate
             </Button>
             <Button variant="secondary" onDark onPress={callDispatch}>
@@ -281,7 +314,7 @@ export default function RunScreen() {
         </Card>
 
         <View style={styles.rateWrap}>
-          <Text style={styles.rateLabel}>Rate {run.party_label ?? run.customer_name}</Text>
+          <Text style={styles.rateLabel}>Rate {run.customer_name}</Text>
           <View style={styles.stars}>
             {[1, 2, 3, 4, 5].map((n) => (
               <Pressable
@@ -429,6 +462,22 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   included: {
     gap: space.s3,
+  },
+  noteBox: {
+    marginTop: space.s2,
+    gap: 4,
+  },
+  noteLabel: {
+    fontFamily: font.body600,
+    fontSize: fs.label,
+    letterSpacing: ls(track.label, fs.label),
+    color: t.textDim,
+  },
+  noteText: {
+    fontFamily: font.body400,
+    fontSize: 15,
+    lineHeight: 22,
+    color: t.textPrimary,
   },
   secondaryRow: {
     flexDirection: 'row',
