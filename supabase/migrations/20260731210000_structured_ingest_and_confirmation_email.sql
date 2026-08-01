@@ -1,0 +1,33 @@
+-- Structured ingest + safety-critical fields + confirmation-email trigger.
+-- (Applied to project wbslrmxwbwzswydwdxyi via MCP on 2026-07-31; mirrored
+-- for the record. The vault secret value is REDACTED here — it lives in
+-- Supabase Vault as 'pixie_email_secret' and in the website's server env.)
+--
+-- Part 1 — contact_submissions gains structured booking_* columns
+-- (origin/destination/trip_type/flight/return_flight/guests/suitcases/
+-- car_seats jsonb/stroller/price_cents/reference/return_at, all nullable).
+-- ingest_web_booking() rewritten: reads columns first; the regex parse of
+-- the message string remains ONLY as a legacy fallback for pre-migration
+-- rows and should be deleted once none remain. Still never raises.
+--
+-- Part 2 — trips gains stroller, suitcases, pickup_address, dropoff_address,
+-- return_at, return_flight; children becomes NULLABLE (null = unknown,
+-- 0 = no children — different facts; the web ingest no longer hardcodes 0).
+-- car_seats now populates from booking_car_seats ("2× Booster · free").
+-- Backfill recovered car-seat text from notes for existing web rows.
+--
+-- Part 3 — trips.confirmation_email_sent_at + notification_failures table
+-- (dispatch-readable) + notify_trip_confirmed():
+--   BEFORE UPDATE OF status, WHEN old.status <> 'confirmed' AND new = 'confirmed'
+--   · skips if confirmation_email_sent_at already set (fire-once; a flip
+--     confirmed → paid → confirmed can never send twice)
+--   · pg_net POST to https://pixierides.com/api/emails/trip-confirmed with
+--     x-pixie-secret from vault.decrypted_secrets
+--   · payload carries everything the email needs (customer, route, pickup,
+--     return leg, party, price, paymentDueAt, insideFortyEightHours)
+--   · never raises: failures land in notification_failures; pg_net is async,
+--     so a failed delivery cannot roll back the dispatcher's confirm
+--
+-- driver_runs view: + stroller (a double stroller changes the vehicle).
+-- Full SQL as applied lives in the database; see prior migrations for the
+-- established patterns.
