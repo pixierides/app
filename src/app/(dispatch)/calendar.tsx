@@ -1,14 +1,18 @@
 /**
  * Dispatch calendar — day, week, month. Midnight to midnight, all times
- * America/New_York. Day view: one column per driver plus Unassigned pinned
- * first; tap an unassigned (paid) trip to assign from a driver sheet.
+ * Orlando local. Day is a single timeline of everything that day; each event
+ * names its driver (or reads "unassigned"), so the schedule reads top to
+ * bottom without a column per driver — the roster lives on the Board.
+ *
+ * Day lands on today unless a specific day was chosen (a month cell, a week
+ * header, or the arrows). Switching views never strands you on a stale date.
+ *
  * Live: subscribes to trip changes — a slipped flight re-renders on its own.
  * Every event comes from the existing dispatch queries; no sample data.
  */
-import { CalendarBody, CalendarContainer, CalendarHeader } from '@howljs/calendar-kit';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useMemo, useState } from 'react';
-import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Calendar as MonthCalendar } from 'react-native-calendars';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Card, ListRow } from '@/components/ui';
@@ -21,7 +25,6 @@ import {
   labelForDay,
   runNear,
   tripsOnDay,
-  TZ,
   useTripsRealtime,
 } from '@/lib/calendar';
 import {
@@ -31,7 +34,6 @@ import {
   type DispatchTrip,
   type Driver,
 } from '@/lib/dispatch';
-import { SPINE_LABELS } from '@/lib/booking';
 import { firstName, formatTime } from '@/lib/format';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
@@ -39,15 +41,14 @@ import { color, font, fs, ls, radius, space, track } from '@/theme/tokens';
 
 const DEFAULT_VEHICLE = 'White Chevy Suburban · FL 8XK-221';
 const DEFAULT_MEET = 'Baggage claim 4 · door A';
-const UNASSIGNED = 'unassigned';
 
 type ViewMode = 'day' | 'week' | 'month';
 
-/** Status → event colour from the project tokens. Label always shown too. */
+/** Status → event colour from the project tokens. A label is always shown too. */
 function statusColor(t: DispatchTrip): string {
   switch (t.status) {
     case 'requested':
-      return color.foamDim;
+      return color.ink2;
     case 'confirmed':
       return color.sea3;
     case 'paid':
@@ -66,6 +67,8 @@ export default function DispatchCalendar() {
   const styles = themed[th.mode];
   const [view, setView] = useState<ViewMode>('day');
   const [date, setDate] = useState<string>(easternToday());
+  /** false = "wherever today is"; true = the dispatcher chose this day. */
+  const [picked, setPicked] = useState(false);
   const [trips, setTrips] = useState<DispatchTrip[] | null>(null);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [assignFor, setAssignFor] = useState<DispatchTrip | null>(null);
@@ -85,6 +88,9 @@ export default function DispatchCalendar() {
   useFocusEffect(
     useCallback(() => {
       load();
+      // Opening the calendar lands on today unless a day was deliberately chosen.
+      if (!picked) setDate(easternToday());
+      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [load]),
   );
   // Pickup times move when flights slip — subscribe, don't poll.
@@ -93,37 +99,72 @@ export default function DispatchCalendar() {
   const open = (trips ?? []).filter(isOpenTrip);
   const dayTrips = tripsOnDay(open, date);
 
-  const resources = useMemo(
+  const showView = (v: ViewMode) => {
+    // A view switch is not a date choice: day snaps back to today.
+    if (v === 'day' && !picked) setDate(easternToday());
+    setView(v);
+  };
+  const pickDay = (ymd: string) => {
+    setDate(ymd);
+    setPicked(true);
+    setView('day');
+  };
+  const shift = (n: number) => {
+    setDate(addDays(date, n));
+    // Stepping through days is choosing a day; paging weeks or months only
+    // moves the window, so day view still opens on today.
+    if (view === 'day') setPicked(true);
+  };
+  const jumpToToday = () => {
+    setDate(easternToday());
+    setPicked(false);
+  };
+
+  const driverName = (t: DispatchTrip): string =>
+    t.driver_name ?? drivers.find((d) => d.id === t.driver_id)?.full_name ?? '';
+
+  const dayColumns: TimelineColumn[] = useMemo(
     () => [
-      { id: UNASSIGNED, title: 'Unassigned' },
-      ...drivers.map((d) => ({ id: d.id, title: firstName(d.full_name) || d.full_name })),
+      {
+        id: date,
+        title: labelForDay(date),
+        events: dayTrips.map((t) => ({
+          trip: t,
+          color: statusColor(t),
+          note: t.driver_id ? driverName(t) : 'unassigned',
+        })),
+      },
     ],
-    [drivers],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [date, dayTrips, drivers],
   );
 
-  const events = useMemo(
+  const weekColumns: TimelineColumn[] = useMemo(
     () =>
-      open.map((t) => ({
-        id: t.id,
-        title: `${t.origin} → ${t.destination}`,
-        start: { dateTime: t.pickup_at },
-        end: { dateTime: new Date(new Date(t.pickup_at).getTime() + 3600_000).toISOString() },
-        color: statusColor(t),
-        resourceId: t.driver_id ?? UNASSIGNED,
-      })),
-    [open],
+      Array.from({ length: 7 }).map((_, i) => {
+        const ymd = addDays(date, i);
+        return {
+          id: ymd,
+          title: labelForDay(ymd),
+          headerYmd: ymd,
+          events: tripsOnDay(open, ymd).map((t) => ({ trip: t, color: statusColor(t) })),
+        };
+      }),
+    [date, open],
   );
+
+  const weekCount = weekColumns.reduce((n, c) => n + c.events.length, 0);
 
   const onPressEvent = useCallback(
-    (event: { id?: string }) => {
-      const trip = open.find((t) => t.id === event.id);
+    (tripId: string) => {
+      const trip = open.find((t) => t.id === tripId);
       if (!trip) return;
       if (!trip.driver_id && trip.status === 'paid') {
         setSheetError(null);
         setAssignFor(trip);
         return;
       }
-      // Assigned — or not yet payable — trips open the same detail the Board uses.
+      // Assigned — or not yet payable — trips open the Board's job detail.
       router.push(`/job/${trip.id}` as never);
     },
     [open],
@@ -154,96 +195,8 @@ export default function DispatchCalendar() {
     return m;
   }, [open]);
 
-  const isWeb = Platform.OS === 'web';
-
-  // Web fallback columns (calendar-kit does not lay out on react-native-web).
-  const dayColumns: TimelineColumn[] = useMemo(
-    () => [
-      {
-        id: UNASSIGNED,
-        title: 'Unassigned',
-        events: dayTrips
-          .filter((t) => !t.driver_id)
-          .map((t) => ({ trip: t, color: statusColor(t) })),
-      },
-      ...drivers.map((d) => ({
-        id: d.id,
-        title: firstName(d.full_name) || d.full_name,
-        events: dayTrips
-          .filter((t) => t.driver_id === d.id)
-          .map((t) => ({ trip: t, color: statusColor(t) })),
-      })),
-    ],
-    [dayTrips, drivers],
-  );
-
-  const weekColumns: TimelineColumn[] = useMemo(
-    () =>
-      Array.from({ length: 7 }).map((_, i) => {
-        const ymd = addDays(date, i);
-        return {
-          id: ymd,
-          title: labelForDay(ymd),
-          headerYmd: ymd,
-          events: tripsOnDay(open, ymd).map((t) => ({ trip: t, color: statusColor(t) })),
-        };
-      }),
-    [date, open],
-  );
-
-  const calTheme = useMemo(
-    () => ({
-      colors: {
-        primary: color.orange,
-        onPrimary: color.onOrange,
-        background: th.bgPage,
-        onBackground: th.textPrimary,
-        surface: th.surfaceCard,
-        onSurface: th.textPrimary,
-        border: th.divider,
-        text: th.textPrimary,
-      },
-      hourTextStyle: { color: th.textDim, fontFamily: font.body400, fontSize: 11 },
-      dayName: { color: th.textDim, fontFamily: font.body600 },
-      dayNumber: { color: th.textPrimary, fontFamily: font.body600 },
-      todayName: { color: th.textHeading, fontFamily: font.body600 },
-      todayNumber: { color: color.onOrange },
-      todayNumberContainer: { backgroundColor: color.orange },
-      nowIndicatorColor: color.orange,
-      resourceText: { color: th.textPrimary, fontFamily: font.body600, fontSize: 13 },
-    }),
-    [th],
-  );
-
-  const renderEvent = useCallback(
-    (event: any) => {
-      const trip = open.find((t) => t.id === event.id);
-      if (!trip) return null;
-      const compact = view === 'week';
-      return (
-        <View style={[evStyles.box, { backgroundColor: event.color }]}>
-          <Text style={evStyles.time} numberOfLines={1}>
-            {formatTime(trip.pickup_at)}
-          </Text>
-          <Text style={evStyles.route} numberOfLines={compact ? 1 : 2}>
-            {trip.origin} → {trip.destination}
-          </Text>
-          {!compact ? (
-            <>
-              {trip.party_label || trip.customer_name ? (
-                <Text style={evStyles.party} numberOfLines={1}>
-                  {trip.party_label ?? trip.customer_name}
-                </Text>
-              ) : null}
-              <Text style={evStyles.status} numberOfLines={1}>
-                {(SPINE_LABELS[trip.status] ?? trip.status).toLowerCase()}
-              </Text>
-            </>
-          ) : null}
-        </View>
-      );
-    },
-    [open, view],
+  const monthHasTrips = Object.keys(countsByDay).some(
+    (d) => d.slice(0, 7) === date.slice(0, 7),
   );
 
   const navLabel =
@@ -253,146 +206,106 @@ export default function DispatchCalendar() {
           year: 'numeric',
           timeZone: 'UTC',
         })
-      : labelForDay(date);
+      : view === 'week'
+        ? `${labelForDay(date)} – ${labelForDay(addDays(date, 6))}`
+        : labelForDay(date);
 
   const step = view === 'day' ? 1 : view === 'week' ? 7 : 30;
+  const isToday = date === easternToday();
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <View style={styles.shell}>
-        {/* ——— header: view switcher + date nav ——— */}
-        <View style={styles.topRow}>
-          <View style={styles.chips}>
-            {(['day', 'week', 'month'] as const).map((v) => {
-              const on = view === v;
-              return (
-                <Pressable
-                  key={v}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: on }}
-                  onPress={() => setView(v)}
-                  style={[styles.chip, on && styles.chipOn]}
-                >
-                  <Text style={[styles.chipText, on && styles.chipTextOn]}>
-                    {v[0].toUpperCase() + v.slice(1)}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
+        {/* ——— view switcher ——— */}
+        <View style={styles.chips}>
+          {(['day', 'week', 'month'] as const).map((v) => {
+            const on = view === v;
+            return (
+              <Pressable
+                key={v}
+                accessibilityRole="button"
+                accessibilityState={{ selected: on }}
+                onPress={() => showView(v)}
+                style={[styles.chip, on && styles.chipOn]}
+              >
+                <Text style={[styles.chipText, on && styles.chipTextOn]}>
+                  {v[0].toUpperCase() + v.slice(1)}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
+
+        {/* ——— date nav ——— */}
         <View style={styles.navRow}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Previous"
-            hitSlop={8}
-            onPress={() => setDate(addDays(date, -step))}
+            hitSlop={10}
+            onPress={() => shift(-step)}
             style={styles.navBtn}
           >
             <Text style={styles.navGlyph}>‹</Text>
           </Pressable>
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => setDate(easternToday())}
-            hitSlop={8}
-          >
+          <Pressable accessibilityRole="button" onPress={jumpToToday} hitSlop={8}>
             <Text style={styles.navLabel}>
               {navLabel}
-              {date === easternToday() && view !== 'month' ? ' · today' : ''}
+              {isToday && view === 'day' ? ' · today' : ''}
             </Text>
           </Pressable>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel="Next"
-            hitSlop={8}
-            onPress={() => setDate(addDays(date, step))}
+            hitSlop={10}
+            onPress={() => shift(step)}
             style={styles.navBtn}
           >
             <Text style={styles.navGlyph}>›</Text>
           </Pressable>
         </View>
 
-        {/* ——— views ——— */}
+        {/* ——— day ——— */}
         {view === 'day' ? (
-          <View style={styles.calWrap}>
-            {dayTrips.length === 0 ? (
-              <Text style={styles.empty}>No trips on {labelForDay(date)}.</Text>
-            ) : null}
-            {isWeb ? (
+          dayTrips.length ? (
+            <View style={styles.calWrap}>
               <DispatchTimeline
                 columns={dayColumns}
-                showNowLine={date === easternToday()}
-                onPressEvent={(id) => onPressEvent({ id })}
+                stretch
+                showNowLine={isToday}
+                onPressEvent={onPressEvent}
               />
-            ) : (
-            <CalendarContainer
-              key={`day-${date}-${th.mode}`}
-              numberOfDays={1}
-              initialDate={date}
-              timeZone={TZ}
-              events={events as never}
-              resources={resources}
-              onPressEvent={onPressEvent}
-              theme={calTheme as never}
-              scrollByDay
-              allowPinchToZoom
-            >
-              <CalendarHeader />
-              <CalendarBody renderEvent={renderEvent as never} />
-            </CalendarContainer>
-            )}
-          </View>
+            </View>
+          ) : (
+            <Text style={styles.empty}>No trips on {labelForDay(date)}.</Text>
+          )
         ) : null}
 
+        {/* ——— week ——— */}
         {view === 'week' ? (
-          <View style={styles.calWrap}>
-            {open.filter((t) => {
-              const d = easternDate(t.pickup_at);
-              return d >= date && d < addDays(date, 7);
-            }).length === 0 ? (
-              <Text style={styles.empty}>No trips this week.</Text>
-            ) : null}
-            {isWeb ? (
+          weekCount ? (
+            <View style={styles.calWrap}>
               <DispatchTimeline
                 columns={weekColumns}
                 compact
-                onPressEvent={(id) => onPressEvent({ id })}
-                onPressHeader={(ymd) => {
-                  setDate(ymd);
-                  setView('day');
-                }}
+                onPressEvent={onPressEvent}
+                onPressHeader={pickDay}
               />
-            ) : (
-            <CalendarContainer
-              key={`week-${date}-${th.mode}`}
-              numberOfDays={7}
-              initialDate={date}
-              timeZone={TZ}
-              events={events as never}
-              onPressEvent={onPressEvent}
-              onPressDayNumber={(d: string) => {
-                setDate(d.slice(0, 10));
-                setView('day');
-              }}
-              theme={calTheme as never}
-            >
-              <CalendarHeader />
-              <CalendarBody renderEvent={renderEvent as never} />
-            </CalendarContainer>
-            )}
-          </View>
+            </View>
+          ) : (
+            <Text style={styles.empty}>
+              No trips between {labelForDay(date)} and {labelForDay(addDays(date, 6))}.
+            </Text>
+          )
         ) : null}
 
+        {/* ——— month ——— */}
         {view === 'month' ? (
           <ScrollView contentContainerStyle={styles.monthScroll}>
             <Card tone="surface" pad={8}>
               <MonthCalendar
                 key={`month-${date.slice(0, 7)}-${th.mode}`}
                 current={date}
-                onDayPress={(d: { dateString: string }) => {
-                  setDate(d.dateString);
-                  setView('day');
-                }}
+                onDayPress={(d: { dateString: string }) => pickDay(d.dateString)}
                 onMonthChange={(d: { dateString: string }) => setDate(d.dateString)}
                 hideExtraDays
                 theme={
@@ -400,28 +313,19 @@ export default function DispatchCalendar() {
                     calendarBackground: 'transparent',
                     monthTextColor: th.textHeading,
                     textMonthFontFamily: font.body600,
-                    dayTextColor: th.textPrimary,
-                    textDayFontFamily: font.body400,
                     textSectionTitleColor: th.textDim,
                     textDayHeaderFontFamily: font.body600,
-                    todayTextColor: color.orangeHi,
                     arrowColor: th.textBody,
-                    selectedDayBackgroundColor: color.orange,
-                    selectedDayTextColor: color.onOrange,
                   } as never
                 }
                 dayComponent={({ date: d, state }: any) => {
                   const count = d?.dateString ? (countsByDay[d.dateString] ?? 0) : 0;
-                  const isToday = d?.dateString === easternToday();
+                  const today = d?.dateString === easternToday();
                   return (
                     <Pressable
                       accessibilityRole="button"
-                      onPress={() => {
-                        if (!d?.dateString) return;
-                        setDate(d.dateString);
-                        setView('day');
-                      }}
-                      style={[monthStyles.day, isToday && monthStyles.today]}
+                      onPress={() => d?.dateString && pickDay(d.dateString)}
+                      style={[monthStyles.day, today && monthStyles.today]}
                     >
                       <Text
                         style={[
@@ -430,7 +334,7 @@ export default function DispatchCalendar() {
                             color:
                               state === 'disabled'
                                 ? th.textDim
-                                : isToday
+                                : today
                                   ? color.onOrange
                                   : th.textPrimary,
                           },
@@ -448,15 +352,12 @@ export default function DispatchCalendar() {
                 }}
               />
             </Card>
-            {Object.keys(countsByDay).filter((d) => d.slice(0, 7) === date.slice(0, 7))
-              .length === 0 ? (
-              <Text style={styles.empty}>No trips this month.</Text>
-            ) : null}
+            {!monthHasTrips ? <Text style={styles.empty}>No trips this month.</Text> : null}
           </ScrollView>
         ) : null}
       </View>
 
-      {/* ——— assign sheet: drivers working today + proximity warnings ——— */}
+      {/* ——— assign sheet: who's free around this pickup ——— */}
       <Modal
         visible={assignFor !== null}
         transparent
@@ -487,6 +388,9 @@ export default function DispatchCalendar() {
                     />
                   );
                 })}
+                {!drivers.length ? (
+                  <Text style={styles.sheetError}>No drivers on the roster.</Text>
+                ) : null}
                 {sheetError ? <Text style={styles.sheetError}>{sheetError}</Text> : null}
                 <Button variant="ghost" fullWidth onPress={() => setAssignFor(null)}>
                   {busy ? 'Assigning…' : 'Cancel'}
@@ -499,37 +403,6 @@ export default function DispatchCalendar() {
     </SafeAreaView>
   );
 }
-
-const evStyles = StyleSheet.create({
-  box: {
-    flex: 1,
-    borderRadius: 6,
-    padding: 4,
-    overflow: 'hidden',
-  },
-  time: {
-    fontFamily: font.body600,
-    fontSize: 10,
-    color: color.white,
-  },
-  route: {
-    fontFamily: font.body600,
-    fontSize: 11,
-    color: color.white,
-  },
-  party: {
-    fontFamily: font.body400,
-    fontSize: 10,
-    color: 'rgba(255,255,255,0.85)',
-  },
-  status: {
-    fontFamily: font.body600,
-    fontSize: 9,
-    letterSpacing: 0.5,
-    color: 'rgba(255,255,255,0.85)',
-    textTransform: 'uppercase',
-  },
-});
 
 const monthStyles = StyleSheet.create({
   day: {
@@ -578,11 +451,6 @@ const makeStyles = (t: Theme) =>
       paddingTop: space.s3,
       gap: space.s3,
     },
-    topRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
     chips: {
       flexDirection: 'row',
       gap: space.s2,
@@ -629,6 +497,7 @@ const makeStyles = (t: Theme) =>
       fontSize: fs.h3,
       letterSpacing: ls(track.h2, fs.h3),
       color: t.textHeading,
+      textAlign: 'center',
     },
     calWrap: {
       flex: 1,
@@ -643,10 +512,10 @@ const makeStyles = (t: Theme) =>
     },
     empty: {
       fontFamily: font.body400,
-      fontSize: 14,
-      color: t.textDim,
-      textAlign: 'center',
-      paddingVertical: space.s2,
+      fontSize: 15,
+      lineHeight: 22,
+      color: t.textBody,
+      paddingVertical: space.s5,
     },
     sheetBackdrop: {
       flex: 1,

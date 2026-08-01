@@ -4,14 +4,17 @@
  * computed at render and recomputed on focus, never ticking.
  */
 
-/** "11:40pm" — lowercase meridiem, no space, minutes always shown. */
+/** "11:40 PM" — Orlando local, AM/PM, minutes always shown. */
 export function formatTime(iso: string | Date): string {
   const d = typeof iso === 'string' ? new Date(iso) : iso;
-  let h = d.getHours();
-  const m = d.getMinutes();
-  const mer = h >= 12 ? 'pm' : 'am';
-  h = h % 12 || 12;
-  return `${h}:${m.toString().padStart(2, '0')}${mer}`;
+  // Always Orlando local, never the device's zone — a driver or dispatcher on
+  // another timezone must still read the pickup time the customer was given.
+  return new Intl.DateTimeFormat('en-US', {
+    timeZone: 'America/New_York',
+    hour: 'numeric',
+    minute: '2-digit',
+    hour12: true,
+  }).format(d);
 }
 
 /** "in 42 min" / "in 2 h 10 min" / "now" — 36a run-list eyebrow only. */
