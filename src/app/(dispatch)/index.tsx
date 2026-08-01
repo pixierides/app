@@ -14,9 +14,11 @@ import { dollars } from '@/lib/booking';
 import {
   confirmTrip,
   fetchDispatchTrips,
+  listDrivers,
   pastCutoff,
   paymentCutoff,
   type DispatchTrip,
+  type Driver,
 } from '@/lib/dispatch';
 import { firstName, formatTime } from '@/lib/format';
 import { useAuth } from '@/providers/auth';
@@ -61,13 +63,17 @@ export default function Board() {
   const styles = themed[th.mode];
   const { profile } = useAuth();
   const [trips, setTrips] = useState<DispatchTrip[] | null>(null);
+  const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [openDriver, setOpenDriver] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<TileKey | null>(null);
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      setTrips(await fetchDispatchTrips());
+      const [t, d] = await Promise.all([fetchDispatchTrips(), listDrivers()]);
+      setTrips(t);
+      setDrivers(d);
     } catch {
       setTrips([]);
     }
@@ -277,6 +283,48 @@ export default function Board() {
                       </Card>
                     ) : (
                       <Text style={styles.emptyQuiet}>Nothing needs a look.</Text>
+                    )}
+                  </View>
+
+                  {/* ——— drivers — a list, not a management surface ——— */}
+                  <View style={styles.section}>
+                    <Text style={styles.sectionLabel}>DRIVERS</Text>
+                    {drivers.length ? (
+                      <Card tone="surface" pad={8}>
+                        {drivers.map((d) => {
+                          const runs = open.filter(
+                            (t) => t.driver_id === d.id && t.status === 'driver_assigned',
+                          );
+                          const expanded = openDriver === d.id;
+                          return (
+                            <View key={d.id}>
+                              <ListRow
+                                title={d.full_name}
+                                subtitle={
+                                  runs.length
+                                    ? `${runs.length} run${runs.length === 1 ? '' : 's'} ahead`
+                                    : 'no runs assigned'
+                                }
+                                chevron
+                                onPress={() => setOpenDriver(expanded ? null : d.id)}
+                              />
+                              {expanded
+                                ? runs.map((t) =>
+                                    rowFor(
+                                      t,
+                                      `${t.reference} · ${t.origin} → ${t.destination} · ${formatTime(t.pickup_at)}`,
+                                    ),
+                                  )
+                                : null}
+                              {expanded && !runs.length ? (
+                                <Text style={styles.emptyQuiet}>Nothing assigned.</Text>
+                              ) : null}
+                            </View>
+                          );
+                        })}
+                      </Card>
+                    ) : (
+                      <Text style={styles.emptyQuiet}>No drivers on the roster.</Text>
                     )}
                   </View>
                 </>

@@ -4,7 +4,7 @@
  * Icons are Lucide, ~1.8px stroke, foam/white — never orange.
  */
 import { Tabs } from 'expo-router';
-import { CircleUser, ClipboardList, Inbox, CarFront } from 'lucide-react-native';
+import { CalendarDays, CircleUser, ClipboardList, Inbox } from 'lucide-react-native';
 import { RoleGate } from '@/components/RoleGate';
 import { TabBar } from '@/components/ui';
 import { useTheme } from '@/providers/theme';
@@ -13,7 +13,7 @@ import { color } from '@/theme/tokens';
 const TABS = [
   { name: 'index', label: 'Board', Icon: ClipboardList },
   { name: 'requests', label: 'Requests', Icon: Inbox },
-  { name: 'drivers', label: 'Drivers', Icon: CarFront },
+  { name: 'calendar', label: 'Calendar', Icon: CalendarDays },
   { name: 'account', label: 'Account', Icon: CircleUser },
 ] as const;
 
@@ -48,7 +48,7 @@ function DispatchTabs() {
       >
         <Tabs.Screen name="index" />
         <Tabs.Screen name="requests" />
-        <Tabs.Screen name="drivers" />
+        <Tabs.Screen name="calendar" />
         <Tabs.Screen name="account" />
         {/* Job detail lives inside the tab navigator but gets no tab. */}
         <Tabs.Screen name="job/[id]" options={{ href: null }} />
