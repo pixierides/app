@@ -123,6 +123,12 @@ export async function writeoffAndSend(
   if (error) throw error;
 }
 
+/** Undo a mis-assignment. Refused once the run is in motion. */
+export async function unassignDriver(tripId: string): Promise<void> {
+  const { error } = await supabase.rpc('dispatch_unassign_driver', { p_trip_id: tripId });
+  if (error) throw error;
+}
+
 export async function releaseTrip(tripId: string): Promise<void> {
   const { error } = await supabase.rpc('dispatch_release_trip', { p_trip_id: tripId });
   if (error) throw error;

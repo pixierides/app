@@ -20,6 +20,7 @@ import {
   pastCutoff,
   paymentCutoff,
   releaseTrip,
+  unassignDriver,
   writeoffAndSend,
   type ContactAttempt,
   type DispatchTrip,
@@ -42,6 +43,7 @@ export default function DispatchJob() {
   const [vehicle, setVehicle] = useState(DEFAULT_VEHICLE);
   const [meetPoint, setMeetPoint] = useState(DEFAULT_MEET);
   const [note, setNote] = useState('');
+  const [confirmUnassign, setConfirmUnassign] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -208,6 +210,60 @@ export default function DispatchJob() {
                     : `Assign ${firstName(drivers.find((d) => d.id === driverId)?.full_name)}`}
                 </Button>
               ) : null}
+            </Card>
+          ) : null}
+
+          {/* ——— assigned: who has it, and the undo for a mis-assign ——— */}
+          {open && trip.driver_id ? (
+            <Card tone="dark-raised" pad={20} style={styles.block}>
+              <Text style={styles.eyebrow}>DRIVER ASSIGNED</Text>
+              <Text style={styles.blockTitle}>{trip.driver_name ?? 'Assigned'}</Text>
+              {trip.vehicle ? <Text style={styles.blockBody}>{trip.vehicle}</Text> : null}
+              {trip.driver_state === 'pending' || trip.driver_state === 'en_route' ? (
+                confirmUnassign ? (
+                  <>
+                    <Text style={styles.blockBodyDim}>
+                      {trip.driver_name ?? 'This driver'} loses this run and it goes back to
+                      unassigned. They aren&apos;t notified — tell them if they&apos;ve already
+                      seen it.
+                    </Text>
+                    <Button
+                      variant="secondary"
+                      onDark
+                      fullWidth
+                      onPress={() =>
+                        run(async () => {
+                          await unassignDriver(trip.id);
+                          setConfirmUnassign(false);
+                        })
+                      }
+                    >
+                      {busy ? 'One moment…' : `Yes — unassign ${trip.driver_name ?? 'driver'}`}
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      onDark
+                      fullWidth
+                      onPress={() => setConfirmUnassign(false)}
+                    >
+                      Keep {trip.driver_name ?? 'them'} on it
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    variant="secondary"
+                    onDark
+                    fullWidth
+                    onPress={() => setConfirmUnassign(true)}
+                  >
+                    Wrong driver — unassign
+                  </Button>
+                )
+              ) : (
+                <Text style={styles.blockBodyDim}>
+                  This run has already started. To change the driver now, call them.
+                </Text>
+              )}
             </Card>
           ) : null}
 
