@@ -26,7 +26,7 @@ import { color, font, fs, lh, ls, radius, shadow, space, track } from '@/theme/t
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 
-type TileKey = 'to_confirm' | 'unassigned' | 'rolling';
+type TileKey = 'to_confirm' | 'unpaid' | 'unassigned' | 'rolling';
 
 const ROLLING_STATES = ['en_route', 'arrived', 'on_trip'] as const;
 
@@ -87,6 +87,9 @@ export default function Board() {
 
   const open = (trips ?? []).filter(isOpen);
   const toConfirm = open.filter((t) => t.status === 'requested');
+  // Confirmed but the money hasn't landed — the same set the calendar paints
+  // yellow. A 'requested' trip isn't unpaid yet: nobody has been asked.
+  const unpaid = open.filter((t) => t.status === 'confirmed' && !t.paid_at);
   const unassigned = open.filter((t) => t.status === 'paid' && !t.driver_id);
   const rolling = open.filter((t) => (ROLLING_STATES as readonly string[]).includes(t.driver_state));
 
@@ -104,7 +107,13 @@ export default function Board() {
     .filter((r) => r.trip.id !== urgent?.id);
 
   const filtered =
-    filter === 'to_confirm' ? toConfirm : filter === 'unassigned' ? unassigned : rolling;
+    filter === 'to_confirm'
+      ? toConfirm
+      : filter === 'unpaid'
+        ? unpaid
+        : filter === 'unassigned'
+          ? unassigned
+          : rolling;
 
   const today = new Date();
   const dateLabel = today
@@ -127,12 +136,14 @@ export default function Board() {
 
   const tiles: { key: TileKey; label: string; count: number }[] = [
     { key: 'to_confirm', label: 'to confirm', count: toConfirm.length },
+    { key: 'unpaid', label: 'unpaid', count: unpaid.length },
     { key: 'unassigned', label: 'unassigned', count: unassigned.length },
     { key: 'rolling', label: 'rolling now', count: rolling.length },
   ];
 
   const filterEmpty: Record<TileKey, string> = {
     to_confirm: 'Nothing to confirm.',
+    unpaid: 'Every confirmed trip is paid.',
     unassigned: 'Every paid trip has a driver.',
     rolling: 'Nobody is rolling right now.',
   };
@@ -396,10 +407,13 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   tiles: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     gap: space.s3,
   },
   tile: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: 140,
+    minWidth: 140,
     backgroundColor: t.surfaceCard,
     borderRadius: radius.card,
     paddingVertical: space.s3,
