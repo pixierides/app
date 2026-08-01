@@ -1,8 +1,8 @@
 /**
- * Dispatch trip detail — 68b (what we know, what we've tried) and the
- * actions: confirm, assign a driver, and 68c (send the car anyway).
- * The attempt log exists so a second dispatcher never re-dials a number
- * already answered by a stranger.
+ * Dispatch trip detail — everything known about the trip and the actions on
+ * it: confirm, assign or unassign a driver, reach the customer, and 68c
+ * (send the car anyway once the payment window has closed).
+ * A driver's car comes from their own fleet selection, not a hardcoded plate.
  */
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
@@ -13,16 +13,13 @@ import { dollars, STATUS_LABELS } from '@/lib/booking';
 import {
   assignDriver,
   confirmTrip,
-  fetchAttempts,
   fetchDispatchTrips,
   listDrivers,
-  logAttempt,
   pastCutoff,
   paymentCutoff,
   releaseTrip,
   unassignDriver,
   writeoffAndSend,
-  type ContactAttempt,
   type DispatchTrip,
   type Driver,
 } from '@/lib/dispatch';
@@ -37,26 +34,19 @@ const DEFAULT_MEET = 'Baggage claim 4 · door A';
 export default function DispatchJob() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [trip, setTrip] = useState<DispatchTrip | null>(null);
-  const [attempts, setAttempts] = useState<ContactAttempt[]>([]);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [driverId, setDriverId] = useState<string | null>(null);
   const [vehicle, setVehicle] = useState(DEFAULT_VEHICLE);
   const [meetPoint, setMeetPoint] = useState(DEFAULT_MEET);
-  const [note, setNote] = useState('');
   const [confirmUnassign, setConfirmUnassign] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
-    const [trips, att, drv] = await Promise.all([
-      fetchDispatchTrips(),
-      fetchAttempts(id!),
-      listDrivers(),
-    ]);
+    const [trips, drv] = await Promise.all([fetchDispatchTrips(), listDrivers()]);
     setTrip(trips.find((t) => t.id === id) ?? null);
-    setAttempts(att);
     setDrivers(drv);
-    if (drv.length === 1) setDriverId(drv[0].id);
+    if (drv.length === 1) pickDriver(drv[0]);
   }, [id]);
 
   useFocusEffect(
@@ -87,6 +77,13 @@ export default function DispatchJob() {
     }
   };
 
+  // The car belongs to the driver: picking one fills their vehicle in, and
+  // leaving it blank lets the server fall back to the same value.
+  const pickDriver = (d: Driver) => {
+    setDriverId(d.id);
+    setVehicle(d.vehicle ?? '');
+  };
+
   const dateLine = [
     new Date(trip.pickup_at).toLocaleDateString('en-US', {
       weekday: 'short',
@@ -110,17 +107,24 @@ export default function DispatchJob() {
               key={d.id}
               accessibilityRole="button"
               accessibilityState={{ selected: on }}
-              onPress={() => setDriverId(d.id)}
+              onPress={() => pickDriver(d)}
               style={[styles.driverChip, on && styles.driverChipOn]}
             >
               <Text style={[styles.driverChipText, on && styles.driverChipTextOn]}>
                 {d.full_name}
+                {d.vehicle ? ` · ${d.vehicle}` : ' · no car set'}
               </Text>
             </Pressable>
           );
         })}
       </View>
-      <Input onDark label="Vehicle" value={vehicle} onChangeText={setVehicle} />
+      <Input
+        onDark
+        label="Vehicle"
+        placeholder="the driver's own car"
+        value={vehicle}
+        onChangeText={setVehicle}
+      />
       <Input onDark label="Meet at" value={meetPoint} onChangeText={setMeetPoint} />
     </>
   );
@@ -333,55 +337,6 @@ export default function DispatchJob() {
             </View>
           ) : null}
 
-          {/* ——— 68b · what we've tried ——— */}
-          <Card tone="dark-raised" pad={20} style={styles.block}>
-            <Text style={styles.eyebrow}>ATTEMPTS</Text>
-            {attempts.length ? (
-              attempts.map((a) => (
-                <View key={a.id} style={styles.attemptRow}>
-                  <Text style={styles.attemptHead}>
-                    {formatTime(a.created_at)} · {a.method}
-                  </Text>
-                  {a.note ? <Text style={styles.attemptNote}>{a.note}</Text> : null}
-                </View>
-              ))
-            ) : (
-              <Text style={styles.blockBodyDim}>Nothing tried yet.</Text>
-            )}
-            <Input
-              onDark
-              label="Note"
-              placeholder="Answered — wrong number, not a customer."
-              value={note}
-              onChangeText={setNote}
-            />
-            <View style={styles.attemptButtons}>
-              <Button
-                variant="secondary"
-                onDark
-                onPress={() =>
-                  run(async () => {
-                    await logAttempt(trip.id, `called ${trip.customer_phone}`, note);
-                    setNote('');
-                  })
-                }
-              >
-                Log · called the number
-              </Button>
-              <Button
-                variant="secondary"
-                onDark
-                onPress={() =>
-                  run(async () => {
-                    await logAttempt(trip.id, `called ${trip.destination} · guest name`, note);
-                    setNote('');
-                  })
-                }
-              >
-                Log · called the hotel
-              </Button>
-            </View>
-          </Card>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -516,25 +471,6 @@ const styles = StyleSheet.create({
   },
   driverChipTextOn: {
     color: color.white,
-  },
-  attemptRow: {
-    gap: 2,
-    paddingBottom: space.s2,
-  },
-  attemptHead: {
-    fontFamily: font.body600,
-    fontSize: 14,
-    color: color.foam,
-  },
-  attemptNote: {
-    fontFamily: font.body400,
-    fontSize: 14,
-    color: color.foamDim,
-  },
-  attemptButtons: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: space.s3,
   },
   contactRow: {
     flexDirection: 'row',

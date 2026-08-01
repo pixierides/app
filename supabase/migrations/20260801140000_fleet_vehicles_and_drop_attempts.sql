@@ -1,0 +1,27 @@
+-- Fleet vehicles + retire the attempt log.
+-- (Applied to project wbslrmxwbwzswydwdxyi via MCP on 2026-08-01; mirrored.)
+--
+-- 1 ── The 68b attempt log is retired at the user's request: the
+--      contact_attempts table and dispatch_log_attempt() are dropped, and the
+--      ATTEMPTS card is gone from the dispatch job screen.
+--
+-- 2 ── public.vehicles is the fleet (label, plate, active). Any signed-in user
+--      may read the active list (drivers pick, dispatch displays); dispatch
+--      manages rows. profiles.vehicle_id holds the driver's current car, set
+--      only through driver_set_vehicle() (drivers only, active vehicles only)
+--      — the column-level grant now includes vehicle_id, still never role.
+--
+--      vehicle_label(id) composes "White Chevy Suburban · FL 8XK-221"; a row
+--      with no plate renders as unset, because a plate a customer is told to
+--      look for has to be real.
+--
+--      dispatch_list_drivers() now returns (id, full_name, vehicle) — return
+--      type changed, so it is dropped and recreated.
+--
+--      dispatch_assign_driver() and dispatch_writeoff_send() fall back to the
+--      driver's own car when dispatch leaves the vehicle field blank, so an
+--      assignment can no longer carry a stale hardcoded plate.
+--
+--      Seeded: the one vehicle the handoff documents, plus two placeholder
+--      rows for the operator to fill in.
+-- Full SQL as applied lives in the database.

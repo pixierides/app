@@ -45,22 +45,22 @@ const DEFAULT_MEET = 'Baggage claim 4 · door A';
 
 type ViewMode = 'day' | 'week' | 'month';
 
-/** Status → event colour from the project tokens. A label is always shown too. */
-function statusColor(t: DispatchTrip): string {
-  switch (t.status) {
-    case 'requested':
-      return color.ink2;
-    case 'confirmed':
-      return color.sea3;
-    case 'paid':
-      return color.green;
-    case 'driver_assigned':
-      return color.sea2;
-    case 'complete':
-      return color.greenText;
-    default:
-      return color.ink2;
-  }
+/**
+ * Operator status colours for the dispatch calendar — an internal ops surface,
+ * so these sit outside the customer palette deliberately:
+ *   red    unconfirmed   · yellow unpaid
+ *   blue   unassigned    · green  assigned
+ * A status word is always on the event too, so colour is never the only signal.
+ */
+const STATUS_INK = '#1E293B';
+
+function statusPaint(t: DispatchTrip): { bg: string; fg: string } {
+  if (t.status === 'requested') return { bg: '#DC2626', fg: color.white }; // red
+  if (t.status === 'confirmed' && !t.paid_at) return { bg: '#FACC15', fg: STATUS_INK }; // yellow
+  if (t.status === 'paid' && !t.driver_id) return { bg: '#2563EB', fg: color.white }; // blue
+  if (t.status === 'driver_assigned') return { bg: color.green, fg: color.white }; // green
+  if (t.status === 'complete') return { bg: color.greenText, fg: color.white };
+  return { bg: color.ink2, fg: color.white };
 }
 
 export default function DispatchCalendar() {
@@ -88,9 +88,12 @@ export default function DispatchCalendar() {
 
   useFocusEffect(
     useCallback(() => {
+      // Tapping the Calendar tab always returns to a freshly loaded month of
+      // today — never a stale day someone drilled into earlier.
       load();
-      // Opening the calendar lands on today unless a day was deliberately chosen.
-      if (!picked) setDate(easternToday());
+      setView('month');
+      setDate(easternToday());
+      setPicked(false);
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [load]),
   );
@@ -131,7 +134,7 @@ export default function DispatchCalendar() {
         title: labelForDay(date),
         events: dayTrips.map((t) => ({
           trip: t,
-          color: statusColor(t),
+          ...statusPaint(t),
           note: t.driver_id ? driverName(t) : 'unassigned',
         })),
       },
@@ -148,7 +151,7 @@ export default function DispatchCalendar() {
           id: ymd,
           title: labelForDay(ymd),
           headerYmd: ymd,
-          events: tripsOnDay(open, ymd).map((t) => ({ trip: t, color: statusColor(t) })),
+          events: tripsOnDay(open, ymd).map((t) => ({ trip: t, ...statusPaint(t) })),
         };
       }),
     [date, open],

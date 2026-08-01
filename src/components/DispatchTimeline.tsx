@@ -19,7 +19,7 @@ const PX_PER_HOUR = 48;
 const COL_WIDTH = 168;
 const GUTTER = 62;
 
-export type TimelineEvent = { trip: DispatchTrip; color: string; note?: string };
+export type TimelineEvent = { trip: DispatchTrip; bg: string; fg: string; note?: string };
 
 export type TimelineColumn = {
   id: string;
@@ -75,7 +75,7 @@ export function DispatchTimeline({
       {Array.from({ length: 24 }).map((_, h) => (
         <View key={h} style={[styles.hourLine, { top: h * PX_PER_HOUR }]} />
       ))}
-      {col.events.map(({ trip, color: evColor, note }) => {
+      {col.events.map(({ trip, bg, fg, note }) => {
         const top = (minutesIntoDay(trip.pickup_at) / 60) * PX_PER_HOUR;
         return (
           <Pressable
@@ -87,19 +87,19 @@ export function DispatchTimeline({
               {
                 top,
                 minHeight: compact ? PX_PER_HOUR * 0.7 : PX_PER_HOUR,
-                backgroundColor: evColor,
+                backgroundColor: bg,
               },
               pressed && { opacity: 0.85 },
             ]}
           >
-            <Text style={styles.evTime} numberOfLines={1}>
+            <Text style={[styles.evTime, { color: fg }]} numberOfLines={1}>
               {formatTime(trip.pickup_at)}
             </Text>
-            <Text style={styles.evRoute} numberOfLines={1}>
+            <Text style={[styles.evRoute, { color: fg }]} numberOfLines={1}>
               {trip.origin} → {trip.destination}
             </Text>
             {!compact ? (
-              <Text style={styles.evMeta} numberOfLines={1}>
+              <Text style={[styles.evMeta, { color: fg, opacity: 0.9 }]} numberOfLines={1}>
                 {(SPINE_LABELS[trip.status] ?? trip.status).toLowerCase()}
                 {note ? ` · ${note}` : ''}
               </Text>

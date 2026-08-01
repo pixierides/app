@@ -9,6 +9,8 @@ import { RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Button, Card, ListRow, RouteChip } from '@/components/ui';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { VehiclePicker } from '@/components/VehiclePicker';
+import { listVehicles, vehicleLabel, type Vehicle } from '@/lib/fleet';
 import { fetchDriverRuns, type DriverRun } from '@/lib/trips';
 import { firstName, formatTime, inMinutes } from '@/lib/format';
 import { useAuth } from '@/providers/auth';
@@ -19,13 +21,17 @@ import { themes, type Theme } from '@/theme/themes';
 export default function DriverHome() {
   const th = useTheme();
   const styles = themed[th.mode];
-  const { profile, signOut } = useAuth();
+  const { profile, refreshProfile, signOut } = useAuth();
   const [runs, setRuns] = useState<DriverRun[] | null>(null);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
+  const [pickingCar, setPickingCar] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     try {
-      setRuns(await fetchDriverRuns());
+      const [r, v] = await Promise.all([fetchDriverRuns(), listVehicles()]);
+      setRuns(r);
+      setVehicles(v);
     } catch {
       setRuns([]);
     }
@@ -41,6 +47,8 @@ export default function DriverHome() {
   const active = (runs ?? []).filter((r) => r.driver_state !== 'complete');
   const next = active[0];
   const later = active.slice(1);
+
+  const myCar = vehicles.find((v) => v.id === profile?.vehicle_id) ?? null;
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -121,6 +129,21 @@ export default function DriverHome() {
           </View>
         )}
 
+        <Card tone="surface" pad={20} style={styles.carCard}>
+          <Text style={styles.eyebrow}>YOUR CAR</Text>
+          <Text style={styles.carName}>
+            {myCar ? vehicleLabel(myCar) : 'No car chosen yet'}
+          </Text>
+          <Button
+            variant="secondary"
+            onDark
+            fullWidth
+            onPress={() => setPickingCar(true)}
+          >
+            {myCar ? 'Change car' : 'Choose your car'}
+          </Button>
+        </Card>
+
         <Card tone="surface" pad={20}>
           <ThemeToggle />
         </Card>
@@ -130,6 +153,13 @@ export default function DriverHome() {
           </Button>
         </View>
       </ScrollView>
+
+      <VehiclePicker
+        visible={pickingCar}
+        currentId={profile?.vehicle_id ?? null}
+        onClose={() => setPickingCar(false)}
+        onChosen={refreshProfile}
+      />
     </SafeAreaView>
   );
 }
@@ -216,6 +246,15 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontSize: 16,
     lineHeight: 16 * 1.5,
     color: t.textBody,
+  },
+  carCard: {
+    gap: space.s3,
+  },
+  carName: {
+    fontFamily: font.display700,
+    fontSize: fs.h3,
+    letterSpacing: ls(track.h2, fs.h3),
+    color: t.textHeading,
   },
   footer: {
     alignItems: 'center',

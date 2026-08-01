@@ -38,15 +38,7 @@ export type DispatchTrip = {
   written_off: boolean;
 };
 
-export type ContactAttempt = {
-  id: string;
-  trip_id: string;
-  method: string;
-  note: string | null;
-  created_at: string;
-};
-
-export type Driver = { id: string; full_name: string };
+export type Driver = { id: string; full_name: string; vehicle: string | null };
 
 /**
  * The one deadline: pickup − 48h. Free cancellation ends, payment is due,
@@ -70,16 +62,6 @@ export async function fetchDispatchTrips(): Promise<DispatchTrip[]> {
     .order('pickup_at', { ascending: true });
   if (error) throw error;
   return (data ?? []) as DispatchTrip[];
-}
-
-export async function fetchAttempts(tripId: string): Promise<ContactAttempt[]> {
-  const { data, error } = await supabase
-    .from('contact_attempts')
-    .select('id, trip_id, method, note, created_at')
-    .eq('trip_id', tripId)
-    .order('created_at', { ascending: true });
-  if (error) throw error;
-  return (data ?? []) as ContactAttempt[];
 }
 
 export async function listDrivers(): Promise<Driver[]> {
@@ -134,11 +116,3 @@ export async function releaseTrip(tripId: string): Promise<void> {
   if (error) throw error;
 }
 
-export async function logAttempt(tripId: string, method: string, note: string): Promise<void> {
-  const { error } = await supabase.rpc('dispatch_log_attempt', {
-    p_trip_id: tripId,
-    p_method: method,
-    p_note: note,
-  });
-  if (error) throw error;
-}

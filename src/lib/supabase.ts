@@ -31,4 +31,6 @@ export type Profile = {
   full_name: string | null;
   email: string | null;
   role: AppRole;
+  /** The driver's currently selected car (fleet row). */
+  vehicle_id: string | null;
 };

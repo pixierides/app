@@ -17,6 +17,8 @@ type AuthState = {
   profile: Profile | null;
   /** true while the profile row for a fresh session is loading */
   profileLoading: boolean;
+  /** Re-read the profile — used after a driver changes their car. */
+  refreshProfile: () => Promise<void>;
   signInWithPhone: (phone: string) => Promise<{ error?: string }>;
   verifyCode: (phone: string, code: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
@@ -46,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setProfileLoading(true);
     supabase
       .from('profiles')
-      .select('id, phone, full_name, email, role')
+      .select('id, phone, full_name, email, role, vehicle_id')
       .eq('id', session.user.id)
       .single()
       .then(({ data }) => {
@@ -63,6 +65,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => {
       cancelled = true;
     };
+  }, [session?.user?.id]);
+
+  const refreshProfile = useCallback(async () => {
+    const id = session?.user?.id;
+    if (!id) return;
+    const { data } = await supabase
+      .from('profiles')
+      .select('id, phone, full_name, email, role, vehicle_id')
+      .eq('id', id)
+      .single();
+    if (data) setProfile(data as Profile);
   }, [session?.user?.id]);
 
   const signInWithPhone = useCallback(async (phone: string) => {
@@ -91,8 +104,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ session, profile, profileLoading, signInWithPhone, verifyCode, signOut }),
-    [session, profile, profileLoading, signInWithPhone, verifyCode, signOut],
+    () => ({
+      session,
+      profile,
+      profileLoading,
+      refreshProfile,
+      signInWithPhone,
+      verifyCode,
+      signOut,
+    }),
+    [session, profile, profileLoading, refreshProfile, signInWithPhone, verifyCode, signOut],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
