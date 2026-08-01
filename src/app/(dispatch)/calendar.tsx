@@ -1,6 +1,7 @@
 /**
- * Dispatch calendar — day, week, month. Midnight to midnight, all times
- * Orlando local. Day is a single timeline of everything that day; each event
+ * Dispatch calendar — month, week, day. Opens on the month so the shape of
+ * the weeks ahead reads first; a day cell drills into its timeline. All times
+ * Orlando local, midnight to midnight. Day is a single timeline and each event
  * names its driver (or reads "unassigned"), so the schedule reads top to
  * bottom without a column per driver — the roster lives on the Board.
  *
@@ -65,7 +66,7 @@ function statusColor(t: DispatchTrip): string {
 export default function DispatchCalendar() {
   const th = useTheme();
   const styles = themed[th.mode];
-  const [view, setView] = useState<ViewMode>('day');
+  const [view, setView] = useState<ViewMode>('month');
   const [date, setDate] = useState<string>(easternToday());
   /** false = "wherever today is"; true = the dispatcher chose this day. */
   const [picked, setPicked] = useState(false);
