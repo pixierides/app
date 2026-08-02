@@ -25,6 +25,15 @@ import {
   type DispatchTrip,
   type Driver,
 } from '@/lib/dispatch';
+import { FlightUpdateSheet } from '@/components/FlightUpdateSheet';
+import { flightLabel } from '@/lib/airlines';
+import {
+  checkedAgo,
+  hasLanded,
+  openFlightSearch,
+  setInternational,
+  updateFlightAsDispatch,
+} from '@/lib/flight';
 import { firstName, formatTime, partyLine } from '@/lib/format';
 import { callNumber, emailTo } from '@/lib/links';
 import { formatDeadline } from '@/lib/policy';
@@ -42,6 +51,7 @@ export default function DispatchJob() {
   const [meetPoint, setMeetPoint] = useState(DEFAULT_MEET);
   const [confirmUnassign, setConfirmUnassign] = useState(false);
   const [overrideOpen, setOverrideOpen] = useState(false);
+  const [flightOpen, setFlightOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -275,6 +285,61 @@ export default function DispatchJob() {
             </Card>
           ) : null}
 
+          {/* ——— the flight, checked by hand ——— */}
+          {open && trip.flight_number ? (
+            <Card tone="dark-raised" pad={20} style={styles.block}>
+              <Text style={styles.eyebrow}>FLIGHT</Text>
+              <Text style={styles.blockTitle}>
+                {[flightLabel(trip.flight_number),
+                  trip.flight_terminal ? `Terminal ${trip.flight_terminal}` : null]
+                  .filter(Boolean)
+                  .join(' · ')}
+              </Text>
+              <Text style={styles.blockBody}>
+                {trip.flight_landed_at
+                  ? `${hasLanded(trip.flight_landed_at) ? 'Landed' : 'Arriving'} ${formatTime(trip.flight_landed_at)}`
+                  : 'Arrival not checked yet'}
+                {trip.flight_status_note ? ` — ${trip.flight_status_note}` : ''}
+              </Text>
+              <Text style={styles.blockBodyDim}>
+                {checkedAgo(trip.flight_checked_at)
+                  ? `Checked ${checkedAgo(trip.flight_checked_at)}${
+                      trip.flight_checked_by_role === 'driver'
+                        ? ` — ${firstName(trip.driver_name) || 'the driver'} did it`
+                        : ''
+                    }`
+                  : 'Nobody has checked this yet.'}
+                {trip.international ? ' · international, 75 min buffer' : ' · domestic, 45 min buffer'}
+              </Text>
+              <View style={styles.flightRow}>
+                <Button
+                  variant="secondary"
+                  onDark
+                  style={styles.flightButton}
+                  onPress={() => openFlightSearch(trip.flight_number)}
+                >
+                  Check flight
+                </Button>
+                <Button
+                  variant="secondary"
+                  onDark
+                  style={styles.flightButton}
+                  onPress={() => setFlightOpen(true)}
+                >
+                  Update
+                </Button>
+              </View>
+              <Button
+                variant="ghost"
+                onDark
+                fullWidth
+                onPress={() => run(() => setInternational(trip.id, !trip.international))}
+              >
+                {trip.international ? 'Actually domestic' : 'Actually international'}
+              </Button>
+            </Card>
+          ) : null}
+
           {/* ——— where the run is, plus the exception path ——— */}
           {open && trip.driver_id && trip.driver_state !== 'pending' ? (
             <Card tone="dark-raised" pad={20} style={styles.block}>
@@ -282,7 +347,9 @@ export default function DispatchJob() {
               <Text style={styles.blockTitle}>
                 {RUN_STATE_LABELS[trip.driver_state]}
                 {trip.driver_state === 'holding' && trip.flight_landed_at
-                  ? ` · ${Math.round((Date.now() - new Date(trip.flight_landed_at).getTime()) / 60000)} min since landing`
+                  ? hasLanded(trip.flight_landed_at)
+                    ? ` · ${Math.round((Date.now() - new Date(trip.flight_landed_at).getTime()) / 60000)} min since landing`
+                    : ` · lands in ${Math.round((new Date(trip.flight_landed_at).getTime() - Date.now()) / 60000)} min`
                   : ''}
               </Text>
 
@@ -404,6 +471,17 @@ export default function DispatchJob() {
 
         </View>
       </ScrollView>
+
+      <FlightUpdateSheet
+        visible={flightOpen}
+        facts={trip}
+        pickupAt={trip.pickup_at}
+        onClose={() => setFlightOpen(false)}
+        onSave={async (arrival, terminal, note) => {
+          await updateFlightAsDispatch(trip.id, arrival, terminal, note);
+          await load();
+        }}
+      />
     </SafeAreaView>
   );
 }
@@ -510,6 +588,14 @@ const styles = StyleSheet.create({
     fontSize: 34,
     letterSpacing: ls(track.price, 34),
     color: color.white,
+  },
+  flightRow: {
+    flexDirection: 'row',
+    gap: space.s3,
+  },
+  flightButton: {
+    flexGrow: 1,
+    flexBasis: 0,
   },
   driverRow: {
     flexDirection: 'row',

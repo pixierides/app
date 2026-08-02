@@ -40,6 +40,11 @@ export type DriverRun = {
   meet_point: string | null;
   flight_number: string | null;
   flight_landed_at: string | null;
+  flight_terminal: string | null;
+  flight_status_note: string | null;
+  flight_checked_at: string | null;
+  flight_checked_by_role: string | null;
+  international: boolean;
   adults: number;
   children: number | null;
   car_seats: string | null;

@@ -76,6 +76,19 @@ export function terminalFrom(meetPoint: string | null): string | null {
   return null;
 }
 
+/**
+ * The terminal to trust. A checked flight beats whatever the booking's
+ * meet_point says — the meet_point was written when the trip was scheduled,
+ * the flight terminal is what somebody looked up since.
+ */
+export function terminalLabel(
+  flightTerminal: string | null | undefined,
+  meetPoint: string | null,
+): string | null {
+  if (flightTerminal) return `Terminal ${flightTerminal}`;
+  return terminalFrom(meetPoint);
+}
+
 /** "door A" out of "Baggage claim 4 · door A", else null. */
 export function doorFrom(meetPoint: string | null): string | null {
   if (!meetPoint) return null;

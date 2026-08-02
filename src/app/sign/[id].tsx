@@ -26,7 +26,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { flightLabel } from '@/lib/airlines';
-import { formatTime, terminalFrom } from '@/lib/format';
+import { formatTime, terminalLabel } from '@/lib/format';
 import { Logo } from '@/components/ui';
 import { useAuth } from '@/providers/auth';
 import { fetchDriverRuns, type DriverRun } from '@/lib/trips';
@@ -88,7 +88,7 @@ export default function SignMode() {
     ? [
         flightLabel(run.flight_number),
         run.flight_landed_at ? `landed ${formatTime(run.flight_landed_at)}` : null,
-        terminalFrom(run.meet_point),
+        terminalLabel(run.flight_terminal, run.meet_point),
       ]
         .filter(Boolean)
         .join(' · ')

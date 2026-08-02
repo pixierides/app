@@ -8,7 +8,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DotGrid, NameSign } from '@/components/ui';
 import { fetchMyTrips, type CustomerTrip } from '@/lib/booking';
-import { terminalFrom } from '@/lib/format';
+import { terminalLabel } from '@/lib/format';
 import { color, font, fs, ls, space, track } from '@/theme/tokens';
 
 export default function CustomerSign() {
@@ -19,7 +19,7 @@ export default function CustomerSign() {
     fetchMyTrips().then((trips) => setTrip(trips.find((t) => t.id === id) ?? null));
   }, [id]);
 
-  const terminal = terminalFrom(trip?.meet_point ?? null);
+  const terminal = terminalLabel(trip?.flight_terminal, trip?.meet_point ?? null);
 
   return (
     <SafeAreaView style={styles.screen}>

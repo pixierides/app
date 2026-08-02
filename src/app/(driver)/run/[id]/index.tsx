@@ -19,7 +19,9 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Button, Card, IncludedRow, NameSign } from '@/components/ui';
+import { FlightUpdateSheet } from '@/components/FlightUpdateSheet';
 import { Phone, MessageSquare } from 'lucide-react-native';
+import { checkedAgo, hasLanded, openFlightSearch, updateFlightAsDriver } from '@/lib/flight';
 import { airlineFrom } from '@/lib/airlines';
 import {
   doorFrom,
@@ -27,7 +29,7 @@ import {
   formatTime,
   minutesBetween,
   partyLine,
-  terminalFrom,
+  terminalLabel,
 } from '@/lib/format';
 import { callNumber, navigateTo, textNumber } from '@/lib/links';
 import {
@@ -62,15 +64,27 @@ function FlightBlock({
 }) {
   const airline = airlineFrom(run.flight_number);
   const digits = (run.flight_number ?? '').toUpperCase().replace(/[^0-9]/g, '');
+  const ago = checkedAgo(run.flight_checked_at);
   return (
     <View style={styles.flightBlock}>
       <Text style={styles.flightNumber}>
-        {airline ? `${airline} ${digits}` : run.flight_number}
+        {[airline ? `${airline} ${digits}` : run.flight_number,
+          run.flight_terminal ? `Terminal ${run.flight_terminal}` : null]
+          .filter(Boolean)
+          .join(' · ')}
       </Text>
       <Text style={styles.flightState}>
         {run.flight_landed_at
-          ? `Landed ${formatTime(run.flight_landed_at)}`
-          : 'Not landed yet'}
+          ? `${hasLanded(run.flight_landed_at) ? 'Landed' : 'Arriving'} ${formatTime(run.flight_landed_at)}`
+          : 'Arrival not checked yet'}
+        {run.flight_status_note ? ` — ${run.flight_status_note}` : ''}
+      </Text>
+      {/* The point of this line: a driver reading "checked 3 hours ago"
+          during a storm re-checks without being told to. */}
+      <Text style={styles.flightChecked}>
+        {ago
+          ? `Checked ${ago}${run.flight_checked_by_role === 'dispatch' ? ' by dispatch' : ''}`
+          : 'Nobody has checked this yet'}
       </Text>
     </View>
   );
@@ -84,6 +98,7 @@ export default function RunScreen() {
   const [runs, setRuns] = useState<DriverRun[] | null>(null);
   const [busy, setBusy] = useState(false);
   const [rated, setRated] = useState<number | null>(null);
+  const [flightOpen, setFlightOpen] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -158,7 +173,7 @@ export default function RunScreen() {
   // ——— 63a · At the airport ———————————————————————————————
   if (run.driver_state === 'pending' || run.driver_state === 'en_route') {
     const door = doorFrom(run.meet_point);
-    const terminal = terminalFrom(run.meet_point);
+    const terminal = terminalLabel(run.flight_terminal, run.meet_point);
     return (
       <SafeAreaView style={styles.screen}>
         <ScrollView contentContainerStyle={styles.scroll}>
@@ -260,8 +275,26 @@ export default function RunScreen() {
           </Text>
 
           {run.flight_number ? (
-            <Card tone="surface" pad={20}>
+            <Card tone="surface" pad={20} style={styles.infoCard}>
               <FlightBlock run={run} styles={styles} />
+              <View style={styles.reachRow}>
+                <Button
+                  variant="secondary"
+                  onDark
+                  style={styles.reachButton}
+                  onPress={() => openFlightSearch(run.flight_number)}
+                >
+                  Check flight
+                </Button>
+                <Button
+                  variant="secondary"
+                  onDark
+                  style={styles.reachButton}
+                  onPress={() => setFlightOpen(true)}
+                >
+                  Update
+                </Button>
+              </View>
             </Card>
           ) : null}
 
@@ -298,11 +331,11 @@ export default function RunScreen() {
                   {run.suitcases ? ` · ${run.suitcases} suitcases` : ''}
                 </Text>
               </View>
-              {terminalFrom(run.meet_point) || doorFrom(run.meet_point) ? (
+              {terminalLabel(run.flight_terminal, run.meet_point) || doorFrom(run.meet_point) ? (
                 <View style={styles.kvRow}>
                   <Text style={styles.kvLabel}>Meet at</Text>
                   <Text style={styles.kvValue}>
-                    {[terminalFrom(run.meet_point), doorFrom(run.meet_point)]
+                    {[terminalLabel(run.flight_terminal, run.meet_point), doorFrom(run.meet_point)]
                       .filter(Boolean)
                       .join(' · ')}
                   </Text>
@@ -322,6 +355,17 @@ export default function RunScreen() {
             Bags take 20 to 50 minutes after a plane lands. Tap when they tell you, not before.
           </Text>
         </ScrollView>
+
+        <FlightUpdateSheet
+          visible={flightOpen}
+          facts={run}
+          pickupAt={run.pickup_at}
+          onClose={() => setFlightOpen(false)}
+          onSave={async (arrival, terminal, note) => {
+            await updateFlightAsDriver(run.id, arrival, terminal, note);
+            await load();
+          }}
+        />
       </SafeAreaView>
     );
   }
@@ -329,7 +373,7 @@ export default function RunScreen() {
   // ——— Called · they have their bags ————————————————————————
   if (run.driver_state === 'called') {
     const door = doorFrom(run.meet_point);
-    const terminal = terminalFrom(run.meet_point);
+    const terminal = terminalLabel(run.flight_terminal, run.meet_point);
     return (
       <SafeAreaView style={styles.screen}>
         <ScrollView contentContainerStyle={styles.scroll}>
@@ -775,6 +819,12 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.body600,
     fontSize: 17,
     color: t.textBody,
+  },
+  flightChecked: {
+    fontFamily: font.body400,
+    fontSize: 13,
+    color: t.textDim,
+    marginTop: 2,
   },
   clockWrap: {
     alignItems: 'center',

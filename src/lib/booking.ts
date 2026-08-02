@@ -50,6 +50,8 @@ export type CustomerTrip = {
   meet_point: string | null;
   flight_number: string | null;
   flight_landed_at: string | null;
+  flight_terminal: string | null;
+  flight_status_note: string | null;
   adults: number;
   children: number | null;
   car_seats: string | null;
@@ -108,7 +110,7 @@ export async function fetchMyTrips(): Promise<CustomerTrip[]> {
   const { data, error } = await supabase
     .from('trips')
     .select(
-      'id, created_at, reference, customer_name, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, flight_landed_at, adults, children, car_seats, price_cents, paid_at, status, driver_state, driver_name, vehicle, hold_until',
+      'id, created_at, reference, customer_name, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, flight_landed_at, flight_terminal, flight_status_note, adults, children, car_seats, price_cents, paid_at, status, driver_state, driver_name, vehicle, hold_until',
     )
     .order('pickup_at', { ascending: true });
   if (error) throw error;

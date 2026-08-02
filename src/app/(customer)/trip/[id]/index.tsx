@@ -21,8 +21,9 @@ import {
   STATUS_LABELS,
   type CustomerTrip,
 } from '@/lib/booking';
-import { firstName, formatTime, terminalFrom } from '@/lib/format';
+import { firstName, formatTime, terminalLabel } from '@/lib/format';
 import { flightLabel } from '@/lib/airlines';
+import { arrivalWord, hasLanded } from '@/lib/flight';
 import { callDispatch, DISPATCH_PHONE } from '@/lib/links';
 import { cancelDeadline, formatDeadline, policyState } from '@/lib/policy';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
@@ -58,14 +59,14 @@ export default function TripDetail() {
   if (!trip) return <SafeAreaView style={styles.screen} />;
 
   const spineIndex = Math.max(0, SPINE_ORDER.indexOf(trip.status));
-  const landed = !!trip.flight_landed_at;
+  const landed = hasLanded(trip.flight_landed_at);
   // The driver is parked in the cell lot and will make contact himself. The
   // customer has nothing to tap: day-of communication is the driver's job.
   const driverHolding = trip.driver_state === 'holding';
   const driverCalled = trip.driver_state === 'called';
   const driverHere = trip.driver_state === 'at_kerb';
   const onTrip = trip.driver_state === 'on_trip';
-  const terminal = terminalFrom(trip.meet_point);
+  const terminal = terminalLabel(trip.flight_terminal, trip.meet_point);
   const upcoming =
     trip.status !== 'complete' && trip.status !== 'cancelled' && trip.status !== 'no_show';
   // Recomputed on focus (fetch re-renders); a formatted boundary, never a countdown.
@@ -196,7 +197,7 @@ export default function TripDetail() {
           <Card tone="surface" texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>
               {trip.flight_number && trip.flight_landed_at
-                ? `${flightLabel(trip.flight_number).toUpperCase()} · LANDED ${formatTime(trip.flight_landed_at).toUpperCase()}`
+                ? `${flightLabel(trip.flight_number).toUpperCase()} · ${arrivalWord(trip.flight_landed_at)} ${formatTime(trip.flight_landed_at).toUpperCase()}`
                 : 'YOUR DRIVER IS WAITING'}
             </Text>
             <Text style={styles.blockTitle}>Take your time.</Text>
@@ -224,7 +225,7 @@ export default function TripDetail() {
           <Card tone="surface" texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>
               {landed && trip.flight_number
-                ? `${trip.flight_number} · LANDED ${formatTime(trip.flight_landed_at!).toUpperCase()}`
+                ? `${flightLabel(trip.flight_number)} · LANDED ${formatTime(trip.flight_landed_at!).toUpperCase()}`
                 : 'YOUR DRIVER'}
             </Text>
             <Text style={styles.blockTitle}>

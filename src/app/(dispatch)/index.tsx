@@ -23,6 +23,7 @@ import {
   type DispatchTrip,
   type Driver,
 } from '@/lib/dispatch';
+import { needsFlightCheck } from '@/lib/flight';
 import { firstName, formatTime } from '@/lib/format';
 import { useAuth } from '@/providers/auth';
 import { color, font, fs, lh, ls, radius, shadow, space, track } from '@/theme/tokens';
@@ -51,6 +52,7 @@ function proximity(pickupAtIso: string): string {
 
 /** "flight moved" / "cutoff passed — decide" / ... reasons for Needs a look. */
 function lookReason(t: DispatchTrip): string | null {
+  if (needsFlightCheck(t)) return `Check ${t.flight_number?.replace(/\s+/g, '')}`;
   if (staleHolding(t)) return `${STALE_HOLDING_MINUTES}+ min in the cell lot — check on the driver`;
   if (pastCutoff(t)) return 'cutoff passed — decide';
   if (t.pickup_at_was) return 'flight moved';
