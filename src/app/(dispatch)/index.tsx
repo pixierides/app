@@ -17,6 +17,9 @@ import {
   listDrivers,
   pastCutoff,
   paymentCutoff,
+  RUN_STATE_LABELS,
+  staleHolding,
+  STALE_HOLDING_MINUTES,
   type DispatchTrip,
   type Driver,
 } from '@/lib/dispatch';
@@ -28,7 +31,7 @@ import { themes, type Theme } from '@/theme/themes';
 
 type TileKey = 'to_confirm' | 'unpaid' | 'unassigned' | 'rolling';
 
-const ROLLING_STATES = ['en_route', 'arrived', 'on_trip'] as const;
+const ROLLING_STATES = ['en_route', 'holding', 'called', 'at_kerb', 'on_trip'] as const;
 
 function isOpen(t: DispatchTrip): boolean {
   return t.status !== 'complete' && t.status !== 'cancelled' && t.status !== 'no_show';
@@ -48,6 +51,7 @@ function proximity(pickupAtIso: string): string {
 
 /** "flight moved" / "cutoff passed — decide" / ... reasons for Needs a look. */
 function lookReason(t: DispatchTrip): string | null {
+  if (staleHolding(t)) return `holding ${STALE_HOLDING_MINUTES}+ min — send them in`;
   if (pastCutoff(t)) return 'cutoff passed — decide';
   if (t.pickup_at_was) return 'flight moved';
   if (t.status === 'paid' && !t.driver_id) return 'no driver assigned';
@@ -225,7 +229,9 @@ export default function Board() {
                       {filtered.map((t) =>
                         rowFor(
                           t,
-                          `${t.reference} · ${t.origin} → ${t.destination} · ${formatTime(t.pickup_at)}`,
+                          filter === 'rolling'
+                            ? `${RUN_STATE_LABELS[t.driver_state]} · ${t.driver_name ?? 'no driver'} · ${t.reference}`
+                            : `${t.reference} · ${t.origin} → ${t.destination} · ${formatTime(t.pickup_at)}`,
                         ),
                       )}
                     </Card>

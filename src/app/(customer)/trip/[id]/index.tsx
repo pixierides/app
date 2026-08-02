@@ -14,6 +14,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Button, Card, IncludedRow, TripStatus } from '@/components/ui';
 import {
+  bagsCollected,
   dollars,
   fetchMyTrips,
   SPINE_LABELS,
@@ -42,18 +43,39 @@ export default function TripDetail() {
   const styles = themed[th.mode];
   const { id } = useLocalSearchParams<{ id: string }>();
   const [trip, setTrip] = useState<CustomerTrip | null>(null);
+  const [bagsBusy, setBagsBusy] = useState(false);
+
+  const load = useCallback(
+    () => fetchMyTrips().then((trips) => setTrip(trips.find((t) => t.id === id) ?? null)),
+    [id],
+  );
 
   useFocusEffect(
     useCallback(() => {
-      fetchMyTrips().then((trips) => setTrip(trips.find((t) => t.id === id) ?? null));
-    }, [id]),
+      load();
+    }, [load]),
   );
+
+  const onBagsCollected = async () => {
+    if (bagsBusy) return;
+    setBagsBusy(true);
+    try {
+      await bagsCollected(id);
+      await load();
+    } finally {
+      setBagsBusy(false);
+    }
+  };
 
   if (!trip) return <SafeAreaView style={styles.screen} />;
 
   const spineIndex = Math.max(0, SPINE_ORDER.indexOf(trip.status));
   const landed = !!trip.flight_landed_at;
-  const driverHere = trip.driver_state === 'arrived';
+  // The driver is parked in the cell lot and cannot move until this trip says
+  // the bags are collected. Flight-landed deliberately does not do it.
+  const driverHolding = trip.driver_state === 'holding';
+  const driverCalled = trip.driver_state === 'called';
+  const driverHere = trip.driver_state === 'at_kerb';
   const onTrip = trip.driver_state === 'on_trip';
   const claim = claimFrom(trip.meet_point);
   const upcoming =
@@ -181,7 +203,39 @@ export default function TripDetail() {
           </Card>
         ) : null}
 
-        {trip.status === 'driver_assigned' && !driverHere && !onTrip ? (
+        {/* ——— the driver is holding — one tap releases him ——— */}
+        {driverHolding ? (
+          <Card tone="surface" texture pad={20} style={styles.block}>
+            <Text style={styles.eyebrow}>
+              {trip.flight_number && trip.flight_landed_at
+                ? `${trip.flight_number} · LANDED ${formatTime(trip.flight_landed_at).toUpperCase()}`
+                : 'YOUR DRIVER IS WAITING'}
+            </Text>
+            <Text style={styles.blockTitle}>Take your time.</Text>
+            <Text style={styles.blockBody}>
+              {trip.driver_name ?? 'Your driver'} is parked a few minutes away. Tap when you have
+              your luggage and we&apos;ll bring your car to the door.
+            </Text>
+            <Button size="lg" fullWidth onPress={onBagsCollected} disabled={bagsBusy}>
+              {bagsBusy ? 'One moment…' : "I've got my bags"}
+            </Button>
+          </Card>
+        ) : null}
+
+        {driverCalled ? (
+          <Card tone="surface" texture pad={20} style={styles.block}>
+            <Text style={styles.eyebrow}>ON THE WAY TO YOU</Text>
+            <Text style={styles.blockTitle}>
+              {trip.driver_name ? `${trip.driver_name} is` : "We're"} bringing the car to the door.
+            </Text>
+            <Text style={styles.blockBody}>
+              {trip.vehicle ? `${trip.vehicle}. ` : ''}
+              {claim ? `Head out from ${claim}` : 'Head for the pickup doors'} — a few minutes.
+            </Text>
+          </Card>
+        ) : null}
+
+        {trip.status === 'driver_assigned' && !driverHolding && !driverCalled && !driverHere && !onTrip ? (
           <Card tone="surface" texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>
               {landed && trip.flight_number
@@ -204,15 +258,13 @@ export default function TripDetail() {
 
         {driverHere ? (
           <Card tone="surface" texture pad={20} style={styles.block}>
-            <Text style={styles.eyebrow}>
-              {trip.flight_number && trip.flight_landed_at
-                ? `${trip.flight_number} · LANDED ${formatTime(trip.flight_landed_at).toUpperCase()}`
-                : 'LANDED'}
+            <Text style={styles.eyebrow}>AT THE DOOR</Text>
+            <Text style={styles.blockTitle}>
+              {trip.driver_name ?? 'Your driver'} is outside.
             </Text>
-            <Text style={styles.blockTitle}>Take your time.</Text>
             <Text style={styles.blockBody}>
-              {trip.driver_name ?? 'Your driver'} is waiting
-              {claim ? ` at ${claim}` : ''}. Get your bags, find a restroom. He waits for you.
+              {trip.vehicle ? `Look for ${trip.vehicle}` : 'Look for your car'}
+              {claim ? ` at the ${claim} doors` : ''}. He&apos;s holding a sign with your name.
             </Text>
             <Button
               size="lg"

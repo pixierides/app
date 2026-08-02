@@ -18,6 +18,8 @@ import {
   pastCutoff,
   paymentCutoff,
   releaseTrip,
+  RUN_STATE_LABELS,
+  setRunState,
   unassignDriver,
   writeoffAndSend,
   type DispatchTrip,
@@ -269,6 +271,57 @@ export default function DispatchJob() {
                   This run has already started. To change the driver now, call them.
                 </Text>
               )}
+            </Card>
+          ) : null}
+
+          {/* ——— where the run actually is, and the override ——— */}
+          {open && trip.driver_id && trip.driver_state !== 'pending' ? (
+            <Card tone="dark-raised" pad={20} style={styles.block}>
+              <Text style={styles.eyebrow}>RUN STATE</Text>
+              <Text style={styles.blockTitle}>
+                {RUN_STATE_LABELS[trip.driver_state]}
+                {trip.driver_state === 'holding' && trip.flight_landed_at
+                  ? ` · ${Math.round((Date.now() - new Date(trip.flight_landed_at).getTime()) / 60000)} min since landing`
+                  : ''}
+              </Text>
+
+              {trip.driver_state === 'holding' ? (
+                <>
+                  <Text style={styles.blockBodyDim}>
+                    {firstName(trip.driver_name)} is parked and waiting for the family to say
+                    they have their bags. If they aren&apos;t going to tap — no app, asleep after
+                    a long flight — send the driver in yourself.
+                  </Text>
+                  <Button
+                    size="md"
+                    fullWidth
+                    onPress={() => run(() => setRunState(trip.id, 'called'))}
+                  >
+                    {busy ? 'One moment…' : 'Send them in'}
+                  </Button>
+                </>
+              ) : null}
+
+              {trip.driver_state === 'called' || trip.driver_state === 'at_kerb' ? (
+                <>
+                  <Text style={styles.blockBodyDim}>
+                    {trip.called_by === 'dispatch'
+                      ? 'You sent them in.'
+                      : 'The family said they had their bags.'}
+                    {trip.kerb_loops > 0
+                      ? ` Circled ${trip.kerb_loops} time${trip.kerb_loops === 1 ? '' : 's'}.`
+                      : ''}
+                  </Text>
+                  <Button
+                    variant="secondary"
+                    onDark
+                    fullWidth
+                    onPress={() => run(() => setRunState(trip.id, 'holding'))}
+                  >
+                    {busy ? 'One moment…' : 'Back to holding'}
+                  </Button>
+                </>
+              ) : null}
             </Card>
           ) : null}
 

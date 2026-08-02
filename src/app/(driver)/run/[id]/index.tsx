@@ -2,13 +2,18 @@
  * The driver's run, one screen per state — distinct states, never one screen
  * with things greyed out:
  *   en_route/pending → 63a  At the airport
- *   arrived          → 63b  They know you're here (resting state between hold-ups)
+ *   holding          →      Cell lot. No action button, deliberately.
+ *   called           →      They have their bags — move to the terminal
+ *   at_kerb          →      The one countdown in the whole app
  *   on_trip          → 29a  Trip in progress
  *   complete         → 30a  Trip complete
+ *
+ * The driver cannot advance holding → called; that release comes from the
+ * family tapping "I've got my bags", or from dispatch. Enforced server-side.
  * No money anywhere. Navigate always deep-links out.
  */
 import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Button, Card, IncludedRow, NameSign } from '@/components/ui';
@@ -20,8 +25,16 @@ import {
   minutesBetween,
   partyLine,
 } from '@/lib/format';
-import { navigateTo } from '@/lib/links';
-import { fetchDriverRuns, ratePassenger, setRunState, type DriverRun } from '@/lib/trips';
+import { callNumber, navigateTo } from '@/lib/links';
+import {
+  fetchDriverRuns,
+  kerbLoop,
+  ratePassenger,
+  setRunState,
+  useWaitingRefresh,
+  type DriverRun,
+  KERB_MINUTES,
+} from '@/lib/trips';
 import { useAuth } from '@/providers/auth';
 import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
@@ -49,6 +62,19 @@ export default function RunScreen() {
       load();
     }, [load]),
   );
+
+  // The holding screen has no button — the release has to arrive by itself.
+  const here = runs?.find((r) => r.id === id);
+  useWaitingRefresh(here?.driver_state === 'holding' || here?.driver_state === 'called', load);
+
+  // The kerb window is the one place a clock is allowed to run.
+  const atKerb = here?.driver_state === 'at_kerb';
+  const [tick, setTick] = useState(() => Date.now());
+  useEffect(() => {
+    if (!atKerb) return;
+    const t = setInterval(() => setTick(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, [atKerb]);
 
   if (!runs) return <SafeAreaView style={styles.screen} />;
 
@@ -103,7 +129,7 @@ export default function RunScreen() {
           <Text style={styles.eyebrow}>
             PICKUP {position + 1} OF {active.length} · {run.origin.toUpperCase()}
           </Text>
-          <Text style={styles.h1}>You're at the airport.{'\n'}Tell them you're here.</Text>
+          <Text style={styles.h1}>Head to the cell lot.</Text>
 
           <Card tone="surface" pad={20} style={styles.infoCard}>
             <Text style={styles.cardName}>{run.customer_name}</Text>
@@ -166,55 +192,212 @@ export default function RunScreen() {
             Navigate
           </Button>
 
-          <Button size="lg" fullWidth onPress={() => advance('arrived')}>
-            {claim ? `I've arrived at ${claim}` : "I've arrived"}
+          <Button size="lg" fullWidth onPress={() => advance('holding')}>
+            I&apos;m in the cell lot
           </Button>
-          <Text style={styles.caption}>This is what tells the family you're waiting.</Text>
+          <Text style={styles.caption}>
+            We&apos;ll tell you the moment they have their bags.
+          </Text>
         </ScrollView>
       </SafeAreaView>
     );
   }
 
-  // ——— 63b · Arrived — the sign is the next tap ————————————
-  if (run.driver_state === 'arrived') {
-    const door = doorFrom(run.meet_point);
+  // ——— Holding · the cell lot ——————————————————————————————
+  // No action button. The absence of one IS the design: it is what stops a
+  // driver drifting to the kerb before the family has their bags.
+  if (run.driver_state === 'holding') {
     return (
       <SafeAreaView style={styles.screen}>
         <ScrollView contentContainerStyle={styles.scroll}>
           {back}
           <Text style={styles.eyebrow}>
-            ARRIVED{run.arrived_at ? ` · ${formatTime(run.arrived_at).toUpperCase()}` : ''}
+            IN THE CELL LOT
+            {run.holding_at ? ` · SINCE ${formatTime(run.holding_at).toUpperCase()}` : ''}
           </Text>
-          <Text style={styles.h1}>They know you're here.</Text>
+          <Text style={styles.h1}>Wait here.</Text>
+          <Text style={styles.subLine}>
+            We&apos;ll tell you when they&apos;ve got their bags.
+          </Text>
 
-          <Card tone="surface" pad={20}>
-            <Text style={styles.notifyLine}>
-              {firstName(run.customer_name)}'s app just said “{firstName(profile?.full_name)} is
-              {door ? ` at ${door}` : ' here'}” — with your car and plate.
+          <Card tone="surface" pad={20} style={styles.infoCard}>
+            <Text style={styles.cardName}>{run.customer_name}</Text>
+            <Text style={styles.cardSub}>
+              {run.guests ? `${run.guests} guests` : partyLine(run.adults, run.children)}
+              {run.suitcases ? ` · ${run.suitcases} suitcases` : ''}
             </Text>
+            <View style={styles.kvRows}>
+              {run.flight_number ? (
+                <View style={styles.kvRow}>
+                  <Text style={styles.kvLabel}>{run.flight_number}</Text>
+                  <Text style={styles.kvValue}>
+                    {run.flight_landed_at
+                      ? `Landed ${formatTime(run.flight_landed_at)}`
+                      : 'Not landed yet'}
+                  </Text>
+                </View>
+              ) : null}
+              {run.meet_point ? (
+                <View style={styles.kvRow}>
+                  <Text style={styles.kvLabel}>Terminal</Text>
+                  <Text style={styles.kvValue}>{run.meet_point}</Text>
+                </View>
+              ) : null}
+              <View style={styles.kvRow}>
+                <Text style={styles.kvLabel}>Booking</Text>
+                <Text style={styles.kvValue}>{run.reference}</Text>
+              </View>
+            </View>
+          </Card>
+
+          <Text style={styles.caption}>
+            Bags take 20 to 50 minutes after a plane lands. This screen changes on its own.
+          </Text>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  // ——— Called · they have their bags ————————————————————————
+  if (run.driver_state === 'called') {
+    const door = doorFrom(run.meet_point);
+    const claim = claimFrom(run.meet_point);
+    return (
+      <SafeAreaView style={styles.screen}>
+        <ScrollView contentContainerStyle={styles.scroll}>
+          {back}
+          <Text style={styles.eyebrow}>
+            {run.kerb_loops > 0 ? `COMING BACK ROUND · LOOP ${run.kerb_loops + 1}` : 'THEY HAVE THEIR BAGS'}
+          </Text>
+          <Text style={styles.h1}>
+            {door ? `Head to ${door}.` : 'Head to the terminal.'}
+          </Text>
+          {run.called_by === 'dispatch' ? (
+            <Text style={styles.subLine}>Dispatch sent you in.</Text>
+          ) : null}
+
+          <Card tone="surface" pad={20} style={styles.infoCard}>
+            <Text style={styles.cardName}>{run.customer_name}</Text>
+            <View style={styles.kvRows}>
+              {door ? (
+                <View style={styles.kvRow}>
+                  <Text style={styles.kvLabel}>Door</Text>
+                  <Text style={styles.kvValue}>{door}</Text>
+                </View>
+              ) : null}
+              {claim ? (
+                <View style={styles.kvRow}>
+                  <Text style={styles.kvLabel}>Claim</Text>
+                  <Text style={styles.kvValue}>{claim}</Text>
+                </View>
+              ) : null}
+              <View style={styles.kvRow}>
+                <Text style={styles.kvLabel}>Booking</Text>
+                <Text style={styles.kvValue}>{run.reference}</Text>
+              </View>
+            </View>
+          </Card>
+
+          <Button
+            variant="secondary"
+            onDark
+            fullWidth
+            onPress={() => navigateTo(run.pickup_address ?? run.origin)}
+          >
+            Navigate
+          </Button>
+
+          <Button size="lg" fullWidth onPress={() => advance('at_kerb')}>
+            I&apos;m at the kerb
+          </Button>
+        </ScrollView>
+      </SafeAreaView>
+    );
+  }
+
+  // ——— At the kerb · the one countdown in the app ——————————
+  // Fifteen minutes is the airport's rule, not ours, which is why a clock is
+  // allowed here and nowhere else. Running out is not a failure.
+  if (run.driver_state === 'at_kerb') {
+    const endsAt = run.kerb_at ? new Date(run.kerb_at).getTime() + KERB_MINUTES * 60_000 : null;
+    const msLeft = endsAt === null ? KERB_MINUTES * 60_000 : endsAt - tick;
+    const out = msLeft <= 0;
+    const secs = Math.max(0, Math.ceil(msLeft / 1000));
+    const clock = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
+
+    return (
+      <SafeAreaView style={styles.screen}>
+        <ScrollView contentContainerStyle={styles.scroll}>
+          {back}
+          <Text style={styles.eyebrow}>AT THE KERB</Text>
+
+          <View style={styles.clockWrap}>
+            <Text style={styles.clock}>{clock}</Text>
+            <Text style={styles.clockLabel}>
+              {out ? 'the fifteen minutes are up' : 'left at the kerb'}
+            </Text>
+          </View>
+
+          <Card tone="surface" pad={20} style={styles.infoCard}>
+            <Text style={styles.cardName}>{run.customer_name}</Text>
+            {run.customer_phone ? (
+              <Text style={styles.cardSub}>{run.customer_phone}</Text>
+            ) : null}
           </Card>
 
           <View style={styles.signPreviewWrap}>
-            <Text style={styles.eyebrow}>WHAT THEY'RE LOOKING FOR</Text>
+            <Text style={styles.eyebrow}>WHAT THEY&apos;RE LOOKING FOR</Text>
             <NameSign name={run.customer_name} foot={null} style={styles.signPreview} />
           </View>
 
           <Button
-            size="lg"
+            variant="secondary"
+            onDark
             fullWidth
             onPress={() => router.push(`/sign/${run.id}` as Href)}
           >
             Show the name sign
           </Button>
-          <Button
-            variant="secondary"
-            onDark
-            fullWidth
-            onPress={() => advance('on_trip')}
-            style={{ marginTop: space.s3 }}
-          >
-            I've got them — start trip
+
+          {out ? (
+            <Card tone="surface" pad={20} style={styles.infoCard}>
+              <Text style={styles.notifyLine}>
+                Loop around and come back. We&apos;ll hold your place.
+              </Text>
+              <Button
+                variant="secondary"
+                onDark
+                fullWidth
+                style={{ marginTop: space.s3 }}
+                onPress={async () => {
+                  if (busy) return;
+                  setBusy(true);
+                  try {
+                    await kerbLoop(run.id);
+                    await load();
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                Circling
+              </Button>
+            </Card>
+          ) : null}
+
+          <Button size="lg" fullWidth onPress={() => advance('on_trip')}>
+            They&apos;re in
           </Button>
+          {run.customer_phone ? (
+            <Button
+              variant="ghost"
+              onDark
+              fullWidth
+              onPress={() => callNumber(run.customer_phone!)}
+            >
+              Can&apos;t find them — call {firstName(run.customer_name)}
+            </Button>
+          ) : null}
         </ScrollView>
       </SafeAreaView>
     );
@@ -482,6 +665,25 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontSize: 16,
     lineHeight: 16 * 1.5,
     color: t.textBody,
+  },
+  clockWrap: {
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: space.s3,
+  },
+  // Neutral on purpose — no red, no alarm. Circling is part of the job.
+  clock: {
+    fontFamily: font.display700,
+    fontSize: 64,
+    lineHeight: 68,
+    letterSpacing: ls(track.h2, 64),
+    color: t.textHeading,
+    fontVariant: ['tabular-nums'],
+  },
+  clockLabel: {
+    fontFamily: font.body400,
+    fontSize: 14,
+    color: t.textDim,
   },
   signPreviewWrap: {
     gap: space.s3,

@@ -21,6 +21,7 @@ export type DispatchTrip = {
   pickup_at_was: string | null;
   meet_point: string | null;
   flight_number: string | null;
+  flight_landed_at: string | null;
   adults: number;
   children: number | null;
   car_seats: string | null;
@@ -31,12 +32,36 @@ export type DispatchTrip = {
   hold_until: string | null;
   status: TripStatus;
   driver_state: DriverRunState;
+  called_by: string | null;
+  kerb_loops: number;
   customer_id: string | null;
   driver_id: string | null;
   driver_name: string | null;
   vehicle: string | null;
   written_off: boolean;
 };
+
+/** What dispatch calls each run state on the board. */
+export const RUN_STATE_LABELS: Record<DriverRunState, string> = {
+  pending: 'not started',
+  en_route: 'driving to the airport',
+  holding: 'in the cell lot',
+  called: 'heading to the terminal',
+  at_kerb: 'at the kerb',
+  on_trip: 'on the trip',
+  complete: 'done',
+};
+
+/**
+ * A run sitting in the cell lot this long after its flight landed usually
+ * means the family is never going to tap. Dispatch has to step in.
+ */
+export const STALE_HOLDING_MINUTES = 45;
+
+export function staleHolding(t: Pick<DispatchTrip, 'driver_state' | 'flight_landed_at'>): boolean {
+  if (t.driver_state !== 'holding' || !t.flight_landed_at) return false;
+  return Date.now() - new Date(t.flight_landed_at).getTime() >= STALE_HOLDING_MINUTES * 60_000;
+}
 
 export type Driver = {
   id: string;
@@ -62,7 +87,7 @@ export async function fetchDispatchTrips(): Promise<DispatchTrip[]> {
   const { data, error } = await supabase
     .from('trips')
     .select(
-      'id, created_at, reference, source, customer_name, customer_phone, customer_email, party_label, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, adults, children, car_seats, stroller, notes, price_cents, paid_at, hold_until, status, driver_state, customer_id, driver_id, driver_name, vehicle, written_off',
+      'id, created_at, reference, source, customer_name, customer_phone, customer_email, party_label, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, flight_landed_at, adults, children, car_seats, stroller, notes, price_cents, paid_at, hold_until, status, driver_state, called_by, kerb_loops, customer_id, driver_id, driver_name, vehicle, written_off',
     )
     .order('pickup_at', { ascending: true });
   if (error) throw error;
@@ -121,3 +146,17 @@ export async function releaseTrip(tripId: string): Promise<void> {
   if (error) throw error;
 }
 
+
+/**
+ * Dispatch can force any transition. The family may not have the app, may not
+ * tap, may be asleep after a delayed flight — dispatch is always the fallback
+ * and is never blocked. "Send them in" is holding → called; it is also the
+ * logged way a driver gets released early, instead of doing it silently.
+ */
+export async function setRunState(tripId: string, state: DriverRunState): Promise<void> {
+  const { error } = await supabase.rpc('dispatch_set_run_state', {
+    p_trip_id: tripId,
+    p_state: state,
+  });
+  if (error) throw error;
+}
