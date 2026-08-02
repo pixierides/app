@@ -8,7 +8,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DotGrid, NameSign } from '@/components/ui';
 import { fetchMyTrips, type CustomerTrip } from '@/lib/booking';
-import { claimFrom } from '@/lib/format';
+import { terminalFrom } from '@/lib/format';
 import { color, font, fs, ls, space, track } from '@/theme/tokens';
 
 export default function CustomerSign() {
@@ -19,7 +19,7 @@ export default function CustomerSign() {
     fetchMyTrips().then((trips) => setTrip(trips.find((t) => t.id === id) ?? null));
   }, [id]);
 
-  const claim = claimFrom(trip?.meet_point ?? null);
+  const terminal = terminalFrom(trip?.meet_point ?? null);
 
   return (
     <SafeAreaView style={styles.screen}>
@@ -41,7 +41,7 @@ export default function CustomerSign() {
         {trip ? <NameSign name={trip.customer_name} style={styles.sign} /> : null}
         {trip?.driver_name ? (
           <Text style={styles.caption}>
-            {trip.driver_name} is holding this{claim ? ` at ${claim}` : ''}.
+            {trip.driver_name} is holding this{terminal ? ` at ${terminal}` : ''}.
           </Text>
         ) : null}
       </View>

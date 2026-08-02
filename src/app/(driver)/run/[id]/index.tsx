@@ -19,13 +19,15 @@ import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Button, Card, IncludedRow, NameSign } from '@/components/ui';
+import { Phone, MessageSquare } from 'lucide-react-native';
+import { airlineFrom } from '@/lib/airlines';
 import {
-  claimFrom,
   doorFrom,
   firstName,
   formatTime,
   minutesBetween,
   partyLine,
+  terminalFrom,
 } from '@/lib/format';
 import { callNumber, navigateTo, textNumber } from '@/lib/links';
 import {
@@ -45,6 +47,34 @@ import { themes, type Theme } from '@/theme/themes';
 /** The opening text from the cell lot — short, and it asks the one question. */
 const TEXT_TEMPLATE = (run: DriverRun) =>
   `Hi ${firstName(run.customer_name)}, it's your Pixie Rides driver. I'm parked a few minutes from the terminal — just text me when you have your bags and I'll pull up to the door.`;
+
+/**
+ * The flight, big enough to read at arm's length in a parked car. The airline
+ * name is what's on the arrivals board and what the family says on the phone;
+ * the bare code is not.
+ */
+function FlightBlock({
+  run,
+  styles,
+}: {
+  run: DriverRun;
+  styles: ReturnType<typeof makeStyles>;
+}) {
+  const airline = airlineFrom(run.flight_number);
+  const digits = (run.flight_number ?? '').toUpperCase().replace(/[^0-9]/g, '');
+  return (
+    <View style={styles.flightBlock}>
+      <Text style={styles.flightNumber}>
+        {airline ? `${airline} ${digits}` : run.flight_number}
+      </Text>
+      <Text style={styles.flightState}>
+        {run.flight_landed_at
+          ? `Landed ${formatTime(run.flight_landed_at)}`
+          : 'Not landed yet'}
+      </Text>
+    </View>
+  );
+}
 
 export default function RunScreen() {
   const th = useTheme();
@@ -127,8 +157,8 @@ export default function RunScreen() {
 
   // ——— 63a · At the airport ———————————————————————————————
   if (run.driver_state === 'pending' || run.driver_state === 'en_route') {
-    const claim = claimFrom(run.meet_point);
     const door = doorFrom(run.meet_point);
+    const terminal = terminalFrom(run.meet_point);
     return (
       <SafeAreaView style={styles.screen}>
         <ScrollView contentContainerStyle={styles.scroll}>
@@ -144,17 +174,14 @@ export default function RunScreen() {
               {run.guests ? `${run.guests} guests` : partyLine(run.adults, run.children)}
               {run.suitcases ? ` · ${run.suitcases} suitcases` : ''}
             </Text>
-            {run.flight_number ? (
-              <Badge tone="confirmed">
-                {run.flight_number}
-                {run.flight_landed_at ? ` · landed ${formatTime(run.flight_landed_at)}` : ''}
-              </Badge>
-            ) : null}
+            {run.flight_number ? <FlightBlock run={run} styles={styles} /> : null}
             <View style={styles.kvRows}>
-              {run.meet_point ? (
+              {terminal || door ? (
                 <View style={styles.kvRow}>
                   <Text style={styles.kvLabel}>Meet at</Text>
-                  <Text style={styles.kvValue}>{run.meet_point}</Text>
+                  <Text style={styles.kvValue}>
+                    {[terminal, door].filter(Boolean).join(' · ')}
+                  </Text>
                 </View>
               ) : null}
               <View style={styles.kvRow}>
@@ -232,6 +259,12 @@ export default function RunScreen() {
             Text {firstName(run.customer_name)} and ask them to say when they have their bags.
           </Text>
 
+          {run.flight_number ? (
+            <Card tone="surface" pad={20}>
+              <FlightBlock run={run} styles={styles} />
+            </Card>
+          ) : null}
+
           <Card tone="surface" pad={20} style={styles.infoCard}>
             <Text style={styles.cardName}>{run.customer_name}</Text>
             {run.customer_phone ? (
@@ -265,20 +298,14 @@ export default function RunScreen() {
                   {run.suitcases ? ` · ${run.suitcases} suitcases` : ''}
                 </Text>
               </View>
-              {run.flight_number ? (
+              {terminalFrom(run.meet_point) || doorFrom(run.meet_point) ? (
                 <View style={styles.kvRow}>
-                  <Text style={styles.kvLabel}>{run.flight_number}</Text>
+                  <Text style={styles.kvLabel}>Meet at</Text>
                   <Text style={styles.kvValue}>
-                    {run.flight_landed_at
-                      ? `Landed ${formatTime(run.flight_landed_at)}`
-                      : 'Not landed yet'}
+                    {[terminalFrom(run.meet_point), doorFrom(run.meet_point)]
+                      .filter(Boolean)
+                      .join(' · ')}
                   </Text>
-                </View>
-              ) : null}
-              {run.meet_point ? (
-                <View style={styles.kvRow}>
-                  <Text style={styles.kvLabel}>Terminal</Text>
-                  <Text style={styles.kvValue}>{run.meet_point}</Text>
                 </View>
               ) : null}
               <View style={styles.kvRow}>
@@ -302,7 +329,7 @@ export default function RunScreen() {
   // ——— Called · they have their bags ————————————————————————
   if (run.driver_state === 'called') {
     const door = doorFrom(run.meet_point);
-    const claim = claimFrom(run.meet_point);
+    const terminal = terminalFrom(run.meet_point);
     return (
       <SafeAreaView style={styles.screen}>
         <ScrollView contentContainerStyle={styles.scroll}>
@@ -311,7 +338,13 @@ export default function RunScreen() {
             {run.kerb_loops > 0 ? `COMING BACK ROUND · LOOP ${run.kerb_loops + 1}` : 'THEY HAVE THEIR BAGS'}
           </Text>
           <Text style={styles.h1}>
-            {door ? `Head to ${door}.` : 'Head to the terminal.'}
+            {terminal && door
+              ? `Head to ${terminal}, ${door}.`
+              : terminal
+                ? `Head to ${terminal}.`
+                : door
+                  ? `Head to ${door}.`
+                  : 'Head to the terminal.'}
           </Text>
           {run.called_by === 'dispatch' ? (
             <Text style={styles.subLine}>Dispatch sent you in.</Text>
@@ -324,16 +357,16 @@ export default function RunScreen() {
           <Card tone="surface" pad={20} style={styles.infoCard}>
             <Text style={styles.cardName}>{run.customer_name}</Text>
             <View style={styles.kvRows}>
+              {terminal ? (
+                <View style={styles.kvRow}>
+                  <Text style={styles.kvLabel}>Terminal</Text>
+                  <Text style={styles.kvValue}>{terminal}</Text>
+                </View>
+              ) : null}
               {door ? (
                 <View style={styles.kvRow}>
                   <Text style={styles.kvLabel}>Door</Text>
                   <Text style={styles.kvValue}>{door}</Text>
-                </View>
-              ) : null}
-              {claim ? (
-                <View style={styles.kvRow}>
-                  <Text style={styles.kvLabel}>Claim</Text>
-                  <Text style={styles.kvValue}>{claim}</Text>
                 </View>
               ) : null}
               <View style={styles.kvRow}>
@@ -361,7 +394,7 @@ export default function RunScreen() {
   }
 
   // ——— At the kerb · the one countdown in the app ——————————
-  // Fifteen minutes is the airport's rule, not ours, which is why a clock is
+  // Thirty minutes is the airport's rule, not ours, which is why a clock is
   // allowed here and nowhere else. Running out is not a failure.
   if (run.driver_state === 'at_kerb') {
     const endsAt = run.kerb_at ? new Date(run.kerb_at).getTime() + KERB_MINUTES * 60_000 : null;
@@ -379,30 +412,56 @@ export default function RunScreen() {
           <View style={styles.clockWrap}>
             <Text style={styles.clock}>{clock}</Text>
             <Text style={styles.clockLabel}>
-              {out ? 'the fifteen minutes are up' : 'left at the kerb'}
+              {out ? `the ${KERB_MINUTES} minutes are up` : 'left at the kerb'}
             </Text>
           </View>
 
+          {/* Reaching them is one tap from their number, not a button that
+              sits under the primary action waiting to be hit by accident. */}
           <Card tone="surface" pad={20} style={styles.infoCard}>
-            <Text style={styles.cardName}>{run.customer_name}</Text>
-            {run.customer_phone ? (
-              <Text style={styles.cardSub}>{run.customer_phone}</Text>
-            ) : null}
+            <View style={styles.paxRow}>
+              <View style={styles.paxWho}>
+                <Text style={styles.cardName}>{run.customer_name}</Text>
+                {run.customer_phone ? (
+                  <Text style={styles.cardSub}>{run.customer_phone}</Text>
+                ) : null}
+              </View>
+              {run.customer_phone ? (
+                <View style={styles.iconRow}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Text ${run.customer_name}`}
+                    hitSlop={10}
+                    style={styles.iconButton}
+                    onPress={() => textNumber(run.customer_phone!, TEXT_TEMPLATE(run))}
+                  >
+                    <MessageSquare size={20} strokeWidth={1.8} color={th.textHeading} />
+                  </Pressable>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={`Call ${run.customer_name}`}
+                    hitSlop={10}
+                    style={styles.iconButton}
+                    onPress={() => callNumber(run.customer_phone!)}
+                  >
+                    <Phone size={20} strokeWidth={1.8} color={th.textHeading} />
+                  </Pressable>
+                </View>
+              ) : null}
+            </View>
           </Card>
 
+          {/* The sign itself is the button — tap it to go full screen. */}
           <View style={styles.signPreviewWrap}>
-            <Text style={styles.eyebrow}>WHAT THEY&apos;RE LOOKING FOR</Text>
-            <NameSign name={run.customer_name} foot={null} style={styles.signPreview} />
+            <Text style={styles.eyebrow}>TAP THE SIGN TO SHOW IT FULL SCREEN</Text>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="Show the name sign full screen"
+              onPress={() => router.push(`/sign/${run.id}` as Href)}
+            >
+              <NameSign name={run.customer_name} foot={null} style={styles.signPreview} />
+            </Pressable>
           </View>
-
-          <Button
-            variant="secondary"
-            onDark
-            fullWidth
-            onPress={() => router.push(`/sign/${run.id}` as Href)}
-          >
-            Show the name sign
-          </Button>
 
           {out ? (
             <Card tone="surface" pad={20} style={styles.infoCard}>
@@ -433,16 +492,6 @@ export default function RunScreen() {
           <Button size="lg" fullWidth onPress={() => advance('on_trip')}>
             They&apos;re in
           </Button>
-          {run.customer_phone ? (
-            <Button
-              variant="ghost"
-              onDark
-              fullWidth
-              onPress={() => callNumber(run.customer_phone!)}
-            >
-              Can&apos;t find them — call {firstName(run.customer_name)}
-            </Button>
-          ) : null}
         </ScrollView>
       </SafeAreaView>
     );
@@ -711,6 +760,22 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     lineHeight: 16 * 1.5,
     color: t.textBody,
   },
+  flightBlock: {
+    gap: 2,
+  },
+  // Big enough to read at arm's length from the driver's seat.
+  flightNumber: {
+    fontFamily: font.display700,
+    fontSize: 30,
+    lineHeight: 34,
+    letterSpacing: ls(track.h2, 30),
+    color: t.textHeading,
+  },
+  flightState: {
+    fontFamily: font.body600,
+    fontSize: 17,
+    color: t.textBody,
+  },
   clockWrap: {
     alignItems: 'center',
     gap: 4,
@@ -729,6 +794,29 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.body400,
     fontSize: 14,
     color: t.textDim,
+  },
+  paxRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.s3,
+  },
+  paxWho: {
+    flexShrink: 1,
+    gap: 2,
+  },
+  iconRow: {
+    flexDirection: 'row',
+    gap: space.s2,
+    marginLeft: 'auto',
+  },
+  iconButton: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.input,
+    borderWidth: 1.5,
+    borderColor: t.divider,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   reachRow: {
     flexDirection: 'row',

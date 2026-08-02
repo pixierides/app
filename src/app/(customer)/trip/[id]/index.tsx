@@ -21,7 +21,8 @@ import {
   STATUS_LABELS,
   type CustomerTrip,
 } from '@/lib/booking';
-import { claimFrom, firstName, formatTime } from '@/lib/format';
+import { firstName, formatTime, terminalFrom } from '@/lib/format';
+import { flightLabel } from '@/lib/airlines';
 import { callDispatch, DISPATCH_PHONE } from '@/lib/links';
 import { cancelDeadline, formatDeadline, policyState } from '@/lib/policy';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
@@ -33,7 +34,7 @@ function dateLine(t: CustomerTrip): string {
   const day = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   const bits = [day, formatTime(t.pickup_at)];
   if (t.car_seats) bits.push(t.car_seats.split(' · ')[0]);
-  if (t.flight_number) bits.push(`${t.flight_number}${t.status === 'paid' ? ' watched' : ''}`);
+  if (t.flight_number) bits.push(`${flightLabel(t.flight_number)}${t.status === 'paid' ? ' watched' : ''}`);
   return bits.join(' · ');
 }
 
@@ -64,7 +65,7 @@ export default function TripDetail() {
   const driverCalled = trip.driver_state === 'called';
   const driverHere = trip.driver_state === 'at_kerb';
   const onTrip = trip.driver_state === 'on_trip';
-  const claim = claimFrom(trip.meet_point);
+  const terminal = terminalFrom(trip.meet_point);
   const upcoming =
     trip.status !== 'complete' && trip.status !== 'cancelled' && trip.status !== 'no_show';
   // Recomputed on focus (fetch re-renders); a formatted boundary, never a countdown.
@@ -195,7 +196,7 @@ export default function TripDetail() {
           <Card tone="surface" texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>
               {trip.flight_number && trip.flight_landed_at
-                ? `${trip.flight_number} · LANDED ${formatTime(trip.flight_landed_at).toUpperCase()}`
+                ? `${flightLabel(trip.flight_number).toUpperCase()} · LANDED ${formatTime(trip.flight_landed_at).toUpperCase()}`
                 : 'YOUR DRIVER IS WAITING'}
             </Text>
             <Text style={styles.blockTitle}>Take your time.</Text>
@@ -214,7 +215,7 @@ export default function TripDetail() {
             </Text>
             <Text style={styles.blockBody}>
               {trip.vehicle ? `${trip.vehicle}. ` : ''}
-              {claim ? `Head out from ${claim}` : 'Head for the pickup doors'} — a few minutes.
+              {terminal ? `Head out from ${terminal}` : 'Head for the pickup doors'} — a few minutes.
             </Text>
           </Card>
         ) : null}
@@ -233,7 +234,7 @@ export default function TripDetail() {
             </Text>
             {trip.vehicle ? (
               <Text style={styles.blockBody}>
-                {trip.vehicle}. {claim ? `He'll be at baggage ${claim} holding a sign with your name.` : "He'll be holding a sign with your name."}
+                {trip.vehicle}. {terminal ? `He'll be at ${terminal} holding a sign with your name.` : "He'll be holding a sign with your name."}
               </Text>
             ) : null}
             {trip.car_seats ? <IncludedRow onDark>Booster already fitted</IncludedRow> : null}
@@ -248,7 +249,7 @@ export default function TripDetail() {
             </Text>
             <Text style={styles.blockBody}>
               {trip.vehicle ? `Look for ${trip.vehicle}` : 'Look for your car'}
-              {claim ? ` at the ${claim} doors` : ''}. He&apos;s holding a sign with your name.
+              {terminal ? ` outside ${terminal}` : ''}. He&apos;s holding a sign with your name.
             </Text>
             <Button
               size="lg"

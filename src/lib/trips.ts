@@ -21,7 +21,7 @@ export type DriverRunState =
   | 'complete';
 
 /** The airport's window, not one we invented. */
-export const KERB_MINUTES = 15;
+export const KERB_MINUTES = 30;
 
 export type DriverRun = {
   id: string;

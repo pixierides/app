@@ -31,7 +31,7 @@ import { formatDeadline } from '@/lib/policy';
 import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
 
 const DEFAULT_VEHICLE = 'White Chevy Suburban · FL 8XK-221';
-const DEFAULT_MEET = 'Baggage claim 4 · door A';
+const DEFAULT_MEET = 'Terminal A · door 2';
 
 export default function DispatchJob() {
   const { id } = useLocalSearchParams<{ id: string }>();

@@ -55,11 +55,25 @@ export function minutesBetween(fromIso: string, toIso: string): string {
   return `${min} min`;
 }
 
-/** "claim 4" out of "Baggage claim 4 · door A", else null. */
-export function claimFrom(meetPoint: string | null): string | null {
+/**
+ * "Terminal A" out of "Terminal A · door 2", else null.
+ *
+ * MCO is read by terminal, not by carousel: a family is told to walk to A, B
+ * or C long before they know which belt their bags land on. Older rows say
+ * "Baggage claim 4", so map the historic claim numbers onto their terminal —
+ * claims 1-14 are Terminal A, 15-28 Terminal B.
+ */
+export function terminalFrom(meetPoint: string | null): string | null {
   if (!meetPoint) return null;
-  const m = meetPoint.match(/claim\s+(\S+)/i);
-  return m ? `claim ${m[1]}` : null;
+  const direct = meetPoint.match(/terminal\s+([ABC])/i);
+  if (direct) return `Terminal ${direct[1].toUpperCase()}`;
+  const claim = meetPoint.match(/claim\s+(\d+)/i);
+  if (claim) {
+    const n = Number(claim[1]);
+    if (n >= 1 && n <= 14) return 'Terminal A';
+    if (n >= 15 && n <= 28) return 'Terminal B';
+  }
+  return null;
 }
 
 /** "door A" out of "Baggage claim 4 · door A", else null. */

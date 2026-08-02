@@ -41,7 +41,7 @@ import { themes, type Theme } from '@/theme/themes';
 import { color, font, fs, ls, radius, space, track } from '@/theme/tokens';
 
 const DEFAULT_VEHICLE = 'White Chevy Suburban · FL 8XK-221';
-const DEFAULT_MEET = 'Baggage claim 4 · door A';
+const DEFAULT_MEET = 'Terminal A · door 2';
 
 type ViewMode = 'day' | 'week' | 'month';
 

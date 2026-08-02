@@ -2,7 +2,11 @@
  * 63c — Sign mode. The phone becomes the sign.
  * Locks to landscape, brightness to full, screen kept awake, all chrome gone.
  * The name is the screen: one line, centred, as large as the glass allows —
- * longer names step the type down, they never wrap. Tap anywhere → back to 63b.
+ * longer names step the type down, they never wrap. Tap anywhere → back.
+ *
+ * The logo and the driver's own full name stay on it. A stranger holding up
+ * your name in an arrivals hall is only reassuring if the family can see who
+ * he is and who sent him.
  */
 import * as Brightness from 'expo-brightness';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
@@ -10,8 +14,11 @@ import { router, useLocalSearchParams } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text } from 'react-native';
-import { claimFrom, formatTime } from '@/lib/format';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { flightLabel } from '@/lib/airlines';
+import { formatTime, terminalFrom } from '@/lib/format';
+import { Logo } from '@/components/ui';
+import { useAuth } from '@/providers/auth';
 import { fetchDriverRuns, type DriverRun } from '@/lib/trips';
 import { color, font } from '@/theme/tokens';
 
@@ -19,6 +26,7 @@ const KEEP_AWAKE_TAG = 'pixie-sign-mode';
 
 export default function SignMode() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { profile } = useAuth();
   const [run, setRun] = useState<DriverRun | null>(null);
 
   useEffect(() => {
@@ -51,9 +59,9 @@ export default function SignMode() {
 
   const flightLine = run
     ? [
-        run.flight_number,
+        flightLabel(run.flight_number),
         run.flight_landed_at ? `landed ${formatTime(run.flight_landed_at)}` : null,
-        claimFrom(run.meet_point),
+        terminalFrom(run.meet_point),
       ]
         .filter(Boolean)
         .join(' · ')
@@ -67,7 +75,12 @@ export default function SignMode() {
       onPress={() => router.back()}
     >
       <StatusBar hidden />
-      {flightLine ? <Text style={styles.flight}>{flightLine}</Text> : null}
+
+      <View style={styles.top}>
+        <Logo variant="navy" size={17} />
+        {flightLine ? <Text style={styles.flight}>{flightLine}</Text> : null}
+      </View>
+
       <Text
         style={styles.name}
         numberOfLines={1}
@@ -76,6 +89,10 @@ export default function SignMode() {
       >
         {run?.customer_name ?? ''}
       </Text>
+
+      {profile?.full_name ? (
+        <Text style={styles.driver}>{profile.full_name}</Text>
+      ) : null}
     </Pressable>
   );
 }
@@ -87,20 +104,41 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 24,
+    paddingVertical: 16,
   },
-  flight: {
+  top: {
     position: 'absolute',
-    top: 18,
+    top: 16,
+    left: 24,
+    right: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 16,
+  },
+  // Bigger than it was: the driver reads this off the glass while watching a
+  // doorway, and the family recognises their airline before their own name.
+  flight: {
+    fontFamily: font.body600,
+    fontSize: 22,
+    letterSpacing: 0.2,
+    color: color.ink2,
+    flexShrink: 1,
+    textAlign: 'right',
+  },
+  driver: {
+    position: 'absolute',
+    bottom: 16,
     alignSelf: 'center',
     fontFamily: font.body600,
-    fontSize: 15,
-    letterSpacing: 0.3,
+    fontSize: 20,
+    letterSpacing: 0.2,
     color: color.ink2,
   },
   name: {
     fontFamily: font.display800,
-    fontSize: 134,
-    letterSpacing: 134 * -0.03,
+    fontSize: 118,
+    letterSpacing: 118 * -0.03,
     color: color.sea,
     textAlign: 'center',
     width: '100%',
