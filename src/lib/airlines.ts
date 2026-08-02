@@ -35,6 +35,7 @@ const CARRIERS: Record<string, string> = {
   EI: 'Aer Lingus',
   // Europe
   LH: 'Lufthansa',
+  '4Y': 'Discover',
   DE: 'Condor',
   AF: 'Air France',
   KL: 'KLM',
