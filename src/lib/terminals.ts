@@ -19,6 +19,17 @@ export type TerminalPickup = {
   lng: number;
 };
 
+/**
+ * Where a driver waits before the family has their bags.
+ *
+ * An address for now, not a coordinate — swap in the lane coordinates the same
+ * way the terminals have them when we have them, and nothing else changes.
+ */
+export const CELL_LOT = {
+  label: 'Cell lot',
+  address: '10505 Jeff Fuqua Blvd Ste 1051, Orlando, FL 32827',
+} as const;
+
 export const TERMINAL_PICKUPS: Record<Terminal, TerminalPickup> = {
   A: { terminal: 'A', lane: 'Commercial lane', lat: 28.4324738, lng: -81.3111113 },
   B: { terminal: 'B', lane: 'Commercial lane', lat: 28.42971, lng: -81.30536 },

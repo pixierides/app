@@ -32,7 +32,7 @@ import {
   terminalLabel,
 } from '@/lib/format';
 import { callNumber, navigateTo, navigateToPoint, textNumber } from '@/lib/links';
-import { laneLabel, lanePhrase, terminalPickup } from '@/lib/terminals';
+import { CELL_LOT, laneLabel, lanePhrase, terminalPickup } from '@/lib/terminals';
 import {
   fetchDriverRuns,
   kerbLoop,
@@ -220,12 +220,10 @@ export default function RunScreen() {
                 <Text style={styles.kvLabel}>Pickup time</Text>
                 <Text style={styles.kvValue}>{formatTime(run.pickup_at)}</Text>
               </View>
-              {run.pickup_address ? (
-                <View style={styles.kvRow}>
-                  <Text style={styles.kvLabel}>Address</Text>
-                  <Text style={styles.kvValue}>{run.pickup_address}</Text>
-                </View>
-              ) : null}
+              <View style={styles.kvRow}>
+                <Text style={styles.kvLabel}>Cell lot</Text>
+                <Text style={styles.kvValue}>{CELL_LOT.address}</Text>
+              </View>
               <View style={styles.kvRow}>
                 <Text style={styles.kvLabel}>Booking</Text>
                 <Text style={styles.kvValue}>{run.reference}</Text>
@@ -253,9 +251,9 @@ export default function RunScreen() {
             variant="secondary"
             onDark
             fullWidth
-            onPress={() => navigateTo(run.pickup_address ?? run.origin)}
+            onPress={() => navigateTo(CELL_LOT.address)}
           >
-            Navigate
+            Navigate to the cell lot
           </Button>
 
           <Button size="lg" fullWidth onPress={() => advance('holding')}>
