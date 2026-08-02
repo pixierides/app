@@ -77,22 +77,35 @@ export default function SignMode() {
       <StatusBar hidden />
 
       <View style={styles.top}>
-        <Logo variant="navy" size={17} />
-        {flightLine ? <Text style={styles.flight}>{flightLine}</Text> : null}
+        <Logo variant="navy" size={30} />
+        {flightLine ? (
+          // Same rule as the name: it steps down, it never wraps — a second
+          // line here would eat into the name's space.
+          <Text
+            style={styles.flight}
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            minimumFontScale={0.6}
+          >
+            {flightLine}
+          </Text>
+        ) : null}
       </View>
 
-      <Text
-        style={styles.name}
-        numberOfLines={1}
-        adjustsFontSizeToFit
-        minimumFontScale={0.25}
-      >
-        {run?.customer_name ?? ''}
-      </Text>
+      {/* The name owns whatever is left and scales itself down to fit, so the
+          bigger chrome above and below can never crowd it off the glass. */}
+      <View style={styles.nameWrap}>
+        <Text
+          style={styles.name}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.25}
+        >
+          {run?.customer_name ?? ''}
+        </Text>
+      </View>
 
-      {profile?.full_name ? (
-        <Text style={styles.driver}>{profile.full_name}</Text>
-      ) : null}
+      <Text style={styles.driver}>{profile?.full_name ?? ''}</Text>
     </Pressable>
   );
 }
@@ -101,39 +114,31 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: color.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 16,
+    paddingHorizontal: 28,
+    paddingVertical: 18,
   },
   top: {
-    position: 'absolute',
-    top: 16,
-    left: 24,
-    right: 24,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 16,
+    gap: 20,
   },
-  // Bigger than it was: the driver reads this off the glass while watching a
-  // doorway, and the family recognises their airline before their own name.
+  // Read off the glass from a few feet away: the driver checks the flight
+  // while watching a doorway, and the family recognises their airline before
+  // they pick their own name out of a crowd.
   flight: {
     fontFamily: font.body600,
-    fontSize: 22,
+    fontSize: 34,
     letterSpacing: 0.2,
     color: color.ink2,
     flexShrink: 1,
     textAlign: 'right',
   },
-  driver: {
-    position: 'absolute',
-    bottom: 16,
-    alignSelf: 'center',
-    fontFamily: font.body600,
-    fontSize: 20,
-    letterSpacing: 0.2,
-    color: color.ink2,
+  nameWrap: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
   },
   name: {
     fontFamily: font.display800,
@@ -142,5 +147,12 @@ const styles = StyleSheet.create({
     color: color.sea,
     textAlign: 'center',
     width: '100%',
+  },
+  driver: {
+    alignSelf: 'center',
+    fontFamily: font.body600,
+    fontSize: 32,
+    letterSpacing: 0.2,
+    color: color.ink2,
   },
 });
