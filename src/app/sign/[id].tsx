@@ -1,6 +1,16 @@
 /**
- * 63c — Sign mode. The phone becomes the sign.
- * Locks to landscape, brightness to full, screen kept awake, all chrome gone.
+ * 63c — Sign mode. The phone becomes the sign. Landscape, always: a name reads
+ * across the long edge or it isn't a sign.
+ *
+ * Landscape + brightness to full, screen kept awake, all chrome gone.
+ * app.json declares orientation "default" because iOS will not rotate a
+ * window declared portrait-only — that mismatch rendered this screen squashed,
+ * laid out landscape-wide inside a portrait window. Portrait is pinned in the
+ * root layout instead; this is the one screen that asks for landscape.
+ *
+ * Exit hands the orientation back BEFORE navigating. Doing it the other way
+ * round leaves the rotation in flight while the screen unmounts, and the app
+ * sits stuck until the phone is physically turned.
  * The name is the screen: one line, centred, as large as the glass allows —
  * longer names step the type down, they never wrap. Tap anywhere → back.
  *
@@ -13,7 +23,7 @@ import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
 import { router, useLocalSearchParams } from 'expo-router';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { flightLabel } from '@/lib/airlines';
 import { formatTime, terminalFrom } from '@/lib/format';
@@ -33,29 +43,46 @@ export default function SignMode() {
     fetchDriverRuns().then((runs) => setRun(runs.find((r) => r.id === id) ?? null));
   }, [id]);
 
-  // Landscape + full brightness + wake lock while showing; restore on exit.
+  const priorBrightness = useRef<number | null>(null);
+
+  // LANDSCAPE (not LANDSCAPE_LEFT) so either way up works — a driver holds the
+  // phone whichever way it came out of the pocket.
   useEffect(() => {
     if (Platform.OS === 'web') return;
-    let previousBrightness: number | null = null;
 
     ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
     activateKeepAwakeAsync(KEEP_AWAKE_TAG);
     (async () => {
       const { status } = await Brightness.requestPermissionsAsync();
       if (status === 'granted') {
-        previousBrightness = await Brightness.getBrightnessAsync();
+        priorBrightness.current = await Brightness.getBrightnessAsync();
         await Brightness.setBrightnessAsync(1);
       }
     })();
 
+    // Safety net only — the tap handler is what normally restores things, and
+    // it awaits the rotation. This catches a swipe-back or a hardware back.
     return () => {
       ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
       deactivateKeepAwake(KEEP_AWAKE_TAG);
-      if (previousBrightness !== null) {
-        Brightness.setBrightnessAsync(previousBrightness);
+      if (priorBrightness.current !== null) {
+        Brightness.setBrightnessAsync(priorBrightness.current);
       }
     };
   }, []);
+
+  const exit = async () => {
+    if (Platform.OS !== 'web') {
+      deactivateKeepAwake(KEEP_AWAKE_TAG);
+      if (priorBrightness.current !== null) {
+        await Brightness.setBrightnessAsync(priorBrightness.current);
+      }
+      // Await the rotation, then leave. This ordering is the fix.
+      await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+    }
+    if (router.canGoBack()) router.back();
+    else router.replace('/');
+  };
 
   const flightLine = run
     ? [
@@ -72,7 +99,7 @@ export default function SignMode() {
       accessibilityRole="button"
       accessibilityLabel="Exit sign mode"
       style={styles.screen}
-      onPress={() => router.back()}
+      onPress={exit}
     >
       <StatusBar hidden />
 
