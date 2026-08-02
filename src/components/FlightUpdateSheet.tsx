@@ -1,15 +1,20 @@
 /**
- * The ten-second flight update, shared by dispatch and the driver.
+ * The five-second flight update, shared by dispatch and the driver.
  *
- * Three fields, because three is what a Google result gives you that matters:
- * when it actually lands, which terminal, and one line of why. No gate field —
- * gates change late and a driver sent to a stale one is worse off than one
- * sent to none.
+ * The app cannot read the browser — not on either platform — so entry is by
+ * hand and the only thing worth optimising is how few taps it takes. Most
+ * delays are round numbers and most terminals are one of three, so the picker
+ * is the fallback rather than the first thing you touch: a thirty-minute delay
+ * is [+30] then [Save].
  *
- * A plain time field rather than a native picker: dispatch runs as an Expo web
- * surface and the driver runs native, and one text box behaves identically on
- * both. It accepts what people actually type off a search result — "2:16 PM",
- * "14:16", "216p".
+ * Three fields still, because three is what a Google result gives you that
+ * matters: when it lands, which terminal, and one line of why. No gate — gates
+ * change late and a driver sent to a stale one is worse off than one sent to
+ * none.
+ *
+ * No negative adjustments. A flight landing early is handled by the 30-minute
+ * rule server-side, and dragging a pickup earlier by hand is not something a
+ * driver should be doing from a cell lot.
  */
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -28,6 +33,13 @@ import { themes, type Theme } from '@/theme/themes';
 import { font, fs, ls, radius, space, track } from '@/theme/tokens';
 
 const TERMINALS: Terminal[] = ['A', 'B', 'C'];
+const BUMPS: { label: string; minutes: number }[] = [
+  { label: '+15', minutes: 15 },
+  { label: '+30', minutes: 30 },
+  { label: '+1h', minutes: 60 },
+  { label: '+2h', minutes: 120 },
+];
+const NOTES = ['On time', 'Delayed', 'Landed'];
 
 export function FlightUpdateSheet({
   visible,
@@ -44,32 +56,55 @@ export function FlightUpdateSheet({
 }) {
   const th = useTheme();
   const styles = themed[th.mode];
-  const [time, setTime] = useState('');
+  // arrivalIso is the truth; timeText is a view of it that the picker edits.
+  // Keeping the ISO authoritative is what lets +2h cross midnight correctly —
+  // formatting to "12:10 AM" and reparsing against the pickup date would land
+  // the arrival a day early.
+  const [arrivalIso, setArrivalIso] = useState<string | null>(null);
+  const [timeText, setTimeText] = useState('');
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [terminal, setTerminal] = useState<Terminal | null>(null);
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Defaults to the known arrival, or — if nobody has checked yet — the
-  // arrival the current pickup already implies. NOT the pickup time itself:
-  // that would make an unedited Save quietly push the pickup a buffer later.
+  const buffer = pickupBufferMinutes(facts.international);
+
+  /**
+   * What "On time" resets to. No scheduled arrival is stored, so it is the
+   * arrival the booked pickup implies — which is exactly how the pickup was
+   * derived in the first place.
+   */
+  const scheduledIso = new Date(new Date(pickupAt).getTime() - buffer * 60_000).toISOString();
+
+  const setArrival = (iso: string) => {
+    setArrivalIso(iso);
+    setTimeText(formatTime(iso));
+  };
+
   useEffect(() => {
     if (!visible) return;
     setError(null);
-    const implied = new Date(
-      new Date(pickupAt).getTime() - pickupBufferMinutes(facts.international) * 60_000,
-    ).toISOString();
-    setTime(formatTime(facts.flight_landed_at ?? implied));
+    setPickerOpen(false);
     setTerminal((facts.flight_terminal as Terminal | null) ?? null);
     setNote(facts.flight_status_note ?? '');
+    // Known arrival first; failing that, the one the pickup already implies.
+    // Never the pickup time itself — that would make an untouched Save push
+    // the pickup a whole buffer later.
+    const iso = facts.flight_landed_at ?? scheduledIso;
+    setArrivalIso(iso);
+    setTimeText(formatTime(iso));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
-  const arrivalIso = easternTimeToIso(time, pickupAt);
-  const badTime = time.trim().length > 0 && arrivalIso === null;
+  const bump = (minutes: number) => {
+    const from = new Date(arrivalIso ?? scheduledIso).getTime();
+    setArrival(new Date(from + minutes * 60_000).toISOString());
+  };
 
-  // Preview of what the server will do, so the buffer rule isn't a surprise.
-  const buffer = pickupBufferMinutes(facts.international);
+  const badTime = pickerOpen && timeText.trim().length > 0 && easternTimeToIso(timeText, pickupAt) === null;
+
+  // What the server will do, so the buffer rule isn't a surprise on save.
   let outcome: string | null = null;
   if (arrivalIso) {
     const proposed = new Date(new Date(arrivalIso).getTime() + buffer * 60_000);
@@ -111,7 +146,9 @@ export function FlightUpdateSheet({
               {facts.flight_number ? flightLabel(facts.flight_number) : 'Flight'}
             </Text>
             <Text style={styles.hint}>
-              Look it up, then put back the three things that matter.
+              {facts.flight_landed_at
+                ? `Currently arriving ${formatTime(facts.flight_landed_at)}.`
+                : 'Nobody has checked this yet.'}
             </Text>
 
             <Button
@@ -122,20 +159,58 @@ export function FlightUpdateSheet({
               Check flight
             </Button>
 
-            <Input
-              label="Arrival time"
-              placeholder="2:16 PM"
-              value={time}
-              onChangeText={setTime}
-              autoCapitalize="characters"
-            />
-            {badTime ? (
-              <Text style={styles.error}>
-                Not a time. Try &ldquo;2:16 PM&rdquo; or &ldquo;14:16&rdquo;.
-              </Text>
-            ) : outcome ? (
-              <Text style={styles.outcome}>{outcome}</Text>
-            ) : null}
+            {/* Round numbers first. They accumulate — +15 twice is +30. */}
+            <View style={styles.bumpRow}>
+              {BUMPS.map((b) => (
+                <Pressable
+                  key={b.label}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Add ${b.label.replace('+', '')} to the arrival time`}
+                  onPress={() => bump(b.minutes)}
+                  style={styles.bump}
+                >
+                  <Text style={styles.bumpText}>{b.label}</Text>
+                </Pressable>
+              ))}
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel="Reset to the scheduled arrival"
+                onPress={() => setArrival(scheduledIso)}
+                style={styles.bump}
+              >
+                <Text style={styles.bumpText}>On time</Text>
+              </Pressable>
+            </View>
+
+            {/* What you are about to save, without opening anything. */}
+            <Text style={styles.arriving}>
+              {arrivalIso ? `Arriving ${formatTime(arrivalIso)}` : 'No arrival time'}
+            </Text>
+            {outcome ? <Text style={styles.outcome}>{outcome}</Text> : null}
+
+            {pickerOpen ? (
+              <>
+                <Input
+                  label="Arrival time"
+                  placeholder="2:16 PM"
+                  value={timeText}
+                  onChangeText={(v) => {
+                    setTimeText(v);
+                    const iso = easternTimeToIso(v, pickupAt);
+                    if (iso) setArrivalIso(iso);
+                  }}
+                />
+                {badTime ? (
+                  <Text style={styles.error}>
+                    Not a time. Try &ldquo;2:16 PM&rdquo; or &ldquo;14:16&rdquo;.
+                  </Text>
+                ) : null}
+              </>
+            ) : (
+              <Button variant="ghost" fullWidth onPress={() => setPickerOpen(true)}>
+                Change time
+              </Button>
+            )}
 
             <Text style={styles.label}>TERMINAL</Text>
             <View style={styles.chipRow}>
@@ -155,9 +230,26 @@ export function FlightUpdateSheet({
               })}
             </View>
 
+            <Text style={styles.label}>STATUS</Text>
+            <View style={styles.chipRow}>
+              {NOTES.map((n) => {
+                const on = note.trim().toLowerCase() === n.toLowerCase();
+                return (
+                  <Pressable
+                    key={n}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: on }}
+                    onPress={() => setNote(on ? '' : n)}
+                    style={[styles.chip, styles.chipShort, on && styles.chipOn]}
+                  >
+                    <Text style={[styles.chipTextSm, on && styles.chipTextOn]}>{n}</Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+            {/* The chips are a shortcut, not a constraint. */}
             <Input
-              label="Status note"
-              placeholder="Runway delay · On time"
+              placeholder="Runway delay · diverted to TPA"
               value={note}
               onChangeText={setNote}
             />
@@ -209,6 +301,35 @@ const makeStyles = (t: Theme) =>
       lineHeight: 20,
       color: t.textDim,
     },
+    bumpRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: space.s2,
+      marginTop: space.s2,
+    },
+    // Deliberately not orange: orange belongs to the one action that advances
+    // a run, and nothing on this sheet does that.
+    bump: {
+      height: 44,
+      paddingHorizontal: 14,
+      borderRadius: radius.input,
+      borderWidth: 1.5,
+      borderColor: t.divider,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    bumpText: {
+      fontFamily: font.body600,
+      fontSize: 15,
+      color: t.textHeading,
+    },
+    arriving: {
+      fontFamily: font.display700,
+      fontSize: 26,
+      lineHeight: 30,
+      letterSpacing: ls(track.h2, 26),
+      color: t.textHeading,
+    },
     label: {
       fontFamily: font.body600,
       fontSize: fs.label,
@@ -218,7 +339,7 @@ const makeStyles = (t: Theme) =>
     },
     chipRow: {
       flexDirection: 'row',
-      gap: space.s3,
+      gap: space.s2,
     },
     chip: {
       flexGrow: 1,
@@ -230,6 +351,9 @@ const makeStyles = (t: Theme) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
+    chipShort: {
+      height: 44,
+    },
     chipOn: {
       borderColor: t.textHeading,
       backgroundColor: t.bgRaised,
@@ -237,6 +361,11 @@ const makeStyles = (t: Theme) =>
     chipText: {
       fontFamily: font.display700,
       fontSize: 20,
+      color: t.textDim,
+    },
+    chipTextSm: {
+      fontFamily: font.body600,
+      fontSize: 14,
       color: t.textDim,
     },
     chipTextOn: {
