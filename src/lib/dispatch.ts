@@ -38,6 +38,7 @@ export type DispatchTrip = {
   notes: string | null;
   price_cents: number | null;
   paid_at: string | null;
+  payment_due_at: string | null;
   hold_until: string | null;
   status: TripStatus;
   driver_state: DriverRunState;
@@ -89,15 +90,28 @@ export function paymentCutoff(pickupAtIso: string): Date {
   return new Date(new Date(pickupAtIso).getTime() - 48 * 3600_000);
 }
 
-export function pastCutoff(t: Pick<DispatchTrip, 'pickup_at' | 'paid_at'>): boolean {
-  return !t.paid_at && Date.now() >= paymentCutoff(t.pickup_at).getTime();
+/**
+ * The deadline as STATED to the customer. It was written at booking and a
+ * flight delay does not move it — so it has to be read, not recomputed. The
+ * derivation is only a fallback for rows written before the column existed.
+ */
+export function paymentDeadline(
+  t: Pick<DispatchTrip, 'pickup_at' | 'payment_due_at'>,
+): Date {
+  return t.payment_due_at ? new Date(t.payment_due_at) : paymentCutoff(t.pickup_at);
+}
+
+export function pastCutoff(
+  t: Pick<DispatchTrip, 'pickup_at' | 'paid_at' | 'payment_due_at'>,
+): boolean {
+  return !t.paid_at && Date.now() >= paymentDeadline(t).getTime();
 }
 
 export async function fetchDispatchTrips(): Promise<DispatchTrip[]> {
   const { data, error } = await supabase
     .from('trips')
     .select(
-      'id, created_at, reference, source, customer_name, customer_phone, customer_email, party_label, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, flight_origin, flight_landed_at, flight_terminal, flight_status_note, flight_checked_at, flight_checked_by_role, international, international_confirmed_at, return_at, return_flight, adults, children, car_seats, stroller, notes, price_cents, paid_at, hold_until, status, driver_state, called_by, kerb_loops, customer_id, driver_id, driver_name, vehicle, written_off',
+      'id, created_at, reference, source, customer_name, customer_phone, customer_email, party_label, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, flight_origin, flight_landed_at, flight_terminal, flight_status_note, flight_checked_at, flight_checked_by_role, international, international_confirmed_at, return_at, return_flight, adults, children, car_seats, stroller, notes, price_cents, paid_at, payment_due_at, hold_until, status, driver_state, called_by, kerb_loops, customer_id, driver_id, driver_name, vehicle, written_off',
     )
     .order('pickup_at', { ascending: true });
   if (error) throw error;

@@ -16,10 +16,18 @@ export type PolicyState = 'A' | 'B' | 'C';
  * B — 2h to 48h out: non-refundable, change still free.
  * C — under 2h: phone only.
  */
-export function policyState(pickupAtIso: string, now: Date = new Date()): PolicyState {
+export function policyState(
+  pickupAtIso: string,
+  now: Date = new Date(),
+  /** The stated deadline. The A/B boundary IS this moment, not a derivation. */
+  paymentDueAtIso?: string | null,
+): PolicyState {
   const pickup = new Date(pickupAtIso).getTime();
   const t = now.getTime();
-  if (t < pickup - 48 * 3600_000) return 'A';
+  const deadline = paymentDueAtIso
+    ? new Date(paymentDueAtIso).getTime()
+    : pickup - 48 * 3600_000;
+  if (t < deadline) return 'A';
   if (t < pickup - 2 * 3600_000) return 'B';
   return 'C';
 }
@@ -32,8 +40,16 @@ export function formatDeadline(d: Date): string {
   return `${formatTime(d)}, ${day}`;
 }
 
-/** The moment free cancellation ends: pickup − 48h. */
-export function cancelDeadline(pickupAtIso: string): Date {
+/**
+ * The moment free cancellation ends. Same instant as the payment deadline and
+ * stated in the confirmation email, so it is read from the trip when present
+ * rather than recomputed — a flight delay must not move it.
+ */
+export function cancelDeadline(
+  pickupAtIso: string,
+  paymentDueAtIso?: string | null,
+): Date {
+  if (paymentDueAtIso) return new Date(paymentDueAtIso);
   return new Date(new Date(pickupAtIso).getTime() - 48 * 3600_000);
 }
 

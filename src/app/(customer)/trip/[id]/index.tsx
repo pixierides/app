@@ -70,7 +70,7 @@ export default function TripDetail() {
   const upcoming =
     trip.status !== 'complete' && trip.status !== 'cancelled' && trip.status !== 'no_show';
   // Recomputed on focus (fetch re-renders); a formatted boundary, never a countdown.
-  const pState = policyState(trip.pickup_at);
+  const pState = policyState(trip.pickup_at, new Date(), trip.payment_due_at);
 
   const steps = SPINE_ORDER.map((s) => ({ title: SPINE_LABELS[s] }));
 
@@ -325,7 +325,8 @@ export default function TripDetail() {
             {pState === 'A' ? (
               <>
                 <Text style={styles.blockBody}>
-                  Free cancellation until {formatDeadline(cancelDeadline(trip.pickup_at))}.
+                  Free cancellation until{' '}
+                  {formatDeadline(cancelDeadline(trip.pickup_at, trip.payment_due_at))}.
                 </Text>
                 <Text style={styles.blockBody}>
                   Change your time or date free, up to 2 hours before pickup.

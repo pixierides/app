@@ -16,7 +16,7 @@ import {
   fetchDispatchTrips,
   listDrivers,
   pastCutoff,
-  paymentCutoff,
+  paymentDeadline,
   RUN_STATE_LABELS,
   staleHolding,
   STALE_HOLDING_MINUTES,
@@ -57,7 +57,7 @@ function lookReason(t: DispatchTrip): string | null {
   if (t.pickup_at_was) return 'flight moved';
   if (t.status === 'paid' && !t.driver_id) return 'no driver assigned';
   if (!t.paid_at && isOpen(t)) {
-    const untilCutoff = paymentCutoff(t.pickup_at).getTime() - Date.now();
+    const untilCutoff = paymentDeadline(t).getTime() - Date.now();
     if (untilCutoff > 0 && untilCutoff < 12 * 3600_000) return 'cutoff approaching';
   }
   return null;

@@ -16,7 +16,7 @@ import {
   fetchDispatchTrips,
   listDrivers,
   pastCutoff,
-  paymentCutoff,
+  paymentDeadline,
   releaseTrip,
   RUN_STATE_LABELS,
   setRunState,
@@ -77,7 +77,7 @@ export default function DispatchJob() {
 
   if (!trip) return <SafeAreaView style={styles.screen} />;
 
-  const cutoff = paymentCutoff(trip.pickup_at);
+  const cutoff = paymentDeadline(trip);
   const decide = pastCutoff(trip);
   const open =
     trip.status !== 'complete' && trip.status !== 'cancelled' && trip.status !== 'no_show';
