@@ -77,23 +77,19 @@ export default function SignMode() {
       <StatusBar hidden />
 
       <View style={styles.top}>
-        <Logo variant="navy" size={30} />
+        <Logo variant="navy" size={20} />
+        {/* One line, truncated if it has to be. NOT auto-shrinking: iOS's
+            adjustsFontSizeToFit inside a shrinking flex row re-measures
+            against a moving target and renders clipped. The name is the only
+            text on this screen allowed to resize itself. */}
         {flightLine ? (
-          // Same rule as the name: it steps down, it never wraps — a second
-          // line here would eat into the name's space.
-          <Text
-            style={styles.flight}
-            numberOfLines={1}
-            adjustsFontSizeToFit
-            minimumFontScale={0.6}
-          >
+          <Text style={styles.flight} numberOfLines={1} ellipsizeMode="tail">
             {flightLine}
           </Text>
         ) : null}
       </View>
 
-      {/* The name owns whatever is left and scales itself down to fit, so the
-          bigger chrome above and below can never crowd it off the glass. */}
+      {/* The name owns whatever is left and scales itself down to fit. */}
       <View style={styles.nameWrap}>
         <Text
           style={styles.name}
@@ -105,7 +101,11 @@ export default function SignMode() {
         </Text>
       </View>
 
-      <Text style={styles.driver}>{profile?.full_name ?? ''}</Text>
+      {profile?.full_name ? (
+        <Text style={styles.driver} numberOfLines={1}>
+          {profile.full_name}
+        </Text>
+      ) : null}
     </Pressable>
   );
 }
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   // they pick their own name out of a crowd.
   flight: {
     fontFamily: font.body600,
-    fontSize: 34,
+    fontSize: 22,
     letterSpacing: 0.2,
     color: color.ink2,
     flexShrink: 1,
@@ -143,6 +143,7 @@ const styles = StyleSheet.create({
   name: {
     fontFamily: font.display800,
     fontSize: 118,
+    lineHeight: 124,
     letterSpacing: 118 * -0.03,
     color: color.sea,
     textAlign: 'center',
@@ -151,7 +152,7 @@ const styles = StyleSheet.create({
   driver: {
     alignSelf: 'center',
     fontFamily: font.body600,
-    fontSize: 32,
+    fontSize: 22,
     letterSpacing: 0.2,
     color: color.ink2,
   },
