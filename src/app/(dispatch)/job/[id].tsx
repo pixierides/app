@@ -30,6 +30,8 @@ import { flightLabel } from '@/lib/airlines';
 import {
   checkedAgo,
   hasLanded,
+  isAirportPickup,
+  needsArrivalBeforeAssign,
   needsDomesticGlance,
   openFlightSearch,
   setInternational,
@@ -53,6 +55,10 @@ export default function DispatchJob() {
   const [confirmUnassign, setConfirmUnassign] = useState(false);
   const [overrideOpen, setOverrideOpen] = useState(false);
   const [flightOpen, setFlightOpen] = useState(false);
+  // The sheet can be opened two ways: to check a flight, or because assignment
+  // asked for an arrival first. The second flows straight on into the picker.
+  const [gateOpen, setGateOpen] = useState(false);
+  const [pickerShown, setPickerShown] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -215,20 +221,39 @@ export default function DispatchJob() {
           {open && trip.status === 'paid' && !trip.driver_id ? (
             <Card tone="dark-raised" texture pad={20} style={styles.block}>
               <Text style={styles.blockTitle}>Assign a driver.</Text>
-              {driverPicker}
-              {driverId ? (
+
+              {/* The button is never disabled. A disabled control says what you
+                  cannot do and leaves you to work out what you can — so this
+                  one opens the thing that is missing instead. */}
+              {!pickerShown ? (
                 <Button
                   size="md"
                   fullWidth
-                  onPress={() =>
-                    run(() => assignDriver(trip.id, driverId, vehicle, meetPoint))
-                  }
+                  onPress={() => {
+                    if (needsArrivalBeforeAssign(trip)) setGateOpen(true);
+                    else setPickerShown(true);
+                  }}
                 >
-                  {busy
-                    ? 'One moment…'
-                    : `Assign ${firstName(drivers.find((d) => d.id === driverId)?.full_name)}`}
+                  Assign driver
                 </Button>
-              ) : null}
+              ) : (
+                <>
+                  {driverPicker}
+                  {driverId ? (
+                    <Button
+                      size="md"
+                      fullWidth
+                      onPress={() =>
+                        run(() => assignDriver(trip.id, driverId, vehicle, meetPoint))
+                      }
+                    >
+                      {busy
+                        ? 'One moment…'
+                        : `Assign ${firstName(drivers.find((d) => d.id === driverId)?.full_name)}`}
+                    </Button>
+                  ) : null}
+                </>
+              )}
             </Card>
           ) : null}
 
@@ -238,6 +263,14 @@ export default function DispatchJob() {
               <Text style={styles.eyebrow}>DRIVER ASSIGNED</Text>
               <Text style={styles.blockTitle}>{trip.driver_name ?? 'Assigned'}</Text>
               {trip.vehicle ? <Text style={styles.blockBody}>{trip.vehicle}</Text> : null}
+              {/* Became an airport pickup after the fact. Not unassigned —
+                  that is dispatch's call, not the app's. */}
+              {needsArrivalBeforeAssign(trip) ? (
+                <Text style={styles.blockBody}>
+                  This is an airport pickup with no arrival time, so the pickup time is a
+                  guess. Check the flight.
+                </Text>
+              ) : null}
               {trip.driver_state === 'pending' || trip.driver_state === 'en_route' ? (
                 confirmUnassign ? (
                   <>
@@ -311,7 +344,7 @@ export default function DispatchJob() {
           ) : null}
 
           {/* ——— the flight, checked by hand ——— */}
-          {open && trip.flight_number ? (
+          {open && isAirportPickup(trip.origin) ? (
             <Card tone="dark-raised" pad={20} style={styles.block}>
               <Text style={styles.eyebrow}>FLIGHT</Text>
               <Text style={styles.blockTitle}>
@@ -537,6 +570,22 @@ export default function DispatchJob() {
         onSave={async (arrival, terminal, note) => {
           await updateFlightAsDispatch(trip.id, arrival, terminal, note);
           await load();
+        }}
+      />
+
+      {/* One continuous action: save the arrival, land in the driver picker.
+          Dismissing without saving returns to the job screen, unassigned. */}
+      <FlightUpdateSheet
+        visible={gateOpen}
+        facts={trip}
+        pickupAt={trip.pickup_at}
+        gateNote="Arrival time first. The pickup time is calculated from it."
+        onClose={() => setGateOpen(false)}
+        onSave={async (arrival, terminal, note) => {
+          await updateFlightAsDispatch(trip.id, arrival, terminal, note);
+          await load();
+          setGateOpen(false);
+          setPickerShown(true);
         }}
       />
     </SafeAreaView>

@@ -1,11 +1,10 @@
 /**
- * The five-second flight update, shared by dispatch and the driver.
+ * The flight update, shared by dispatch and the driver.
  *
  * The app cannot read the browser — not on either platform — so entry is by
- * hand and the only thing worth optimising is how few taps it takes. Most
- * delays are round numbers and most terminals are one of three, so the picker
- * is the fallback rather than the first thing you touch: a thirty-minute delay
- * is [+30] then [Save].
+ * hand. Arrival time is a scrolled wheel: faster than reading a row of
+ * quick-adjust buttons and choosing between them, and it covers the cases
+ * round numbers don't.
  *
  * Three fields still, because three is what a Google result gives you that
  * matters: when it lands, which terminal, and one line of why. No gate — gates
@@ -19,10 +18,10 @@
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Button, Input } from '@/components/ui';
+import { TimeWheel } from '@/components/TimeWheel';
 import { flightLabel } from '@/lib/airlines';
 import { formatTime } from '@/lib/format';
 import {
-  easternTimeToIso,
   openFlightSearch,
   pickupBufferMinutes,
   type FlightFacts,
@@ -33,36 +32,29 @@ import { themes, type Theme } from '@/theme/themes';
 import { font, fs, ls, radius, space, track } from '@/theme/tokens';
 
 const TERMINALS: Terminal[] = ['A', 'B', 'C'];
-const BUMPS: { label: string; minutes: number }[] = [
-  { label: '+15', minutes: 15 },
-  { label: '+30', minutes: 30 },
-  { label: '+1h', minutes: 60 },
-  { label: '+2h', minutes: 120 },
-];
 const NOTES = ['On time', 'Delayed', 'Landed'];
 
 export function FlightUpdateSheet({
   visible,
   facts,
   pickupAt,
+  gateNote,
   onClose,
   onSave,
 }: {
   visible: boolean;
   facts: FlightFacts;
   pickupAt: string;
+  /** Shown at the top when the sheet was opened by the assignment gate. */
+  gateNote?: string | null;
   onClose: () => void;
   onSave: (arrivalIso: string | null, terminal: Terminal | null, note: string | null) => Promise<void>;
 }) {
   const th = useTheme();
   const styles = themed[th.mode];
-  // arrivalIso is the truth; timeText is a view of it that the picker edits.
-  // Keeping the ISO authoritative is what lets +2h cross midnight correctly —
-  // formatting to "12:10 AM" and reparsing against the pickup date would land
-  // the arrival a day early.
+  // The instant, not a formatted string: the wheel works in device-local time
+  // and this app is always Orlando, so TimeWheel converts at both edges.
   const [arrivalIso, setArrivalIso] = useState<string | null>(null);
-  const [timeText, setTimeText] = useState('');
-  const [pickerOpen, setPickerOpen] = useState(false);
   const [terminal, setTerminal] = useState<Terminal | null>(null);
   const [note, setNote] = useState('');
   const [busy, setBusy] = useState(false);
@@ -71,38 +63,22 @@ export function FlightUpdateSheet({
   const buffer = pickupBufferMinutes(facts.international);
 
   /**
-   * What "On time" resets to. No scheduled arrival is stored, so it is the
-   * arrival the booked pickup implies — which is exactly how the pickup was
-   * derived in the first place.
+   * The scheduled arrival. Nothing stores one, so it is the arrival the booked
+   * pickup implies — which is how the pickup was derived in the first place.
    */
   const scheduledIso = new Date(new Date(pickupAt).getTime() - buffer * 60_000).toISOString();
-
-  const setArrival = (iso: string) => {
-    setArrivalIso(iso);
-    setTimeText(formatTime(iso));
-  };
 
   useEffect(() => {
     if (!visible) return;
     setError(null);
-    setPickerOpen(false);
     setTerminal((facts.flight_terminal as Terminal | null) ?? null);
     setNote(facts.flight_status_note ?? '');
     // Known arrival first; failing that, the one the pickup already implies.
     // Never the pickup time itself — that would make an untouched Save push
     // the pickup a whole buffer later.
-    const iso = facts.flight_landed_at ?? scheduledIso;
-    setArrivalIso(iso);
-    setTimeText(formatTime(iso));
+    setArrivalIso(facts.flight_landed_at ?? scheduledIso);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
-
-  const bump = (minutes: number) => {
-    const from = new Date(arrivalIso ?? scheduledIso).getTime();
-    setArrival(new Date(from + minutes * 60_000).toISOString());
-  };
-
-  const badTime = pickerOpen && timeText.trim().length > 0 && easternTimeToIso(timeText, pickupAt) === null;
 
   // What the server will do, so the buffer rule isn't a surprise on save.
   let outcome: string | null = null;
@@ -124,7 +100,7 @@ export function FlightUpdateSheet({
   }
 
   const save = async () => {
-    if (busy || badTime) return;
+    if (busy) return;
     setBusy(true);
     setError(null);
     try {
@@ -142,13 +118,14 @@ export function FlightUpdateSheet({
       <Pressable style={styles.backdrop} onPress={onClose}>
         <Pressable style={styles.sheet} onPress={() => {}}>
           <ScrollView contentContainerStyle={styles.body}>
+            {gateNote ? <Text style={styles.gate}>{gateNote}</Text> : null}
             <Text style={styles.title}>
               {facts.flight_number ? flightLabel(facts.flight_number) : 'Flight'}
             </Text>
             <Text style={styles.hint}>
               {facts.flight_landed_at
                 ? `Currently arriving ${formatTime(facts.flight_landed_at)}.`
-                : 'Nobody has checked this yet.'}
+                : `Scheduled ${formatTime(scheduledIso)} · nobody has checked it yet.`}
             </Text>
 
             <Button
@@ -159,58 +136,12 @@ export function FlightUpdateSheet({
               Check flight
             </Button>
 
-            {/* Round numbers first. They accumulate — +15 twice is +30. */}
-            <View style={styles.bumpRow}>
-              {BUMPS.map((b) => (
-                <Pressable
-                  key={b.label}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Add ${b.label.replace('+', '')} to the arrival time`}
-                  onPress={() => bump(b.minutes)}
-                  style={styles.bump}
-                >
-                  <Text style={styles.bumpText}>{b.label}</Text>
-                </Pressable>
-              ))}
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Reset to the scheduled arrival"
-                onPress={() => setArrival(scheduledIso)}
-                style={styles.bump}
-              >
-                <Text style={styles.bumpText}>On time</Text>
-              </Pressable>
-            </View>
-
-            {/* What you are about to save, without opening anything. */}
-            <Text style={styles.arriving}>
-              {arrivalIso ? `Arriving ${formatTime(arrivalIso)}` : 'No arrival time'}
-            </Text>
+            <TimeWheel
+              value={arrivalIso ?? scheduledIso}
+              referenceIso={pickupAt}
+              onChange={setArrivalIso}
+            />
             {outcome ? <Text style={styles.outcome}>{outcome}</Text> : null}
-
-            {pickerOpen ? (
-              <>
-                <Input
-                  label="Arrival time"
-                  placeholder="2:16 PM"
-                  value={timeText}
-                  onChangeText={(v) => {
-                    setTimeText(v);
-                    const iso = easternTimeToIso(v, pickupAt);
-                    if (iso) setArrivalIso(iso);
-                  }}
-                />
-                {badTime ? (
-                  <Text style={styles.error}>
-                    Not a time. Try &ldquo;2:16 PM&rdquo; or &ldquo;14:16&rdquo;.
-                  </Text>
-                ) : null}
-              </>
-            ) : (
-              <Button variant="ghost" fullWidth onPress={() => setPickerOpen(true)}>
-                Change time
-              </Button>
-            )}
 
             <Text style={styles.label}>TERMINAL</Text>
             <View style={styles.chipRow}>
@@ -301,33 +232,11 @@ const makeStyles = (t: Theme) =>
       lineHeight: 20,
       color: t.textDim,
     },
-    bumpRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: space.s2,
-      marginTop: space.s2,
-    },
-    // Deliberately not orange: orange belongs to the one action that advances
-    // a run, and nothing on this sheet does that.
-    bump: {
-      height: 44,
-      paddingHorizontal: 14,
-      borderRadius: radius.input,
-      borderWidth: 1.5,
-      borderColor: t.divider,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    bumpText: {
+    // Why the sheet opened, said before anything else on it.
+    gate: {
       fontFamily: font.body600,
       fontSize: 15,
-      color: t.textHeading,
-    },
-    arriving: {
-      fontFamily: font.display700,
-      fontSize: 26,
-      lineHeight: 30,
-      letterSpacing: ls(track.h2, 26),
+      lineHeight: 22,
       color: t.textHeading,
     },
     label: {

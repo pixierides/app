@@ -143,6 +143,53 @@ export function needsFlightCheck(t: {
 }
 
 /**
+ * A Date whose DEVICE-local wall clock equals the Orlando wall clock of `iso`.
+ *
+ * The native time wheel renders and reports device-local time, and this app's
+ * rule is that every time is Orlando. A driver's phone is in Orlando so the
+ * two agree, but dispatch on a laptop in another zone would otherwise set an
+ * instant an hour or more out. Shift going in, shift coming back.
+ */
+export function easternWallClock(iso: string): Date {
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: TZ,
+    hour12: false,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).formatToParts(new Date(iso));
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value);
+  return new Date(get('year'), get('month') - 1, get('day'), get('hour') % 24, get('minute'));
+}
+
+/** The inverse: a device-local Date off the wheel back to a real instant. */
+export function wallClockToIso(picked: Date, referenceIso: string): string | null {
+  return easternTimeToIso(`${picked.getHours()}:${String(picked.getMinutes()).padStart(2, '0')}`, referenceIso);
+}
+
+/**
+ * An airport pickup, decided by the origin and never by the flight number —
+ * a trip out of MCO with an empty flight field is exactly what the arrival
+ * gate exists to catch.
+ */
+export function isAirportPickup(origin: string | null | undefined): boolean {
+  const s = (origin ?? '').toUpperCase();
+  if (s.includes('AIRPORT') || s.includes('ORLANDO INTERNATIONAL')) return true;
+  // Whole words only, so a hotel with 'mco' inside its name is not an airport.
+  return s.split(/[^A-Z]+/).some((w) => w === 'MCO' || w === 'SFB');
+}
+
+/** True when this trip may not be assigned yet: airport pickup, no arrival. */
+export function needsArrivalBeforeAssign(t: {
+  origin: string;
+  flight_landed_at: string | null;
+}): boolean {
+  return isAirportPickup(t.origin) && !t.flight_landed_at;
+}
+
+/**
  * Parse what someone types off a Google result — "2:16 PM", "14:16", "216pm" —
  * against a reference day, in Orlando local. Returns null if it isn't a time.
  *
