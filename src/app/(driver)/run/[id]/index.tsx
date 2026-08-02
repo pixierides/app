@@ -20,7 +20,7 @@ import {
   minutesBetween,
   partyLine,
 } from '@/lib/format';
-import { callDispatch, navigateTo } from '@/lib/links';
+import { navigateTo } from '@/lib/links';
 import { fetchDriverRuns, ratePassenger, setRunState, type DriverRun } from '@/lib/trips';
 import { useAuth } from '@/providers/auth';
 import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
@@ -157,18 +157,14 @@ export default function RunScreen() {
             </IncludedRow>
           </View>
 
-          <View style={styles.secondaryRow}>
-            <Button
-              variant="secondary"
-              onDark
-              onPress={() => navigateTo(run.pickup_address ?? run.origin)}
-            >
-              Navigate
-            </Button>
-            <Button variant="secondary" onDark onPress={callDispatch}>
-              Dispatch
-            </Button>
-          </View>
+          <Button
+            variant="secondary"
+            onDark
+            fullWidth
+            onPress={() => navigateTo(run.pickup_address ?? run.origin)}
+          >
+            Navigate
+          </Button>
 
           <Button size="lg" fullWidth onPress={() => advance('arrived')}>
             {claim ? `I've arrived at ${claim}` : "I've arrived"}
@@ -255,18 +251,14 @@ export default function RunScreen() {
             </View>
           </Card>
 
-          <View style={styles.secondaryRow}>
-            <Button
-              variant="secondary"
-              onDark
-              onPress={() => navigateTo(run.dropoff_address ?? run.destination)}
-            >
-              Navigate
-            </Button>
-            <Button variant="secondary" onDark onPress={callDispatch}>
-              Dispatch
-            </Button>
-          </View>
+          <Button
+            variant="secondary"
+            onDark
+            fullWidth
+            onPress={() => navigateTo(run.dropoff_address ?? run.destination)}
+          >
+            Navigate
+          </Button>
 
           <Button size="lg" fullWidth onPress={() => advance('complete')}>
             Arrived at drop-off
@@ -478,10 +470,6 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontSize: 15,
     lineHeight: 22,
     color: t.textPrimary,
-  },
-  secondaryRow: {
-    flexDirection: 'row',
-    gap: space.s3,
   },
   caption: {
     fontFamily: font.body400,
