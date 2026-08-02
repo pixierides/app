@@ -286,6 +286,30 @@ export default function DispatchJob() {
             </Card>
           ) : null}
 
+          {/* ——— the return leg — a date, not "4 days out" ——— */}
+          {trip.return_at ? (
+            <Card tone="dark-raised" pad={20} style={styles.block}>
+              <Text style={styles.eyebrow}>RETURN LEG</Text>
+              <Text style={styles.blockTitle}>
+                {new Date(trip.return_at).toLocaleDateString('en-US', {
+                  weekday: 'short',
+                  month: 'short',
+                  day: 'numeric',
+                  timeZone: 'America/New_York',
+                })}{' '}
+                · {formatTime(trip.return_at)}
+              </Text>
+              <Text style={styles.blockBody}>
+                {trip.destination} → {trip.origin}
+                {trip.return_flight ? ` · ${trip.return_flight}` : ''}
+              </Text>
+              <Text style={styles.blockBodyDim}>
+                Not a trip yet, so it is on nobody&apos;s schedule and nobody&apos;s calendar —
+                it needs booking as its own run before a driver can see it.
+              </Text>
+            </Card>
+          ) : null}
+
           {/* ——— the flight, checked by hand ——— */}
           {open && trip.flight_number ? (
             <Card tone="dark-raised" pad={20} style={styles.block}>

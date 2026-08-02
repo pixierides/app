@@ -20,6 +20,21 @@ export function callDispatch() {
   Linking.openURL(`tel:${DISPATCH_PHONE.replace(/-/g, '')}`);
 }
 
+/**
+ * Navigate to a point rather than an address. A street address at MCO drops a
+ * driver at departures; the commercial lane is a coordinate. Still a deep link
+ * out to the platform's maps app — never in-app turn-by-turn.
+ */
+export function navigateToPoint(lat: number, lng: number, label: string) {
+  const q = encodeURIComponent(label);
+  const url = Platform.select({
+    ios: `maps:0,0?daddr=${lat},${lng}&q=${q}`,
+    android: `geo:${lat},${lng}?q=${lat},${lng}(${q})`,
+    default: `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`,
+  });
+  Linking.openURL(url);
+}
+
 export function callNumber(e164: string) {
   Linking.openURL(`tel:${e164}`);
 }

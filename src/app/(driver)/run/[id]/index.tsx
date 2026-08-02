@@ -31,7 +31,8 @@ import {
   partyLine,
   terminalLabel,
 } from '@/lib/format';
-import { callNumber, navigateTo, textNumber } from '@/lib/links';
+import { callNumber, navigateTo, navigateToPoint, textNumber } from '@/lib/links';
+import { laneLabel, lanePhrase, terminalPickup } from '@/lib/terminals';
 import {
   fetchDriverRuns,
   kerbLoop,
@@ -46,9 +47,25 @@ import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 
-/** The opening text from the cell lot — short, and it asks the one question. */
-const TEXT_TEMPLATE = (run: DriverRun) =>
-  `Hi ${firstName(run.customer_name)}, it's your Pixie Rides driver. I'm parked a few minutes from the terminal — just text me when you have your bags and I'll pull up to the door.`;
+/**
+ * What the driver sends, which is not the same message twice.
+ *
+ * From the cell lot it asks the one question. From the kerb it answers the
+ * one the family is about to ask — where are you — and at MCO the answer is
+ * the Ground Transportation level, not "outside", because arrivals and
+ * departures are different floors and the wrong one costs ten minutes.
+ */
+const TEXT_TEMPLATE = (run: DriverRun) => {
+  const name = firstName(run.customer_name);
+  const lane = lanePhrase(terminalLabel(run.flight_terminal, run.meet_point));
+  const door = doorFrom(run.meet_point);
+
+  if (run.driver_state === 'at_kerb' || run.driver_state === 'called') {
+    const where = [lane ?? 'the terminal', door].filter(Boolean).join(', ');
+    return `Hi ${name}, your Pixie Rides driver here. I'm on the Ground Transportation level at ${where} — one level down from baggage claim. Look for ${run.vehicle ?? 'my car'}; I'll be holding a sign with your name.`;
+  }
+  return `Hi ${name}, it's your Pixie Rides driver. I'm parked a few minutes from the terminal — just text me when you have your bags and I'll pull up to the door.`;
+};
 
 /**
  * The flight, big enough to read at arm's length in a parked car. The airline
@@ -390,6 +407,11 @@ export default function RunScreen() {
                   ? `Head to ${door}.`
                   : 'Head to the terminal.'}
           </Text>
+          {laneLabel(terminal) ? (
+            <Text style={styles.subLine}>
+              Ground Transportation level · {terminalPickup(terminal)!.lane.toLowerCase()}
+            </Text>
+          ) : null}
           {run.called_by === 'dispatch' ? (
             <Text style={styles.subLine}>Dispatch sent you in.</Text>
           ) : (
@@ -404,7 +426,9 @@ export default function RunScreen() {
               {terminal ? (
                 <View style={styles.kvRow}>
                   <Text style={styles.kvLabel}>Terminal</Text>
-                  <Text style={styles.kvValue}>{terminal}</Text>
+                  <Text style={styles.kvValue}>
+                    {[terminal, terminalPickup(terminal)?.lane].filter(Boolean).join(' · ')}
+                  </Text>
                 </View>
               ) : null}
               {door ? (
@@ -424,9 +448,13 @@ export default function RunScreen() {
             variant="secondary"
             onDark
             fullWidth
-            onPress={() => navigateTo(run.pickup_address ?? run.origin)}
+            onPress={() => {
+              const lane = terminalPickup(terminal);
+              if (lane) navigateToPoint(lane.lat, lane.lng, `Terminal ${lane.terminal} ${lane.lane}`);
+              else navigateTo(run.pickup_address ?? run.origin);
+            }}
           >
-            Navigate
+            {terminalPickup(terminal) ? 'Navigate to the lane' : 'Navigate'}
           </Button>
 
           <Button size="lg" fullWidth onPress={() => advance('at_kerb')}>
@@ -451,7 +479,14 @@ export default function RunScreen() {
       <SafeAreaView style={styles.screen}>
         <ScrollView contentContainerStyle={styles.scroll}>
           {back}
-          <Text style={styles.eyebrow}>AT THE KERB</Text>
+          <Text style={styles.eyebrow}>
+            AT THE KERB
+            {lanePhrase(terminalLabel(run.flight_terminal, run.meet_point))
+              ? ` · ${lanePhrase(terminalLabel(run.flight_terminal, run.meet_point))!
+                  .replace(',', '')
+                  .toUpperCase()}`
+              : ''}
+          </Text>
 
           <View style={styles.clockWrap}>
             <Text style={styles.clock}>{clock}</Text>
@@ -647,7 +682,7 @@ export default function RunScreen() {
                 <Text
                   style={[
                     styles.star,
-                    { color: rated && n <= rated ? color.white : color.foamDim },
+                    { color: rated && n <= rated ? color.star : color.starEmpty },
                   ]}
                 >
                   ★

@@ -24,6 +24,12 @@ export const color = {
   green: '#4E9E7A', // fills (tick backgrounds, badges)
   greenText: '#367254', // green as small text on light
 
+  // Ratings only. A star reads as a star when it is gold; anything else and
+  // people hunt for the meaning. Not part of the brand palette and used
+  // nowhere except stars.
+  star: '#F5B301',
+  starEmpty: '#C9DFED',
+
   // Text & tone
   ink: '#08344F',
   ink2: '#3D6480',
