@@ -22,11 +22,13 @@ export type DispatchTrip = {
   meet_point: string | null;
   flight_number: string | null;
   flight_landed_at: string | null;
+  flight_origin: string | null;
   flight_terminal: string | null;
   flight_status_note: string | null;
   flight_checked_at: string | null;
   flight_checked_by_role: string | null;
   international: boolean;
+  international_confirmed_at: string | null;
   adults: number;
   children: number | null;
   car_seats: string | null;
@@ -93,7 +95,7 @@ export async function fetchDispatchTrips(): Promise<DispatchTrip[]> {
   const { data, error } = await supabase
     .from('trips')
     .select(
-      'id, created_at, reference, source, customer_name, customer_phone, customer_email, party_label, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, flight_landed_at, flight_terminal, flight_status_note, flight_checked_at, flight_checked_by_role, international, adults, children, car_seats, stroller, notes, price_cents, paid_at, hold_until, status, driver_state, called_by, kerb_loops, customer_id, driver_id, driver_name, vehicle, written_off',
+      'id, created_at, reference, source, customer_name, customer_phone, customer_email, party_label, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, flight_origin, flight_landed_at, flight_terminal, flight_status_note, flight_checked_at, flight_checked_by_role, international, international_confirmed_at, adults, children, car_seats, stroller, notes, price_cents, paid_at, hold_until, status, driver_state, called_by, kerb_loops, customer_id, driver_id, driver_name, vehicle, written_off',
     )
     .order('pickup_at', { ascending: true });
   if (error) throw error;

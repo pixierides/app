@@ -30,6 +30,7 @@ import { flightLabel } from '@/lib/airlines';
 import {
   checkedAgo,
   hasLanded,
+  needsDomesticGlance,
   openFlightSearch,
   setInternational,
   updateFlightAsDispatch,
@@ -310,6 +311,7 @@ export default function DispatchJob() {
                     }`
                   : 'Nobody has checked this yet.'}
                 {trip.international ? ' · international, 75 min buffer' : ' · domestic, 45 min buffer'}
+                {trip.international_confirmed_at ? ' (confirmed)' : ''}
               </Text>
               <View style={styles.flightRow}>
                 <Button
@@ -329,14 +331,45 @@ export default function DispatchJob() {
                   Update
                 </Button>
               </View>
-              <Button
-                variant="ghost"
-                onDark
-                fullWidth
-                onPress={() => run(() => setInternational(trip.id, !trip.international))}
-              >
-                {trip.international ? 'Actually domestic' : 'Actually international'}
-              </Button>
+              {/* The carrier guess is blind to a US airline arriving from
+                  abroad, so an unreviewed domestic call gets asked about once
+                  rather than being quietly wrong by half an hour. */}
+              {needsDomesticGlance(trip) ? (
+                <>
+                  <Text style={styles.blockBodyDim}>
+                    Domestic? {firstName(trip.customer_name)} is on a US carrier, which could
+                    still be flying in from abroad — that&apos;s 75 minutes for immigration, not
+                    45. The search above shows where it left from.
+                  </Text>
+                  <View style={styles.flightRow}>
+                    <Button
+                      variant="secondary"
+                      onDark
+                      style={styles.flightButton}
+                      onPress={() => run(() => setInternational(trip.id, false))}
+                    >
+                      Yes, domestic
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onDark
+                      style={styles.flightButton}
+                      onPress={() => run(() => setInternational(trip.id, true))}
+                    >
+                      International
+                    </Button>
+                  </View>
+                </>
+              ) : (
+                <Button
+                  variant="ghost"
+                  onDark
+                  fullWidth
+                  onPress={() => run(() => setInternational(trip.id, !trip.international))}
+                >
+                  {trip.international ? 'Actually domestic' : 'Actually international'}
+                </Button>
+              )}
             </Card>
           ) : null}
 

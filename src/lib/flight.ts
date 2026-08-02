@@ -101,6 +101,25 @@ export function checkedAgo(iso: string | null | undefined): string | null {
   return `${h} hour${h === 1 ? '' : 's'} ago`;
 }
 
+/**
+ * The carrier guess cannot see a US airline flying in from abroad — DL from
+ * LHR, AA from CUN, UA from GRU all look domestic and would get 45 minutes
+ * when they need 75. So while a domestic call is still just a guess, dispatch
+ * gets asked. Deciding it either way makes the prompt go away.
+ */
+export function needsDomesticGlance(t: {
+  flight_number: string | null;
+  flight_origin?: string | null;
+  international: boolean;
+  international_confirmed_at: string | null;
+}): boolean {
+  if (!t.flight_number) return false;
+  if (t.international) return false;
+  if (t.international_confirmed_at) return false;
+  // A known departure airport is the accurate signal; no need to ask.
+  return !t.flight_origin;
+}
+
 const STALE_MINUTES = 60;
 const SOON_HOURS = 2;
 

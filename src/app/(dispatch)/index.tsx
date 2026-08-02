@@ -52,7 +52,6 @@ function proximity(pickupAtIso: string): string {
 
 /** "flight moved" / "cutoff passed — decide" / ... reasons for Needs a look. */
 function lookReason(t: DispatchTrip): string | null {
-  if (needsFlightCheck(t)) return `Check ${t.flight_number?.replace(/\s+/g, '')}`;
   if (staleHolding(t)) return `${STALE_HOLDING_MINUTES}+ min in the cell lot — check on the driver`;
   if (pastCutoff(t)) return 'cutoff passed — decide';
   if (t.pickup_at_was) return 'flight moved';
@@ -109,7 +108,7 @@ export default function Board() {
 
   const needsLook = open
     .map((t) => ({ trip: t, reason: lookReason(t) }))
-    .filter((r): r is { trip: DispatchTrip; reason: string } => r.reason !== null)
+    .filter((r) => r.reason !== null || needsFlightCheck(r.trip))
     .filter((r) => r.trip.id !== urgent?.id);
 
   const filtered =
@@ -154,17 +153,24 @@ export default function Board() {
     rolling: 'Nobody is rolling right now.',
   };
 
-  const rowFor = (t: DispatchTrip, subtitle: string) => (
-    <ListRow
-      key={t.id}
-      onDark
-      title={t.customer_name}
-      subtitle={subtitle}
-      trailing={<Badge tone="on-dark">{proximity(t.pickup_at)}</Badge>}
-      chevron
-      onPress={() => router.push(`/job/${t.id}` as never)}
-    />
-  );
+  // "Check DL1487" rides on the row, not in the reason line: a marker to notice
+  // at 1am, never at the cost of hiding why else the trip needs a look.
+  const rowFor = (t: DispatchTrip, subtitle: string) => {
+    const check = needsFlightCheck(t)
+      ? `Check ${t.flight_number?.replace(/\s+/g, '')}`
+      : null;
+    return (
+      <ListRow
+        key={t.id}
+        onDark
+        title={check ? `${t.customer_name} · ${check}` : t.customer_name}
+        subtitle={subtitle}
+        trailing={<Badge tone="on-dark">{proximity(t.pickup_at)}</Badge>}
+        chevron
+        onPress={() => router.push(`/job/${t.id}` as never)}
+      />
+    );
+  };
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
@@ -296,7 +302,9 @@ export default function Board() {
                         {needsLook.map(({ trip, reason }) =>
                           rowFor(
                             trip,
-                            `${reason} · ${trip.reference} · ${trip.origin} → ${trip.destination}`,
+                            [reason, trip.reference, `${trip.origin} → ${trip.destination}`]
+                              .filter(Boolean)
+                              .join(' · '),
                           ),
                         )}
                       </Card>
