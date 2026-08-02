@@ -13,7 +13,7 @@ import { Button, Card, ListRow, RouteChip } from '@/components/ui';
 import { setMyShift } from '@/lib/driver';
 import { addDays, easternDate, easternToday, labelForDay } from '@/lib/calendar';
 import { fetchDriverRuns, type DriverRun } from '@/lib/trips';
-import { firstName, formatTime, inMinutes } from '@/lib/format';
+import { firstName, formatTime, greetingWord, inMinutes } from '@/lib/format';
 import { useAuth } from '@/providers/auth';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
@@ -99,7 +99,7 @@ export default function DriverHome() {
       >
         <View style={styles.headerRow}>
           <Text style={styles.greeting}>
-            Evening, {firstName(profile?.full_name) || 'driver'}.
+            {greetingWord()}, {firstName(profile?.full_name) || 'driver'}.
           </Text>
           <Pressable
             accessibilityRole="switch"
@@ -149,7 +149,7 @@ export default function DriverHome() {
 
             {later.length > 0 ? (
               <View style={styles.laterWrap}>
-                <Text style={styles.sectionLabel}>LATER TONIGHT</Text>
+                <Text style={styles.sectionLabel}>LATER TODAY</Text>
                 <Card tone="surface" pad={8}>
                   {later.map((r) => (
                     <ListRow
@@ -174,7 +174,7 @@ export default function DriverHome() {
           <View style={styles.empty}>
             <Text style={styles.emptyH1}>You&apos;re all caught up.</Text>
             <Text style={styles.emptySub}>
-              Nothing tonight.{' '}
+              Nothing left today.{' '}
               {onShift
                 ? "Stay online and we'll ping you the moment dispatch has one."
                 : 'Go online and dispatch will know you’re available.'}

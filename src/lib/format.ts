@@ -17,6 +17,24 @@ export function formatTime(iso: string | Date): string {
   }).format(d);
 }
 
+/**
+ * "Morning" / "Afternoon" / "Evening" — Orlando local, same reason as
+ * formatTime: a driver's greeting should match the shift they're working, not
+ * the timezone their phone happens to be in.
+ */
+export function greetingWord(now: Date = new Date()): string {
+  const hour = Number(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      hour: '2-digit',
+      hour12: false,
+    }).format(now),
+  );
+  if (hour < 12) return 'Morning';
+  if (hour < 17) return 'Afternoon';
+  return 'Evening';
+}
+
 /** "in 42 min" / "in 2 h 10 min" / "now" — 36a run-list eyebrow only. */
 export function inMinutes(iso: string): string {
   const ms = new Date(iso).getTime() - Date.now();
