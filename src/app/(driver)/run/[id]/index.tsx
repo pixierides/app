@@ -2,14 +2,16 @@
  * The driver's run, one screen per state — distinct states, never one screen
  * with things greyed out:
  *   en_route/pending → 63a  At the airport
- *   holding          →      Cell lot. No action button, deliberately.
+ *   holding          →      Cell lot. Reach the passenger from here.
  *   called           →      They have their bags — move to the terminal
  *   at_kerb          →      The one countdown in the whole app
  *   on_trip          → 29a  Trip in progress
  *   complete         → 30a  Trip complete
  *
- * The driver cannot advance holding → called; that release comes from the
- * family tapping "I've got my bags", or from dispatch. Enforced server-side.
+ * The driver advances the run. All day-of contact is theirs: they text or
+ * call from the cell lot, the passenger answers, and the driver taps. Nobody
+ * else in the chain knows before the driver does. Dispatch can override any
+ * state, but that is an exception path, not part of the loop.
  * No money anywhere. Navigate always deep-links out.
  */
 import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-router';
@@ -25,7 +27,7 @@ import {
   minutesBetween,
   partyLine,
 } from '@/lib/format';
-import { callNumber, navigateTo } from '@/lib/links';
+import { callNumber, navigateTo, textNumber } from '@/lib/links';
 import {
   fetchDriverRuns,
   kerbLoop,
@@ -39,6 +41,10 @@ import { useAuth } from '@/providers/auth';
 import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
+
+/** The opening text from the cell lot — short, and it asks the one question. */
+const TEXT_TEMPLATE = (run: DriverRun) =>
+  `Hi ${firstName(run.customer_name)}, it's your Pixie Rides driver. I'm parked a few minutes from the terminal — just text me when you have your bags and I'll pull up to the door.`;
 
 export default function RunScreen() {
   const th = useTheme();
@@ -63,7 +69,8 @@ export default function RunScreen() {
     }, [load]),
   );
 
-  // The holding screen has no button — the release has to arrive by itself.
+  // Only a dispatch override changes this run from outside now, but when it
+  // does the driver should see it without poking the app.
   const here = runs?.find((r) => r.id === id);
   useWaitingRefresh(here?.driver_state === 'holding' || here?.driver_state === 'called', load);
 
@@ -196,7 +203,7 @@ export default function RunScreen() {
             I&apos;m in the cell lot
           </Button>
           <Text style={styles.caption}>
-            We&apos;ll tell you the moment they have their bags.
+            You&apos;ll text {firstName(run.customer_name)} from there.
           </Text>
         </ScrollView>
       </SafeAreaView>
@@ -204,8 +211,13 @@ export default function RunScreen() {
   }
 
   // ——— Holding · the cell lot ——————————————————————————————
-  // No action button. The absence of one IS the design: it is what stops a
-  // driver drifting to the kerb before the family has their bags.
+  // Reaching the passenger is the driver's actual job at this moment, so the
+  // phone is on the screen rather than two taps away.
+  //
+  // The button says "Passenger has their bags", never "Heading to terminal".
+  // One names a fact the driver was told; the other names a thing the driver
+  // decided. That wording is what keeps a driver honest with themselves at
+  // minute forty in a cell lot.
   if (run.driver_state === 'holding') {
     return (
       <SafeAreaView style={styles.screen}>
@@ -217,16 +229,42 @@ export default function RunScreen() {
           </Text>
           <Text style={styles.h1}>Wait here.</Text>
           <Text style={styles.subLine}>
-            We&apos;ll tell you when they&apos;ve got their bags.
+            Text {firstName(run.customer_name)} and ask them to say when they have their bags.
           </Text>
 
           <Card tone="surface" pad={20} style={styles.infoCard}>
             <Text style={styles.cardName}>{run.customer_name}</Text>
-            <Text style={styles.cardSub}>
-              {run.guests ? `${run.guests} guests` : partyLine(run.adults, run.children)}
-              {run.suitcases ? ` · ${run.suitcases} suitcases` : ''}
-            </Text>
+            {run.customer_phone ? (
+              <Text style={styles.cardSub}>{run.customer_phone}</Text>
+            ) : null}
+            {run.customer_phone ? (
+              <View style={styles.reachRow}>
+                <Button
+                  variant="secondary"
+                  onDark
+                  style={styles.reachButton}
+                  onPress={() => textNumber(run.customer_phone!, TEXT_TEMPLATE(run))}
+                >
+                  Text
+                </Button>
+                <Button
+                  variant="secondary"
+                  onDark
+                  style={styles.reachButton}
+                  onPress={() => callNumber(run.customer_phone!)}
+                >
+                  Call
+                </Button>
+              </View>
+            ) : null}
             <View style={styles.kvRows}>
+              <View style={styles.kvRow}>
+                <Text style={styles.kvLabel}>Party</Text>
+                <Text style={styles.kvValue}>
+                  {run.guests ? `${run.guests} guests` : partyLine(run.adults, run.children)}
+                  {run.suitcases ? ` · ${run.suitcases} suitcases` : ''}
+                </Text>
+              </View>
               {run.flight_number ? (
                 <View style={styles.kvRow}>
                   <Text style={styles.kvLabel}>{run.flight_number}</Text>
@@ -250,8 +288,11 @@ export default function RunScreen() {
             </View>
           </Card>
 
+          <Button size="lg" fullWidth onPress={() => advance('called')}>
+            Passenger has their bags
+          </Button>
           <Text style={styles.caption}>
-            Bags take 20 to 50 minutes after a plane lands. This screen changes on its own.
+            Bags take 20 to 50 minutes after a plane lands. Tap when they tell you, not before.
           </Text>
         </ScrollView>
       </SafeAreaView>
@@ -274,7 +315,11 @@ export default function RunScreen() {
           </Text>
           {run.called_by === 'dispatch' ? (
             <Text style={styles.subLine}>Dispatch sent you in.</Text>
-          ) : null}
+          ) : (
+            <Text style={styles.subLine}>
+              {firstName(run.customer_name)} told you they have their bags.
+            </Text>
+          )}
 
           <Card tone="surface" pad={20} style={styles.infoCard}>
             <Text style={styles.cardName}>{run.customer_name}</Text>
@@ -684,6 +729,15 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.body400,
     fontSize: 14,
     color: t.textDim,
+  },
+  reachRow: {
+    flexDirection: 'row',
+    gap: space.s3,
+    marginTop: space.s2,
+  },
+  reachButton: {
+    flexGrow: 1,
+    flexBasis: 0,
   },
   signPreviewWrap: {
     gap: space.s3,

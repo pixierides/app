@@ -115,16 +115,6 @@ export async function fetchMyTrips(): Promise<CustomerTrip[]> {
   return (data ?? []) as CustomerTrip[];
 }
 
-/**
- * The one tap that releases the driver from the cell lot. Bags-collected is
- * the trigger — never flight-landed, which is 20 to 50 minutes too early and
- * is exactly what burns the driver's fifteen minutes at the kerb.
- */
-export async function bagsCollected(tripId: string): Promise<void> {
-  const { error } = await supabase.rpc('customer_bags_collected', { p_trip_id: tripId });
-  if (error) throw error;
-}
-
 /** Opens the pay screen server-side: starts the 20-minute hold on first open. */
 export async function openPayScreen(tripId: string): Promise<string> {
   const { data, error } = await supabase.rpc('customer_open_pay', { p_trip_id: tripId });

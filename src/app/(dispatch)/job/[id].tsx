@@ -41,6 +41,7 @@ export default function DispatchJob() {
   const [vehicle, setVehicle] = useState(DEFAULT_VEHICLE);
   const [meetPoint, setMeetPoint] = useState(DEFAULT_MEET);
   const [confirmUnassign, setConfirmUnassign] = useState(false);
+  const [overrideOpen, setOverrideOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -274,7 +275,7 @@ export default function DispatchJob() {
             </Card>
           ) : null}
 
-          {/* ——— where the run actually is, and the override ——— */}
+          {/* ——— where the run is, plus the exception path ——— */}
           {open && trip.driver_id && trip.driver_state !== 'pending' ? (
             <Card tone="dark-raised" pad={20} style={styles.block}>
               <Text style={styles.eyebrow}>RUN STATE</Text>
@@ -285,43 +286,53 @@ export default function DispatchJob() {
                   : ''}
               </Text>
 
-              {trip.driver_state === 'holding' ? (
-                <>
-                  <Text style={styles.blockBodyDim}>
-                    {firstName(trip.driver_name)} is parked and waiting for the family to say
-                    they have their bags. If they aren&apos;t going to tap — no app, asleep after
-                    a long flight — send the driver in yourself.
-                  </Text>
-                  <Button
-                    size="md"
-                    fullWidth
-                    onPress={() => run(() => setRunState(trip.id, 'called'))}
-                  >
-                    {busy ? 'One moment…' : 'Send them in'}
-                  </Button>
-                </>
+              {trip.driver_state === 'called' || trip.driver_state === 'at_kerb' ? (
+                <Text style={styles.blockBodyDim}>
+                  {trip.called_by === 'dispatch'
+                    ? 'You moved this one along.'
+                    : `${firstName(trip.driver_name)} heard from the passenger.`}
+                  {trip.kerb_loops > 0
+                    ? ` Circled ${trip.kerb_loops} time${trip.kerb_loops === 1 ? '' : 's'}.`
+                    : ''}
+                </Text>
               ) : null}
 
-              {trip.driver_state === 'called' || trip.driver_state === 'at_kerb' ? (
+              {/* The driver runs this loop. You step in when it breaks. */}
+              {overrideOpen ? (
                 <>
                   <Text style={styles.blockBodyDim}>
-                    {trip.called_by === 'dispatch'
-                      ? 'You sent them in.'
-                      : 'The family said they had their bags.'}
-                    {trip.kerb_loops > 0
-                      ? ` Circled ${trip.kerb_loops} time${trip.kerb_loops === 1 ? '' : 's'}.`
-                      : ''}
+                    {firstName(trip.driver_name)} moves this run himself — he texts the passenger
+                    and taps when they answer. Only step in if that has broken: passenger
+                    unreachable, flight chaos, or the driver can&apos;t.
                   </Text>
-                  <Button
-                    variant="secondary"
-                    onDark
-                    fullWidth
-                    onPress={() => run(() => setRunState(trip.id, 'holding'))}
-                  >
-                    {busy ? 'One moment…' : 'Back to holding'}
+                  {trip.driver_state === 'holding' ? (
+                    <Button
+                      variant="secondary"
+                      onDark
+                      fullWidth
+                      onPress={() => run(() => setRunState(trip.id, 'called'))}
+                    >
+                      {busy ? 'One moment…' : 'Send them in anyway'}
+                    </Button>
+                  ) : (
+                    <Button
+                      variant="secondary"
+                      onDark
+                      fullWidth
+                      onPress={() => run(() => setRunState(trip.id, 'holding'))}
+                    >
+                      {busy ? 'One moment…' : 'Put back in the cell lot'}
+                    </Button>
+                  )}
+                  <Button variant="ghost" onDark fullWidth onPress={() => setOverrideOpen(false)}>
+                    Leave it to {firstName(trip.driver_name) || 'the driver'}
                   </Button>
                 </>
-              ) : null}
+              ) : (
+                <Button variant="ghost" onDark fullWidth onPress={() => setOverrideOpen(true)}>
+                  Something&apos;s gone wrong — override
+                </Button>
+              )}
             </Card>
           ) : null}
 

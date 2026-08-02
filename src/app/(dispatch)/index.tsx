@@ -51,7 +51,7 @@ function proximity(pickupAtIso: string): string {
 
 /** "flight moved" / "cutoff passed — decide" / ... reasons for Needs a look. */
 function lookReason(t: DispatchTrip): string | null {
-  if (staleHolding(t)) return `holding ${STALE_HOLDING_MINUTES}+ min — send them in`;
+  if (staleHolding(t)) return `${STALE_HOLDING_MINUTES}+ min in the cell lot — check on the driver`;
   if (pastCutoff(t)) return 'cutoff passed — decide';
   if (t.pickup_at_was) return 'flight moved';
   if (t.status === 'paid' && !t.driver_id) return 'no driver assigned';

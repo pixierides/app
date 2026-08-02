@@ -46,15 +46,16 @@ export const RUN_STATE_LABELS: Record<DriverRunState, string> = {
   pending: 'not started',
   en_route: 'driving to the airport',
   holding: 'in the cell lot',
-  called: 'heading to the terminal',
+  called: 'passenger has their bags — heading in',
   at_kerb: 'at the kerb',
   on_trip: 'on the trip',
   complete: 'done',
 };
 
 /**
- * A run sitting in the cell lot this long after its flight landed usually
- * means the family is never going to tap. Dispatch has to step in.
+ * The driver runs this loop, so a run still sitting in the cell lot this long
+ * after its flight landed means the driver hasn't heard back — or hasn't
+ * tapped. Either way it is worth a look.
  */
 export const STALE_HOLDING_MINUTES = 45;
 

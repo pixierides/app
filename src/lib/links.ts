@@ -24,6 +24,12 @@ export function callNumber(e164: string) {
   Linking.openURL(`tel:${e164}`);
 }
 
+/** Day-of contact is the driver's job, and most of it is a text. */
+export function textNumber(e164: string, body?: string) {
+  const q = body ? `${Platform.OS === 'ios' ? '&' : '?'}body=${encodeURIComponent(body)}` : '';
+  Linking.openURL(`sms:${e164}${q}`);
+}
+
 export function emailTo(address: string) {
   Linking.openURL(`mailto:${address}`);
 }

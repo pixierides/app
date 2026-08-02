@@ -14,7 +14,6 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Button, Card, IncludedRow, TripStatus } from '@/components/ui';
 import {
-  bagsCollected,
   dollars,
   fetchMyTrips,
   SPINE_LABELS,
@@ -43,7 +42,6 @@ export default function TripDetail() {
   const styles = themed[th.mode];
   const { id } = useLocalSearchParams<{ id: string }>();
   const [trip, setTrip] = useState<CustomerTrip | null>(null);
-  const [bagsBusy, setBagsBusy] = useState(false);
 
   const load = useCallback(
     () => fetchMyTrips().then((trips) => setTrip(trips.find((t) => t.id === id) ?? null)),
@@ -56,23 +54,12 @@ export default function TripDetail() {
     }, [load]),
   );
 
-  const onBagsCollected = async () => {
-    if (bagsBusy) return;
-    setBagsBusy(true);
-    try {
-      await bagsCollected(id);
-      await load();
-    } finally {
-      setBagsBusy(false);
-    }
-  };
-
   if (!trip) return <SafeAreaView style={styles.screen} />;
 
   const spineIndex = Math.max(0, SPINE_ORDER.indexOf(trip.status));
   const landed = !!trip.flight_landed_at;
-  // The driver is parked in the cell lot and cannot move until this trip says
-  // the bags are collected. Flight-landed deliberately does not do it.
+  // The driver is parked in the cell lot and will make contact himself. The
+  // customer has nothing to tap: day-of communication is the driver's job.
   const driverHolding = trip.driver_state === 'holding';
   const driverCalled = trip.driver_state === 'called';
   const driverHere = trip.driver_state === 'at_kerb';
@@ -203,7 +190,7 @@ export default function TripDetail() {
           </Card>
         ) : null}
 
-        {/* ——— the driver is holding — one tap releases him ——— */}
+        {/* ——— the driver is holding and will make contact ——— */}
         {driverHolding ? (
           <Card tone="surface" texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>
@@ -213,12 +200,9 @@ export default function TripDetail() {
             </Text>
             <Text style={styles.blockTitle}>Take your time.</Text>
             <Text style={styles.blockBody}>
-              {trip.driver_name ?? 'Your driver'} is parked a few minutes away. Tap when you have
-              your luggage and we&apos;ll bring your car to the door.
+              {trip.driver_name ?? 'Your driver'} is parked a few minutes away and will text you.
+              Reply once you have your luggage and he&apos;ll bring the car to the door.
             </Text>
-            <Button size="lg" fullWidth onPress={onBagsCollected} disabled={bagsBusy}>
-              {bagsBusy ? 'One moment…' : "I've got my bags"}
-            </Button>
           </Card>
         ) : null}
 
