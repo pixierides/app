@@ -70,7 +70,8 @@ export default function TripDetail() {
   const upcoming =
     trip.status !== 'complete' && trip.status !== 'cancelled' && trip.status !== 'no_show';
   // Recomputed on focus (fetch re-renders); a formatted boundary, never a countdown.
-  const pState = policyState(trip.pickup_at, new Date(), trip.payment_due_at);
+  const pState = policyState(trip.pickup_at, new Date(), trip.free_cancel_until);
+  const freeCancelAt = cancelDeadline(trip.free_cancel_until);
 
   const steps = SPINE_ORDER.map((s) => ({ title: SPINE_LABELS[s] }));
 
@@ -324,10 +325,15 @@ export default function TripDetail() {
           <Card tone="surface" pad={20} style={styles.block}>
             {pState === 'A' ? (
               <>
-                <Text style={styles.blockBody}>
-                  Free cancellation until{' '}
-                  {formatDeadline(cancelDeadline(trip.pickup_at, trip.payment_due_at))}.
-                </Text>
+                {/* State A only exists while free cancellation is live, so the
+                    deadline is always present here — but read it rather than
+                    assert it, because promising a date we don't have is the
+                    exact bug this column was added to stop. */}
+                {freeCancelAt ? (
+                  <Text style={styles.blockBody}>
+                    Free cancellation until {formatDeadline(freeCancelAt)}.
+                  </Text>
+                ) : null}
                 <Text style={styles.blockBody}>
                   Change your time or date free, up to 2 hours before pickup.
                 </Text>

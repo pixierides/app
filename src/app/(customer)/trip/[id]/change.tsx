@@ -36,7 +36,7 @@ export default function ChangePickup() {
 
   if (!trip) return <SafeAreaView style={styles.screen} />;
 
-  const pState = policyState(trip.pickup_at, new Date(), trip.payment_due_at);
+  const pState = policyState(trip.pickup_at, new Date(), trip.free_cancel_until);
   if (pState === 'C') {
     return (
       <SafeAreaView style={styles.screen}>

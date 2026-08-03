@@ -35,7 +35,7 @@ export default function CancelTrip() {
 
   if (!trip) return <SafeAreaView style={styles.screen} />;
 
-  const pState = policyState(trip.pickup_at, new Date(), trip.payment_due_at);
+  const pState = policyState(trip.pickup_at, new Date(), trip.free_cancel_until);
   // Cancel is offered in state A always, and in B only while unpaid.
   const cancellable = pState === 'A' || (pState === 'B' && !trip.paid_at);
 

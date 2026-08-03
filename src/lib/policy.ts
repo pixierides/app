@@ -19,15 +19,17 @@ export type PolicyState = 'A' | 'B' | 'C';
 export function policyState(
   pickupAtIso: string,
   now: Date = new Date(),
-  /** The stated deadline. The A/B boundary IS this moment, not a derivation. */
-  paymentDueAtIso?: string | null,
+  /**
+   * trips.free_cancel_until. NULL means free cancellation never applied — the
+   * booking was made inside 48 hours — so state A simply does not exist for it.
+   * Never derived from pickup: booking_deadlines() in the database is the one
+   * place either deadline is computed.
+   */
+  freeCancelUntilIso?: string | null,
 ): PolicyState {
   const pickup = new Date(pickupAtIso).getTime();
   const t = now.getTime();
-  const deadline = paymentDueAtIso
-    ? new Date(paymentDueAtIso).getTime()
-    : pickup - 48 * 3600_000;
-  if (t < deadline) return 'A';
+  if (freeCancelUntilIso && t < new Date(freeCancelUntilIso).getTime()) return 'A';
   if (t < pickup - 2 * 3600_000) return 'B';
   return 'C';
 }
@@ -41,16 +43,12 @@ export function formatDeadline(d: Date): string {
 }
 
 /**
- * The moment free cancellation ends. Same instant as the payment deadline and
- * stated in the confirmation email, so it is read from the trip when present
- * rather than recomputed — a flight delay must not move it.
+ * The moment free cancellation ends, or null when it never applied. Read from
+ * the trip — a flight delay must not move a stated deadline, and nothing
+ * outside booking_deadlines() may compute one.
  */
-export function cancelDeadline(
-  pickupAtIso: string,
-  paymentDueAtIso?: string | null,
-): Date {
-  if (paymentDueAtIso) return new Date(paymentDueAtIso);
-  return new Date(new Date(pickupAtIso).getTime() - 48 * 3600_000);
+export function cancelDeadline(freeCancelUntilIso: string | null): Date | null {
+  return freeCancelUntilIso ? new Date(freeCancelUntilIso) : null;
 }
 
 /** True when paying now makes the booking immediately non-refundable (72d). */
