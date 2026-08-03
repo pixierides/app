@@ -11,6 +11,7 @@ import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'r
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Button, Card, IncludedRow, ListRow } from '@/components/ui';
 import { dollars } from '@/lib/booking';
+import { flightLabel } from '@/lib/airlines';
 import {
   confirmTrip,
   fetchDispatchTrips,
@@ -269,9 +270,13 @@ export default function Board() {
                             · {formatTime(urgent.pickup_at)}
                           </Text>
                         </View>
+                        {/* The name, not party_label — for a web booking that
+                            label IS "Guests: … · Suitcases: …", so using it as
+                            a heading printed the party and hid the customer. */}
                         <Text style={styles.urgentParty}>
-                          {urgent.party_label ?? urgent.customer_name}
-                          {urgent.flight_number ? ` · ${urgent.flight_number}` : ''}
+                          {urgent.customer_name}
+                          {urgent.guests ? ` · ${urgent.guests} guests` : ''}
+                          {urgent.flight_number ? ` · ${flightLabel(urgent.flight_number)}` : ''}
                         </Text>
                         {urgent.car_seats ? (
                           <IncludedRow onDark>{urgent.car_seats}</IncludedRow>
