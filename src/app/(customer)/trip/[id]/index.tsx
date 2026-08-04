@@ -24,7 +24,7 @@ import {
 import { firstName, formatTime, terminalLabel } from '@/lib/format';
 import { flightLabel } from '@/lib/airlines';
 import { arrivalWord, hasLanded } from '@/lib/flight';
-import { callDispatch, DISPATCH_PHONE } from '@/lib/links';
+import { callDispatch, callNumber, DISPATCH_PHONE, textNumber } from '@/lib/links';
 import { cancelDeadline, formatDeadline, policyState } from '@/lib/policy';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
@@ -72,6 +72,31 @@ export default function TripDetail() {
   // Recomputed on focus (fetch re-renders); a formatted boundary, never a countdown.
   const pState = policyState(trip.pickup_at, new Date(), trip.free_cancel_until);
   const freeCancelAt = cancelDeadline(trip.free_cancel_until);
+  // driver_name is stored as a first name already (split at assignment).
+  // Never assume a pronoun: use the name where we have one, and phrasing that
+  // needs no pronoun where we don't.
+  const driver = trip.driver_name?.trim() || null;
+  const driverOr = driver ?? 'Your driver';
+  // Day-of contact is the driver's job, so the number is offered only while
+  // the run is actually live — not from the moment they were assigned.
+  const canReachDriver =
+    !!trip.driver_phone && (driverHolding || driverCalled || driverHere || onTrip);
+
+  // Same two-button treatment the dispatch line uses, pointed at the driver.
+  const driverContact = (
+    <View style={styles.policyActions}>
+      <Button
+        variant="secondary"
+        onDark
+        onPress={() => textNumber(trip.driver_phone!)}
+      >
+        Text {driver ?? 'driver'}
+      </Button>
+      <Button variant="ghost" onDark onPress={() => callNumber(trip.driver_phone!)}>
+        Call {driver ?? 'driver'}
+      </Button>
+    </View>
+  );
 
   const steps = SPINE_ORDER.map((s) => ({ title: SPINE_LABELS[s] }));
 
@@ -153,6 +178,25 @@ export default function TripDetail() {
           </Card>
         ) : null}
 
+        {/* ——— no-show · excluded from `upcoming`, so it had no block and the
+             screen went silent in the state most likely to cause a call ——— */}
+        {trip.status === 'no_show' ? (
+          <Card tone="surface" pad={20} style={styles.block}>
+            <Text style={styles.blockTitle}>We couldn&apos;t find you.</Text>
+            <Text style={styles.blockBody}>
+              {driverOr} waited at {terminal ?? 'the pickup point'} and we weren&apos;t able to
+              reach you, so the car was released.
+            </Text>
+            <Text style={styles.blockBody}>
+              A held car and driver can&apos;t be recovered, so this booking is
+              non-refundable. If you think this is wrong, call us — a person will look at it.
+            </Text>
+            <Button variant="secondary" onDark fullWidth onPress={callDispatch}>
+              Call {DISPATCH_PHONE}
+            </Button>
+          </Card>
+        ) : null}
+
         {/* ——— status-specific block ——— */}
         {trip.status === 'requested' ? (
           <Card tone="surface" texture pad={20} style={styles.block}>
@@ -203,9 +247,10 @@ export default function TripDetail() {
             </Text>
             <Text style={styles.blockTitle}>Take your time.</Text>
             <Text style={styles.blockBody}>
-              {trip.driver_name ?? 'Your driver'} is parked a few minutes away and will text you.
-              Reply once you have your luggage and he&apos;ll bring the car to the door.
+              {driverOr} is parked a few minutes away and will text you. Reply once you have
+              your luggage and the car comes to the door.
             </Text>
+            {canReachDriver ? driverContact : null}
           </Card>
         ) : null}
 
@@ -219,6 +264,7 @@ export default function TripDetail() {
               {trip.vehicle ? `${trip.vehicle}. ` : ''}
               {terminal ? `Head out from ${terminal}` : 'Head for the pickup doors'} — a few minutes.
             </Text>
+            {canReachDriver ? driverContact : null}
           </Card>
         ) : null}
 
@@ -236,10 +282,19 @@ export default function TripDetail() {
             </Text>
             {trip.vehicle ? (
               <Text style={styles.blockBody}>
-                {trip.vehicle}. {terminal ? `He'll be at ${terminal} holding a sign with your name.` : "He'll be holding a sign with your name."}
+                {trip.vehicle}.{' '}
+                {terminal
+                  ? `${driverOr} will be at ${terminal} holding a sign with your name.`
+                  : `${driverOr} will be holding a sign with your name.`}
               </Text>
             ) : null}
-            {trip.car_seats ? <IncludedRow onDark>Booster already fitted</IncludedRow> : null}
+            {/* The actual seat that was booked. "Booster" was hardcoded, so a
+                rear-facing infant seat was described as a booster. */}
+            {trip.car_seats ? (
+              <IncludedRow onDark>
+                {trip.car_seats.replace(' · free', '')} — fitted before we leave, free
+              </IncludedRow>
+            ) : null}
           </Card>
         ) : null}
 
@@ -251,8 +306,10 @@ export default function TripDetail() {
             </Text>
             <Text style={styles.blockBody}>
               {trip.vehicle ? `Look for ${trip.vehicle}` : 'Look for your car'}
-              {terminal ? ` outside ${terminal}` : ''}. He&apos;s holding a sign with your name.
+              {terminal ? ` outside ${terminal}` : ''}. {driverOr} is holding a sign with your
+              name.
             </Text>
+            {canReachDriver ? driverContact : null}
             <Button
               size="lg"
               fullWidth
@@ -268,8 +325,8 @@ export default function TripDetail() {
             <Text style={styles.eyebrow}>IN TRANSIT</Text>
             <Text style={styles.blockTitle}>On the way to {trip.destination}.</Text>
             <Text style={styles.blockBody}>
-              {trip.driver_name ?? 'Your driver'} has you. Sit back — the price is settled and the
-              route is his job now.
+              {driverOr} has you. Sit back — the price is settled and the route is taken care
+              of.
             </Text>
           </Card>
         ) : null}
@@ -356,10 +413,17 @@ export default function TripDetail() {
               </>
             ) : pState === 'B' ? (
               <>
+                {/* B is inside 48 hours, by which point a human has confirmed —
+                    so the unpaid case is about payment being due, not about
+                    not being charged yet. Wording matches the pay page. */}
                 <Text style={styles.blockBody}>
                   {trip.paid_at
                     ? 'This booking is now non-refundable.'
-                    : "You're not charged until a human confirms."}
+                    : trip.payment_due_at
+                      ? `Payment of ${dollars(trip.price_cents)} is due by ${formatDeadline(
+                          new Date(trip.payment_due_at),
+                        )} to hold your driver. It's non-refundable once paid.`
+                      : `Payment of ${dollars(trip.price_cents)} is due to hold your driver. It's non-refundable once paid.`}
                 </Text>
                 <Text style={styles.blockBody}>
                   You can still change your time or date free, up to 2 hours before pickup.
