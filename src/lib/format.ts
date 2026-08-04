@@ -35,6 +35,27 @@ export function greetingWord(now: Date = new Date()): string {
   return 'Evening';
 }
 
+/**
+ * "this morning" / "this afternoon" / "tonight" for a PICKUP time — Orlando
+ * local, same reason as everything else here.
+ *
+ * Only meaningful when the pickup is actually today; callers check that. An
+ * 11am pickup was being announced as "tonight" because the copy assumed a
+ * flight that had landed meant an evening run.
+ */
+export function partOfDay(iso: string): string {
+  const hour = Number(
+    new Intl.DateTimeFormat('en-US', {
+      timeZone: 'America/New_York',
+      hour: '2-digit',
+      hour12: false,
+    }).format(new Date(iso)),
+  );
+  if (hour < 12) return 'this morning';
+  if (hour < 17) return 'this afternoon';
+  return 'tonight';
+}
+
 /** "in 42 min" / "in 2 h 10 min" / "now" — 36a run-list eyebrow only. */
 export function inMinutes(iso: string): string {
   const ms = new Date(iso).getTime() - Date.now();

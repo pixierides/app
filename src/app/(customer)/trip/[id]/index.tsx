@@ -21,7 +21,8 @@ import {
   STATUS_LABELS,
   type CustomerTrip,
 } from '@/lib/booking';
-import { firstName, formatTime, terminalLabel } from '@/lib/format';
+import { firstName, formatTime, partOfDay, terminalLabel } from '@/lib/format';
+import { easternDate, easternToday } from '@/lib/calendar';
 import { flightLabel } from '@/lib/airlines';
 import { arrivalWord, hasLanded } from '@/lib/flight';
 import { callDispatch, callNumber, DISPATCH_PHONE, textNumber } from '@/lib/links';
@@ -72,6 +73,9 @@ export default function TripDetail() {
   // Recomputed on focus (fetch re-renders); a formatted boundary, never a countdown.
   const pState = policyState(trip.pickup_at, new Date(), trip.free_cancel_until);
   const freeCancelAt = cancelDeadline(trip.free_cancel_until);
+  // "tonight" only if the pickup really is tonight. It was keyed off the
+  // flight having landed, which says nothing about the time of day.
+  const pickupToday = easternDate(trip.pickup_at) === easternToday();
   // driver_name is stored as a first name already (split at assignment).
   // Never assume a pronoun: use the name where we have one, and phrasing that
   // needs no pronoun where we don't.
@@ -276,8 +280,10 @@ export default function TripDetail() {
                 : 'YOUR DRIVER'}
             </Text>
             <Text style={styles.blockTitle}>
-              {trip.driver_name
-                ? `${trip.driver_name} is your driver ${landed ? 'tonight' : ''}`.trim() + '.'
+              {driver
+                ? `${driver} is your driver${
+                    pickupToday ? ` ${partOfDay(trip.pickup_at)}` : ''
+                  }.`
                 : 'Your driver is set.'}
             </Text>
             {trip.vehicle ? (

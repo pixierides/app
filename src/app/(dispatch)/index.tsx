@@ -25,7 +25,8 @@ import {
   type Driver,
 } from '@/lib/dispatch';
 import { needsFlightCheck } from '@/lib/flight';
-import { firstName, formatTime } from '@/lib/format';
+import { easternDate, easternToday } from '@/lib/calendar';
+import { firstName, formatTime, greetingWord } from '@/lib/format';
 import { useAuth } from '@/providers/auth';
 import { color, font, fs, lh, ls, radius, shadow, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
@@ -42,7 +43,13 @@ function isOpen(t: DispatchTrip): boolean {
 function proximity(pickupAtIso: string): string {
   const pickup = new Date(pickupAtIso);
   const h = Math.max(0, Math.round((pickup.getTime() - Date.now()) / 3600_000));
-  if (h < 24) return `Tonight · ${h}h`;
+  // Under 24 hours is not the same thing as tonight: at 10am a pickup 20 hours
+  // out is tomorrow morning. Compare the Orlando date instead of guessing.
+  if (h < 24) {
+    const day = easternDate(pickupAtIso);
+    if (day === easternToday()) return `Today · ${h}h`;
+    return `Tomorrow · ${h}h`;
+  }
   const days = Math.round(h / 24);
   if (days < 7) {
     return `${pickup.toLocaleDateString('en-US', { weekday: 'short' })} · ${days} day${days === 1 ? '' : 's'}`;
@@ -126,6 +133,9 @@ export default function Board() {
     .toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
     .replace(',', '')
     .toUpperCase();
+  // The board is the whole day's work, not the evening's — it said TONIGHT at
+  // ten in the morning.
+  const shiftLabel = greetingWord().toUpperCase();
 
   const doConfirm = async (id: string) => {
     if (busy) return;
@@ -191,7 +201,7 @@ export default function Board() {
       >
         <View style={styles.shell}>
           {/* ——— header ——— */}
-          <Text style={styles.eyebrow}>TONIGHT · {dateLabel}</Text>
+          <Text style={styles.eyebrow}>{shiftLabel} · {dateLabel}</Text>
           <View style={styles.headRow}>
             <Text style={styles.h1}>
               {open.length} run{open.length === 1 ? '' : 's'} on the board

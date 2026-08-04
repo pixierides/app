@@ -10,6 +10,7 @@ import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Card, ListRow } from '@/components/ui';
 import { fetchDispatchTrips, type DispatchTrip } from '@/lib/dispatch';
+import { easternDate, easternToday } from '@/lib/calendar';
 import { formatTime } from '@/lib/format';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
@@ -18,7 +19,13 @@ import { themes, type Theme } from '@/theme/themes';
 function proximity(pickupAtIso: string): string {
   const pickup = new Date(pickupAtIso);
   const h = Math.max(0, Math.round((pickup.getTime() - Date.now()) / 3600_000));
-  if (h < 24) return `Tonight · ${h}h`;
+  // Under 24 hours is not the same thing as tonight: at 10am a pickup 20 hours
+  // out is tomorrow morning. Compare the Orlando date instead of guessing.
+  if (h < 24) {
+    const day = easternDate(pickupAtIso);
+    if (day === easternToday()) return `Today · ${h}h`;
+    return `Tomorrow · ${h}h`;
+  }
   const days = Math.round(h / 24);
   if (days < 7) {
     return `${pickup.toLocaleDateString('en-US', { weekday: 'short' })} · ${days} day${days === 1 ? '' : 's'}`;
