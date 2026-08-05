@@ -7,6 +7,19 @@ import React, { createContext, useCallback, useContext, useMemo, useState } from
 export type BookingDraft = {
   origin: string;
   destination: string;
+  /**
+   * What Places returned, when the customer picked a suggestion. All null for
+   * a typed address — which is a perfectly valid booking, so nothing here is
+   * ever required.
+   */
+  originAddress: string | null;
+  originPlaceId: string | null;
+  originLat: number | null;
+  originLng: number | null;
+  destinationAddress: string | null;
+  destinationPlaceId: string | null;
+  destinationLat: number | null;
+  destinationLng: number | null;
   adults: number;
   children: number;
   seats: number;
@@ -23,6 +36,14 @@ export type BookingDraft = {
 const EMPTY: BookingDraft = {
   origin: 'MCO — Orlando Intl',
   destination: '',
+  originAddress: null,
+  originPlaceId: null,
+  originLat: null,
+  originLng: null,
+  destinationAddress: null,
+  destinationPlaceId: null,
+  destinationLat: null,
+  destinationLng: null,
   adults: 2,
   children: 0,
   seats: 0,

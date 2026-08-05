@@ -2,7 +2,8 @@
  * Booking step 1 of 3 — the route.
  */
 import { router } from 'expo-router';
-import { Button, Input } from '@/components/ui';
+import { Button } from '@/components/ui';
+import { AddressField } from '@/components/AddressField';
 import { BookScaffold } from '@/components/BookScaffold';
 import { useBooking } from '@/providers/booking';
 
@@ -22,18 +23,34 @@ export default function BookRoute() {
         ) : null
       }
     >
-      <Input
+      <AddressField
         onDark
         label="Pickup"
         value={draft.origin}
-        onChangeText={(t) => update({ origin: t })}
+        onChange={(p) =>
+          update({
+            origin: p.label,
+            originAddress: p.address,
+            originPlaceId: p.placeId,
+            originLat: p.lat,
+            originLng: p.lng,
+          })
+        }
       />
-      <Input
+      <AddressField
         onDark
         label="Drop-off"
         placeholder="Hotel, resort or port"
         value={draft.destination}
-        onChangeText={(t) => update({ destination: t })}
+        onChange={(p) =>
+          update({
+            destination: p.label,
+            destinationAddress: p.address,
+            destinationPlaceId: p.placeId,
+            destinationLat: p.lat,
+            destinationLng: p.lng,
+          })
+        }
       />
     </BookScaffold>
   );

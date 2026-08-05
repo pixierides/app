@@ -93,6 +93,15 @@ export type RideRequest = {
   flightNumber: string | null;
   customerName: string;
   email: string;
+  /** From Places when a suggestion was picked; all null for a typed address. */
+  pickupAddress?: string | null;
+  pickupPlaceId?: string | null;
+  pickupLat?: number | null;
+  pickupLng?: number | null;
+  dropoffAddress?: string | null;
+  dropoffPlaceId?: string | null;
+  dropoffLat?: number | null;
+  dropoffLng?: number | null;
 };
 
 export async function submitRideRequest(req: RideRequest): Promise<string> {
@@ -106,6 +115,14 @@ export async function submitRideRequest(req: RideRequest): Promise<string> {
     p_flight_number: req.flightNumber,
     p_customer_name: req.customerName,
     p_email: req.email,
+    p_pickup_address: req.pickupAddress ?? null,
+    p_pickup_place_id: req.pickupPlaceId ?? null,
+    p_pickup_lat: req.pickupLat ?? null,
+    p_pickup_lng: req.pickupLng ?? null,
+    p_dropoff_address: req.dropoffAddress ?? null,
+    p_dropoff_place_id: req.dropoffPlaceId ?? null,
+    p_dropoff_lat: req.dropoffLat ?? null,
+    p_dropoff_lng: req.dropoffLng ?? null,
   });
   if (error) throw error;
   return data as string;

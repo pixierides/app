@@ -52,6 +52,14 @@ export default function BookVerify() {
         flightNumber: draft.flightNumber.trim() || null,
         customerName: draft.customerName,
         email: draft.email,
+        pickupAddress: draft.originAddress,
+        pickupPlaceId: draft.originPlaceId,
+        pickupLat: draft.originLat,
+        pickupLng: draft.originLng,
+        dropoffAddress: draft.destinationAddress,
+        dropoffPlaceId: draft.destinationPlaceId,
+        dropoffLat: draft.destinationLat,
+        dropoffLng: draft.destinationLng,
       });
       reset();
       router.replace({ pathname: '/book/received', params: { tripId } });
