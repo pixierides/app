@@ -32,6 +32,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AddressField, type ChosenPlace } from '@/components/AddressField';
 import { DateTimeField } from '@/components/DateTimeField';
+import { DismissKeyboardArea } from '@/components/DismissKeyboardArea';
 import { FieldError, Picker, Segmented, Stepper } from '@/components/FormControls';
 import { SizeGuideSheet } from '@/components/SizeGuideSheet';
 import { Button, Input } from '@/components/ui';
@@ -292,6 +293,12 @@ export default function BookForm() {
           // anyway, because a scroll is not a tap. A wobbly tap never reaches it.
           onScrollBeginDrag={Keyboard.dismiss}
         >
+          {/* Tapping quiet space dismisses the keyboard. keyboardShouldPersistTaps
+              ="always" is what makes one tap pick an address suggestion, and its
+              cost is that no tap closes the keyboard by itself — so this puts that
+              back on purpose. Carries the container's gap: a layer inserted under
+              a contentContainerStyle takes the gap with it. */}
+          <DismissKeyboardArea style={styles.stack}>
           {errList.length > 0 ? (
             <View style={styles.errSummary} accessibilityRole="alert">
               <Text style={styles.errSummaryLead}>Please fix the following:</Text>
@@ -624,6 +631,7 @@ export default function BookForm() {
               {sendError ? <FieldError>{sendError}</FieldError> : null}
             </View>
           ) : null}
+          </DismissKeyboardArea>
         </ScrollView>
 
         {/*
@@ -745,6 +753,8 @@ const makeStyles = (t: Theme) =>
       paddingHorizontal: space.s5,
       paddingTop: space.s2,
       paddingBottom: space.s5,
+    },
+    stack: {
       gap: space.s4,
     },
     stepBody: { gap: space.s4 },

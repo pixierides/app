@@ -15,6 +15,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { DismissKeyboardArea } from '@/components/DismissKeyboardArea';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
@@ -62,9 +63,15 @@ export function BookScaffold({
           keyboardShouldPersistTaps="always"
           onScrollBeginDrag={Keyboard.dismiss}
         >
-          {eyebrow ? <Text style={styles.eyebrow}>{eyebrow.toUpperCase()}</Text> : null}
-          <Text style={styles.h1}>{title}</Text>
-          {children}
+          {/* Tapping quiet space puts the keyboard away — see
+              DismissKeyboardArea for why "always" made that stop working.
+              It carries the container's gap, because inserting a layer between a
+              contentContainerStyle and its children takes that gap with it. */}
+          <DismissKeyboardArea style={styles.stack}>
+            {eyebrow ? <Text style={styles.eyebrow}>{eyebrow.toUpperCase()}</Text> : null}
+            <Text style={styles.h1}>{title}</Text>
+            {children}
+          </DismissKeyboardArea>
         </ScrollView>
         {footer ? <View style={styles.footer}>{footer}</View> : null}
       </KeyboardAvoidingView>
@@ -99,6 +106,8 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     paddingHorizontal: space.s5,
     paddingTop: space.s3,
     paddingBottom: space.s5,
+  },
+  stack: {
     gap: space.s4,
   },
   eyebrow: {
