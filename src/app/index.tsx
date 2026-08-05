@@ -121,7 +121,7 @@ export default function Home() {
   // The trip fills the screen. Rendered by the shared component, so the day-of
   // surface here and at /trip/[id] can never disagree.
   if (next && (runUnderway(next) || hoursAway(next.pickup_at) <= 24)) {
-    return <TripDetailView trip={next} showBack={false} />;
+    return <TripDetailView trip={next} topSlot="trips" />;
   }
 
   // ——— 2 · upcoming ———
