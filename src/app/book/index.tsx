@@ -32,6 +32,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AddressField, type ChosenPlace } from '@/components/AddressField';
 import { DateTimeField } from '@/components/DateTimeField';
 import { FieldError, Picker, Segmented, Stepper } from '@/components/FormControls';
+import { SizeGuideSheet } from '@/components/SizeGuideSheet';
 import { Button, Input } from '@/components/ui';
 import { cacheAge, oneWayPrice, roundTripPrice, useRates } from '@/lib/rates';
 import { formatUsPhone, toE164 } from '@/lib/phone';
@@ -73,6 +74,7 @@ export default function BookForm() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState('');
+  const [guideOpen, setGuideOpen] = useState(false);
   const scroller = useRef<ScrollView>(null);
 
   const { from, to, guests, trip } = draft;
@@ -391,7 +393,16 @@ export default function BookForm() {
                 hint={
                   <Text style={styles.hint}>
                     Most are 26–30 inches. Bigger than that, or an odd shape? Tell us in the
-                    notes.
+                    notes.{' '}
+                    {/* Opens over the form. Nothing typed is lost, because
+                        nothing navigates. */}
+                    <Text
+                      accessibilityRole="button"
+                      style={styles.hintLink}
+                      onPress={() => setGuideOpen(true)}
+                    >
+                      See our size guide
+                    </Text>
                   </Text>
                 }
               />
@@ -675,6 +686,10 @@ export default function BookForm() {
           ) : null}
           {step < 3 ? <Text style={styles.foot}>No account. No card yet.</Text> : null}
         </View>
+
+        {/* Outside the step conditionals, like the panel — a sheet that unmounted
+            with its step would take the form's scroll position with it. */}
+        <SizeGuideSheet visible={guideOpen} onClose={() => setGuideOpen(false)} />
       </KeyboardAvoidingView>
     </SafeAreaView>
   );
@@ -719,6 +734,11 @@ const makeStyles = (t: Theme) =>
     row2: { flexDirection: 'row', gap: space.s3 },
     col: { flex: 1 },
     hint: { fontFamily: font.body400, fontSize: 13, lineHeight: 19, color: t.textDim },
+    hintLink: {
+      fontFamily: font.body600,
+      color: t.textHeading,
+      textDecorationLine: 'underline',
+    },
     notesField: { gap: space.s2 },
     notesLabel: {
       fontFamily: font.body600,
