@@ -5,6 +5,7 @@
 import { router } from 'expo-router';
 import React from 'react';
 import {
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -53,8 +54,14 @@ export function BookScaffold({
           ) : null}
         </View>
         {/* "always" — see AddressField: with "handled" the first tap on a
-            suggestion is spent dismissing the keyboard, not choosing. */}
-        <ScrollView contentContainerStyle={styles.body} keyboardShouldPersistTaps="always">
+            suggestion is spent dismissing the keyboard, not choosing. Dismissal
+            hangs off onScrollBeginDrag rather than keyboardDismissMode, which
+            fires on a tap's own wobble and cancels the press. */}
+        <ScrollView
+          contentContainerStyle={styles.body}
+          keyboardShouldPersistTaps="always"
+          onScrollBeginDrag={Keyboard.dismiss}
+        >
           {eyebrow ? <Text style={styles.eyebrow}>{eyebrow.toUpperCase()}</Text> : null}
           <Text style={styles.h1}>{title}</Text>
           {children}

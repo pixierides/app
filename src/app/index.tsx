@@ -7,6 +7,7 @@ import { Redirect, router } from 'expo-router';
 import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
+  Keyboard,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -66,9 +67,14 @@ export default function Home() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      {/* "always" so the first tap on an address suggestion picks it rather
-          than being spent dismissing the keyboard. */}
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="always">
+      {/* "always" so the first tap on an address suggestion picks it rather than
+          being spent dismissing the keyboard, and dismiss on scroll rather than
+          on drag — see the booking form for why on-drag eats the tap. */}
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        keyboardShouldPersistTaps="always"
+        onScrollBeginDrag={Keyboard.dismiss}
+      >
         <View style={styles.topRow}>
           <Logo variant="auto" size={13} />
           {isCustomer ? (

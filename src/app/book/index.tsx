@@ -19,6 +19,7 @@ import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Keyboard,
   KeyboardAvoidingView,
   Platform,
   Pressable,
@@ -275,14 +276,21 @@ export default function BookForm() {
           // choosing a place takes two taps — the press fires on release, after
           // the scroll view has already decided the tap was for the keyboard.
           keyboardShouldPersistTaps="always"
-          // No keyboardDismissMode="on-drag" here, deliberately. A finger that
-          // moves a pixel while tapping an address suggestion counts as a drag:
-          // the keyboard collapses mid-touch, the layout shifts the row out from
-          // under the finger, and the press is cancelled. Proven from a device
-          // log — pressIn, keyboardWillHide, pressOut, no press — which is why
-          // choosing a place sometimes took two taps. Selection has to be
-          // reliable; dismissing the keyboard by scrolling is a convenience, and
-          // picking a suggestion closes it anyway (see AddressField.choose).
+          // Dismiss on SCROLL, not on drag. With a list of suggestions open the
+          // keyboard is covering half of it, and the natural move is to scroll
+          // to see the rest — so it has to get out of the way.
+          //
+          // But NOT via keyboardDismissMode="on-drag": that fires on any pan,
+          // including the pixel of movement in an ordinary tap, and then the
+          // keyboard collapses mid-touch, the layout shifts the row out from
+          // under the finger, and the press is cancelled. That was the two-tap
+          // bug, proven from a device log: pressIn, keyboardWillHide, pressOut,
+          // no press.
+          //
+          // onScrollBeginDrag only fires once the scroll view has claimed the
+          // gesture past the touch slop — by which point the press is cancelled
+          // anyway, because a scroll is not a tap. A wobbly tap never reaches it.
+          onScrollBeginDrag={Keyboard.dismiss}
         >
           {errList.length > 0 ? (
             <View style={styles.errSummary} accessibilityRole="alert">
