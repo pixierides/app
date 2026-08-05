@@ -11,17 +11,29 @@
  *   ready    fetched this session
  *   cached   the refresh failed, so these numbers are from a previous session.
  *            Real, but not confirmed today: say so, quietly.
- *   empty    nothing has ever been cached, so we genuinely do not know a price
+ *   empty    we do not know a price — nothing was ever cached, or what was
+ *            cached is too old to stand behind
  *
  * `empty` gets "Tap to load prices". `loading` must NOT — a slow first fetch is
  * not the same situation, and that prompt would read as broken. And never a
  * guess or a zero: a wrong price is worse than no price.
+ *
+ * A cache has a shelf life. "Checked 3 days ago" is honest; a month-old figure
+ * is a price we may no longer offer, and the request email would repeat it back
+ * to the customer as fixed. Past MAX_CACHE_AGE_MS the copy is discarded and
+ * treated as if nothing had ever been cached — no figure, and a refetch.
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const ENDPOINT = 'https://pixierides.com/api/rates';
 const CACHE_KEY = 'pixie-rates-v1';
+
+/**
+ * Seven days. Long enough to cover a trip with bad signal, short enough that a
+ * price change reaches phones before anyone is quoted the old one.
+ */
+export const MAX_CACHE_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 export type RatePair = {
   from: string;
@@ -73,12 +85,29 @@ export function cacheAge(fetchedAt: string): string {
   return `${days} day${days === 1 ? '' : 's'} ago`;
 }
 
+/** True once a cached copy is too old to quote from. */
+export function isExpired(fetchedAt: string, now: number = Date.now()): boolean {
+  const at = new Date(fetchedAt).getTime();
+  // An unparseable or future stamp is not something to trust either.
+  return !Number.isFinite(at) || now - at > MAX_CACHE_AGE_MS || at > now;
+}
+
+/**
+ * The one gate on the cache, so both callers below are covered: an expired copy
+ * is never shown provisionally AND is never fallen back to. It is dropped from
+ * storage as well — keeping it around only invites it being read again.
+ */
 async function readCache(): Promise<Cached | null> {
   try {
     const raw = await AsyncStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Cached;
-    return Array.isArray(parsed?.table?.pairs) && parsed.table.pairs.length ? parsed : null;
+    if (!Array.isArray(parsed?.table?.pairs) || !parsed.table.pairs.length) return null;
+    if (isExpired(parsed.fetchedAt)) {
+      AsyncStorage.removeItem(CACHE_KEY).catch(() => {});
+      return null;
+    }
+    return parsed;
   } catch {
     return null;
   }
