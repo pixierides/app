@@ -6,11 +6,9 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, Button, Card, ListRow } from '@/components/ui';
-import { ThemeToggle } from '@/components/ThemeToggle';
+import { Badge, Card, ListRow } from '@/components/ui';
 import { fetchMyTrips, STATUS_LABELS, type CustomerTrip } from '@/lib/booking';
 import { formatTime } from '@/lib/format';
-import { useAuth } from '@/providers/auth';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
@@ -18,7 +16,6 @@ import { themes, type Theme } from '@/theme/themes';
 export default function Trips() {
   const th = useTheme();
   const styles = themed[th.mode];
-  const { signOut } = useAuth();
   const [trips, setTrips] = useState<CustomerTrip[] | null>(null);
   const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming');
 
@@ -100,14 +97,6 @@ export default function Trips() {
           </Text>
         )}
 
-        <Card tone="surface" pad={20}>
-          <ThemeToggle />
-        </Card>
-        <View style={styles.footer}>
-          <Button variant="ghost" onDark onPress={signOut}>
-            Sign out
-          </Button>
-        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -174,10 +163,6 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontSize: 16,
     color: t.textBody,
     paddingVertical: space.s4,
-  },
-  footer: {
-    alignItems: 'center',
-    paddingTop: space.s4,
   },
 });
 

@@ -1,80 +1,34 @@
 /**
- * Home — the trip, not the pitch.
+ * The signed-out screen, and the only route that decides where a session goes.
  *
- * Nobody strangers into an app. They downloaded it, and they have almost
- * certainly already booked, so this used to open by pitching to someone who had
- * already bought. Booking happens once or twice a year; checking a trip happens
- * repeatedly in the days around it. This screen optimises for the repeated case.
+ * It was a logo pinned top-left, two controls pinned bottom, and seventy percent
+ * empty space between — which reads as a layout that failed to load, not one that
+ * is deliberately spare. Stripping the website's marketing copy was right;
+ * stripping the orientation with it left nothing on screen saying whose app this
+ * is or why anyone would sign in.
  *
- * Four states, in priority order:
+ * So: one composed block, centred. Logo, two lines of orientation, two real
+ * buttons, and the credentials. No headline about holding your name, no flat-rate
+ * claim, no feature list, no hero image — those belong on the website, where a
+ * stranger needs convincing. Someone here already downloaded the app.
  *
- *   1 active    pickup inside 24 hours, or the run already under way. The trip
- *               IS the screen — no booking CTA. Someone whose car arrives in two
- *               hours is not shopping.
- *   2 upcoming  the trip leads, booking is secondary.
- *   3 no trip   the only state where booking leads.
- *   4 signed out sign in leads: the likeliest visitor is a returning customer
- *               whose session expired, not a stranger.
- *
- * State 1 renders components/TripDetailView — the same component the
- * /trip/[id] route renders, not a second version of it.
+ * This route sits OUTSIDE the tab group on purpose: there is nothing to navigate
+ * to until you are in, so there is no tab bar. A customer is redirected into the
+ * group, where Home carries the three signed-in states.
  */
-import { Redirect, router, useFocusEffect } from 'expo-router';
-import { useCallback, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Redirect, router } from 'expo-router';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { TripDetailView } from '@/components/TripDetailView';
-import { Button, Card, Logo } from '@/components/ui';
-import { dollars, fetchMyTrips, STATUS_LABELS, type CustomerTrip } from '@/lib/booking';
-import { formatTime } from '@/lib/format';
+import { Button, Logo } from '@/components/ui';
 import { useAuth } from '@/providers/auth';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { font, fs, ls, space, track } from '@/theme/tokens';
+import { font, fs, lh, ls, space, track } from '@/theme/tokens';
 
-/** The trip is over, one way or another — it is not what the customer is here for. */
-const isClosed = (t: CustomerTrip) =>
-  t.status === 'complete' || t.status === 'cancelled' || t.status === 'no_show';
-
-/** Hours from now until pickup. Negative once the pickup time has passed. */
-const hoursAway = (iso: string) => (new Date(iso).getTime() - Date.now()) / 3_600_000;
-
-/**
- * The run is live: a driver is holding in the cell lot, on their way, at the
- * kerb, or driving. Independent of the clock — a delayed flight can put a run
- * under way long after the scheduled pickup.
- */
-const runUnderway = (t: CustomerTrip) =>
-  t.driver_state === 'holding' ||
-  t.driver_state === 'called' ||
-  t.driver_state === 'at_kerb' ||
-  t.driver_state === 'on_trip';
-
-function whenLine(t: CustomerTrip): string {
-  const d = new Date(t.pickup_at);
-  const day = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-  return `${day} · ${formatTime(t.pickup_at)}`;
-}
-
-export default function Home() {
+export default function Landing() {
   const th = useTheme();
   const styles = themed[th.mode];
   const { session, profile, profileLoading } = useAuth();
-  const [trips, setTrips] = useState<CustomerTrip[] | null>(null);
-
-  const isCustomer = !!session && profile?.role === 'customer';
-
-  useFocusEffect(
-    useCallback(() => {
-      if (!isCustomer) {
-        setTrips(null);
-        return;
-      }
-      fetchMyTrips()
-        .then(setTrips)
-        .catch(() => setTrips([]));
-    }, [isCustomer]),
-  );
 
   // Restoring session — hold the frame.
   if (session === undefined || (session && (profileLoading || !profile))) {
@@ -85,129 +39,43 @@ export default function Home() {
     );
   }
 
-  // One app, three roles: drivers and dispatch land on their own surfaces.
+  // One app, three roles. Each lands on its own surface.
   if (session && profile?.role === 'driver') return <Redirect href="/(driver)" />;
   if (session && profile?.role === 'dispatch') return <Redirect href="/(dispatch)" />;
+  if (session && profile?.role === 'customer') return <Redirect href="/home" />;
 
-  // ——— 4 · signed out ———
-  if (!isCustomer) {
-    return (
-      <Shell>
-        <Button size="lg" fullWidth onPress={() => router.push('/(auth)/sign-in')}>
-          Sign in
-        </Button>
-        <Button variant="ghost" size="lg" fullWidth onPress={() => router.push('/book')}>
-          Book a ride
-        </Button>
-      </Shell>
-    );
-  }
-
-  // Trips still loading — hold the frame rather than flash the no-trip state,
-  // which would tell a customer with a trip tomorrow that they have none.
-  if (trips === null) {
-    return (
-      <View style={styles.splash}>
-        <ActivityIndicator color={th.textDim} />
-      </View>
-    );
-  }
-
-  // Sorted by pickup ascending, so the first open trip is the next one.
-  const open = trips.filter((t) => !isClosed(t));
-  const next = open[0] ?? null;
-
-  // ——— 1 · active ———
-  // The trip fills the screen. Rendered by the shared component, so the day-of
-  // surface here and at /trip/[id] can never disagree.
-  if (next && (runUnderway(next) || hoursAway(next.pickup_at) <= 24)) {
-    return <TripDetailView trip={next} topSlot="trips" />;
-  }
-
-  // ——— 2 · upcoming ———
-  if (next) {
-    const paymentDue = !next.paid_at && next.status === 'confirmed';
-    return (
-      <Shell>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Your trip, ${next.origin} to ${next.destination}, ${whenLine(next)}`}
-          onPress={() => router.push(`/trip/${next.id}` as never)}
-        >
-          <Card tone="surface" texture pad={20} style={styles.card}>
-            <Text style={styles.route}>
-              {next.origin} <Text style={styles.arrow}>→</Text> {next.destination}
-            </Text>
-            <Text style={styles.when}>{whenLine(next)}</Text>
-            <View style={styles.metaRow}>
-              <Text style={styles.ref}>{next.reference}</Text>
-              <Text style={styles.price}>{dollars(next.price_cents)}</Text>
-            </View>
-            <Text style={styles.status}>
-              {paymentDue
-                ? 'Payment due to lock in your ride'
-                : next.paid_at
-                  ? next.driver_name
-                    ? `${next.driver_name} is driving you`
-                    : "You're all set — we'll introduce your driver nearer the time"
-                  : (STATUS_LABELS[next.status] ?? next.status)}
-            </Text>
-          </Card>
-        </Pressable>
-
-        {/* When payment is due, that is the action — not "see this trip". */}
-        {paymentDue ? (
-          <Button
-            size="lg"
-            fullWidth
-            onPress={() => router.push(`/trip/${next.id}/pay` as never)}
-          >
-            Pay now
-          </Button>
-        ) : null}
-
-        <Button variant="ghost" size="lg" fullWidth onPress={() => router.push('/book')}>
-          Book another ride
-        </Button>
-        <Pressable accessibilityRole="button" onPress={() => router.push('/trips')} hitSlop={8}>
-          <Text style={styles.quiet}>Your trips</Text>
-        </Pressable>
-      </Shell>
-    );
-  }
-
-  // ——— 3 · no trip ———
-  // One action. They installed the app; they know what it does.
-  return (
-    <Shell>
-      <Button size="lg" fullWidth onPress={() => router.push('/book')}>
-        Book a ride
-      </Button>
-      {trips.length > 0 ? (
-        <Button variant="ghost" size="lg" fullWidth onPress={() => router.push('/trips')}>
-          Your trips
-        </Button>
-      ) : null}
-    </Shell>
-  );
-}
-
-/**
- * The frame the three non-active states share: the mark, then the actions,
- * bottom-weighted so the primary sits under the thumb. Deliberately empty
- * above — an emptier screen with one clear action is the goal, not a problem to
- * be filled.
- */
-function Shell({ children }: { children: React.ReactNode }) {
-  const th = useTheme();
-  const styles = themed[th.mode];
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <View style={styles.top}>
-        <Logo variant="auto" size={13} />
+      {/* One block, centred. The old version anchored the logo to the top and the
+          buttons to the bottom, which is what turned the middle into a gap rather
+          than breathing room. */}
+      <View style={styles.block}>
+        <Logo variant="auto" size={22} />
+
+        <View style={styles.copy}>
+          <Text style={styles.h1}>Your rides with Pixie Rides.</Text>
+          <Text style={styles.sub}>
+            Sign in to see your trip, your driver, and your receipt.
+          </Text>
+        </View>
+
+        {/* Equal size and width, different weight. Sign in was full-width orange
+            against a faint text link, which assumed everyone already has an
+            account — and a text link reads as a footnote, not an option. */}
+        <View style={styles.actions}>
+          <Button size="lg" fullWidth onPress={() => router.push('/(auth)/sign-in')}>
+            Sign in
+          </Button>
+          <Button variant="secondary" size="lg" fullWidth onPress={() => router.push('/book')}>
+            Book a ride
+          </Button>
+        </View>
+
+        {/* The one thing an unfamiliar app can offer to earn a sign-in, and a fact
+            rather than a claim. No icons, no badges, no colour — that would turn
+            it into marketing, which is the thing this screen is not. */}
+        <Text style={styles.credentialsText}>Licensed · Insured · MCO permitted</Text>
       </View>
-      <View style={styles.spacer} />
-      <View style={styles.actions}>{children}</View>
     </SafeAreaView>
   );
 }
@@ -221,50 +89,39 @@ const makeStyles = (t: Theme) =>
       justifyContent: 'center',
       backgroundColor: t.bgPage,
     },
-    top: { paddingHorizontal: space.s5, paddingTop: space.s3 },
-    spacer: { flex: 1 },
-    actions: {
-      paddingHorizontal: space.s5,
-      paddingBottom: space.s5,
-      gap: space.s3,
-    },
-    card: { gap: space.s2 },
-    route: {
-      fontFamily: font.display700,
-      fontSize: fs.h3,
-      color: t.textHeading,
-    },
-    arrow: { color: t.textDim },
-    when: { fontFamily: font.body600, fontSize: 15, color: t.textBody },
-    metaRow: {
-      flexDirection: 'row',
+    block: {
+      flex: 1,
+      justifyContent: 'center',
       alignItems: 'center',
-      justifyContent: 'space-between',
-      marginTop: space.s1,
+      paddingHorizontal: space.s5,
+      // Generous, so it still feels calm — composed rather than crowded.
+      gap: space.s6,
+      maxWidth: 480,
+      width: '100%',
+      alignSelf: 'center',
     },
-    ref: {
-      fontFamily: font.body600,
-      fontSize: fs.label,
-      letterSpacing: ls(track.label, fs.label),
-      color: t.textDim,
+    copy: { gap: space.s3 },
+    h1: {
+      fontFamily: font.display700,
+      fontSize: fs.h2,
+      lineHeight: fs.h2 * lh.tight,
+      letterSpacing: ls(track.h2, fs.h2),
+      color: t.textHeading,
+      textAlign: 'center',
     },
-    price: { fontFamily: font.display700, fontSize: 18, color: t.textHeading },
-    status: {
+    sub: {
       fontFamily: font.body400,
-      fontSize: 14,
-      lineHeight: 20,
-      color: t.textBody,
-      borderTopWidth: 1,
-      borderTopColor: t.divider,
-      paddingTop: space.s3,
-      marginTop: space.s1,
-    },
-    quiet: {
-      fontFamily: font.body600,
-      fontSize: 14,
+      fontSize: fs.bodySm,
+      lineHeight: fs.bodySm * 1.5,
       color: t.textDim,
       textAlign: 'center',
-      paddingVertical: space.s2,
+    },
+    actions: { alignSelf: 'stretch', gap: space.s3 },
+    credentialsText: {
+      fontFamily: font.body400,
+      fontSize: 12,
+      color: t.textDim,
+      textAlign: 'center',
     },
   });
 
