@@ -9,6 +9,15 @@ import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Button, Card, Input } from '@/components/ui';
+import {
+  adjustmentLine,
+  fetchOpenAdjustments,
+  fetchTripEdits,
+  isEditable,
+  resolveAdjustment,
+  type PriceAdjustment,
+  type TripEdit,
+} from '@/lib/dispatch-edit';
 import { dollars, STATUS_LABELS } from '@/lib/booking';
 import {
   assignDriver,
@@ -61,12 +70,21 @@ export default function DispatchJob() {
   const [pickerShown, setPickerShown] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [edits, setEdits] = useState<TripEdit[]>([]);
+  const [adjustment, setAdjustment] = useState<PriceAdjustment | null>(null);
+  const [settleNote, setSettleNote] = useState('');
 
   const load = useCallback(async () => {
     const [trips, drv] = await Promise.all([fetchDispatchTrips(), listDrivers()]);
     setTrip(trips.find((t) => t.id === id) ?? null);
     setDrivers(drv);
     if (drv.length === 1) pickDriver(drv[0]);
+    // The edit history answers "I told you it was the Polynesian" — so it belongs
+    // on the screen dispatch is looking at while the customer says it.
+    fetchTripEdits(id!).then(setEdits).catch(() => setEdits([]));
+    fetchOpenAdjustments()
+      .then((all) => setAdjustment(all.find((a) => a.trip_id === id) ?? null))
+      .catch(() => setAdjustment(null));
   }, [id]);
 
   useFocusEffect(
@@ -559,6 +577,77 @@ export default function DispatchJob() {
             </View>
           ) : null}
 
+
+          {/* ——— an unsettled price difference ———
+              The record of a decision a human still has to make. Marking it
+              settled needs a note: "resolved" with nothing after it is not a
+              record of anything. */}
+          {adjustment ? (
+            <Card tone="dark" pad={20} style={styles.block}>
+              <Text style={styles.eyebrow}>PRICE CHANGED AFTER PAYMENT</Text>
+              <Text style={styles.adjustLine}>{adjustmentLine(adjustment)}</Text>
+              <Text style={styles.adjustNote}>
+                Take or refund the difference in Stripe first. Nothing here moves money.
+              </Text>
+              <Input
+                label="What did you do?"
+                value={settleNote}
+                onChangeText={setSettleNote}
+                placeholder="Collected $50 by card over the phone"
+                onDark
+              />
+              <Button
+                variant="secondary"
+                onDark
+                disabled={settleNote.trim().length === 0 || busy}
+                onPress={async () => {
+                  setBusy(true);
+                  setError(null);
+                  try {
+                    await resolveAdjustment(adjustment.id, settleNote.trim());
+                    setSettleNote('');
+                    await load();
+                  } catch (e: any) {
+                    setError(e?.message ?? 'Could not mark that settled.');
+                  } finally {
+                    setBusy(false);
+                  }
+                }}
+              >
+                Mark settled
+              </Button>
+            </Card>
+          ) : null}
+
+          {/* ——— edit this booking ——— */}
+          {isEditable(trip.status) ? (
+            <Button
+              variant="secondary"
+              onDark
+              fullWidth
+              onPress={() => router.push(`/job/edit/${trip.id}` as never)}
+            >
+              Edit booking
+            </Button>
+          ) : null}
+
+          {/* ——— what was changed, and whether the customer was told ——— */}
+          {edits.length > 0 ? (
+            <View style={styles.historyBlock}>
+              <Text style={styles.eyebrow}>EDIT HISTORY</Text>
+              {edits.slice(0, 12).map((e) => (
+                <Text key={e.id} style={styles.historyLine}>
+                  {e.field}: {e.old_value ?? '—'} → {e.new_value ?? '—'}
+                  {'  '}
+                  <Text style={styles.historyWho}>
+                    {e.changed_by_name ?? 'dispatch'}
+                    {e.email_resent ? ' · emailed' : ' · not emailed'}
+                  </Text>
+                </Text>
+              ))}
+            </View>
+          ) : null}
+
         </View>
       </ScrollView>
 
@@ -728,6 +817,33 @@ const styles = StyleSheet.create({
   },
   driverChipTextOn: {
     color: color.white,
+  },
+  adjustLine: {
+    fontFamily: font.body600,
+    fontSize: 15,
+    lineHeight: 22,
+    color: color.white,
+  },
+  adjustNote: {
+    fontFamily: font.body400,
+    fontSize: 13,
+    lineHeight: 19,
+    color: color.foamDim,
+  },
+  historyBlock: {
+    gap: space.s2,
+    paddingTop: space.s4,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(168,205,226,0.14)',
+  },
+  historyLine: {
+    fontFamily: font.body400,
+    fontSize: 12,
+    lineHeight: 18,
+    color: color.foam,
+  },
+  historyWho: {
+    color: color.foamDim,
   },
   contactRow: {
     flexDirection: 'row',

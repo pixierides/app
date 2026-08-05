@@ -25,6 +25,7 @@ import {
   type Driver,
 } from '@/lib/dispatch';
 import { needsFlightCheck } from '@/lib/flight';
+import { adjustmentLine, fetchOpenAdjustments, type PriceAdjustment } from '@/lib/dispatch-edit';
 import { easternDate, easternToday } from '@/lib/calendar';
 import { firstName, formatTime, greetingWord } from '@/lib/format';
 import { useAuth } from '@/providers/auth';
@@ -77,6 +78,7 @@ export default function Board() {
   const { profile } = useAuth();
   const [trips, setTrips] = useState<DispatchTrip[] | null>(null);
   const [drivers, setDrivers] = useState<Driver[]>([]);
+  const [adjustments, setAdjustments] = useState<PriceAdjustment[]>([]);
   const [openDriver, setOpenDriver] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [filter, setFilter] = useState<TileKey | null>(null);
@@ -84,9 +86,16 @@ export default function Board() {
 
   const load = useCallback(async () => {
     try {
-      const [t, d] = await Promise.all([fetchDispatchTrips(), listDrivers()]);
+      const [t, d, a] = await Promise.all([
+        fetchDispatchTrips(),
+        listDrivers(),
+        // Unresolved money questions. Loaded with the board because an
+        // outstanding difference is exactly the thing that gets forgotten.
+        fetchOpenAdjustments().catch(() => [] as PriceAdjustment[]),
+      ]);
       setTrips(t);
       setDrivers(d);
+      setAdjustments(a);
     } catch {
       setTrips([]);
     }
@@ -200,6 +209,32 @@ export default function Board() {
         }
       >
         <View style={styles.shell}>
+          {/* ——— unsettled price differences ———
+              Above everything, including the urgent request: a queue can wait a
+              minute, money that was taken at the wrong figure cannot. Each line
+              states the difference and who owes it; NOTHING here charges or
+              refunds, because a customer who agreed to $129 has not agreed to
+              $179 and taking the difference without asking is a chargeback. */}
+          {adjustments.length > 0 ? (
+            <View style={styles.moneyBlock}>
+              <Text style={styles.moneyEyebrow}>
+                {adjustments.length} PRICE CHANGE{adjustments.length === 1 ? '' : 'S'} TO SETTLE
+              </Text>
+              {adjustments.map((a) => (
+                <Pressable
+                  key={a.id}
+                  accessibilityRole="button"
+                  onPress={() => router.push(`/job/${a.trip_id}` as never)}
+                >
+                  <Text style={styles.moneyLine}>{adjustmentLine(a)}</Text>
+                </Pressable>
+              ))}
+              <Text style={styles.moneyNote}>
+                Handle it in Stripe, then mark it settled on the job.
+              </Text>
+            </View>
+          ) : null}
+
           {/* ——— header ——— */}
           <Text style={styles.eyebrow}>{shiftLabel} · {dateLabel}</Text>
           <View style={styles.headRow}>
@@ -396,6 +431,33 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     paddingHorizontal: space.s5,
     paddingTop: space.s4,
     gap: space.s4,
+  },
+  moneyBlock: {
+    gap: space.s2,
+    padding: space.s4,
+    borderRadius: radius.card,
+    backgroundColor: t.surfaceCard,
+    borderLeftWidth: 3,
+    borderLeftColor: color.orange,
+    marginBottom: space.s4,
+  },
+  moneyEyebrow: {
+    fontFamily: font.body600,
+    fontSize: fs.label,
+    letterSpacing: ls(track.label, fs.label),
+    color: color.orange,
+  },
+  moneyLine: {
+    fontFamily: font.body600,
+    fontSize: 14,
+    lineHeight: 20,
+    color: t.textHeading,
+    paddingVertical: space.s1,
+  },
+  moneyNote: {
+    fontFamily: font.body400,
+    fontSize: 12,
+    color: t.textDim,
   },
   eyebrow: {
     fontFamily: font.body600,
