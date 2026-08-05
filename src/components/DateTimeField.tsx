@@ -8,13 +8,16 @@
  * plus the browser preview both need these fields to work.
  */
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 import { font, ls, radius, space, track } from '@/theme/tokens';
 
 const pad = (n: number) => String(n).padStart(2, '0');
+
+/** The spinner's minute step. Nobody schedules an airport pickup for 6:37. */
+const MINUTE_STEP = 5;
 
 /** 'YYYY-MM-DD' / 'HH:MM' → a Date in device-local terms for the picker. */
 function toDate(mode: 'date' | 'time', value: string): Date {
@@ -58,16 +61,41 @@ export function DateTimeField({
   const th = useTheme();
   const styles = themed[th.mode];
   const [open, setOpen] = useState(false);
+  // iOS's spinner only fires onChange when the wheel actually moves. Someone who
+  // opens it, sees today already under the marker and taps Done has changed
+  // nothing — so without this the field would stay empty while showing a date.
+  // What was on screen is what gets stored.
+  const moved = useRef(false);
+
+  const format = (d: Date) =>
+    mode === 'date'
+      ? `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+      : `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
   const handle = (_e: DateTimePickerEvent, picked?: Date) => {
     // Android's dialog closes itself; iOS's inline spinner stays until tapped away.
     if (Platform.OS === 'android') setOpen(false);
     if (!picked) return;
-    onChange(
-      mode === 'date'
-        ? `${picked.getFullYear()}-${pad(picked.getMonth() + 1)}-${pad(picked.getDate())}`
-        : `${pad(picked.getHours())}:${pad(picked.getMinutes())}`,
-    );
+    moved.current = true;
+    onChange(format(picked));
+  };
+
+  const openPicker = () => {
+    moved.current = false;
+    setOpen(true);
+  };
+
+  /** Where the wheel opens: the current value, or now when there isn't one. */
+  const initial = () => toDate(mode, value);
+
+  const done = () => {
+    setOpen(false);
+    if (moved.current || value) return;
+    // Commit the position the wheel was resting at. Time snaps down to the
+    // 5-minute step the spinner shows, so the stored value matches it exactly.
+    const d = initial();
+    if (mode === 'time') d.setMinutes(Math.floor(d.getMinutes() / MINUTE_STEP) * MINUTE_STEP, 0, 0);
+    onChange(format(d));
   };
 
   const shown = display(mode, value);
@@ -81,7 +109,7 @@ export function DateTimeField({
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={`${label}: ${shown ?? 'not set'}`}
-        onPress={() => setOpen(true)}
+        onPress={openPicker}
         style={styles.control}
       >
         <Text style={shown ? styles.value : styles.placeholder}>
@@ -90,17 +118,17 @@ export function DateTimeField({
       </Pressable>
       {open ? (
         <DateTimePicker
-          value={toDate(mode, value)}
+          value={initial()}
           mode={mode}
           display={Platform.OS === 'ios' ? 'spinner' : 'default'}
           minimumDate={mode === 'date' && minDate ? toDate('date', minDate) : undefined}
-          minuteInterval={mode === 'time' ? 5 : undefined}
+          minuteInterval={mode === 'time' ? MINUTE_STEP : undefined}
           themeVariant={th.mode === 'dark' ? 'dark' : 'light'}
           onChange={handle}
         />
       ) : null}
       {open && Platform.OS === 'ios' ? (
-        <Pressable accessibilityRole="button" onPress={() => setOpen(false)} style={styles.done}>
+        <Pressable accessibilityRole="button" onPress={done} style={styles.done}>
           <Text style={styles.doneText}>Done</Text>
         </Pressable>
       ) : null}
