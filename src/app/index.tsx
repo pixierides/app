@@ -66,7 +66,9 @@ export default function Home() {
 
   return (
     <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      {/* "always" so the first tap on an address suggestion picks it rather
+          than being spent dismissing the keyboard. */}
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="always">
         <View style={styles.topRow}>
           <Logo variant="auto" size={13} />
           {isCustomer ? (

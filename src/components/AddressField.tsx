@@ -11,7 +11,7 @@
  * plain text box in silence. The customer never learns there was a service.
  */
 import { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Keyboard, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Input } from '@/components/ui';
 import {
   autocomplete,
@@ -84,6 +84,12 @@ export function AddressField({
   const choose = async (s: PlaceSuggestion) => {
     setOpen(false);
     setResults([]);
+    // The scroll views around this field use keyboardShouldPersistTaps="always",
+    // without which the first tap on a suggestion is spent dismissing the
+    // keyboard and choosing a place takes two taps. The cost of "always" is that
+    // the keyboard now never closes on its own, so close it here: picking an
+    // address is the end of typing.
+    Keyboard.dismiss();
     // Fill from the suggestion first so the field responds immediately, then
     // enrich once details land. If details fail, the label still stands.
     onChange({ label: s.primary, address: s.secondary || null, placeId: s.placeId, lat: null, lng: null });

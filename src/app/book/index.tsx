@@ -270,7 +270,11 @@ export default function BookForm() {
         <ScrollView
           ref={scroller}
           contentContainerStyle={styles.body}
-          keyboardShouldPersistTaps="handled"
+          // "always", not "handled". With "handled" the first tap on an address
+          // suggestion goes to dismissing the keyboard instead of the row, so
+          // choosing a place takes two taps — the press fires on release, after
+          // the scroll view has already decided the tap was for the keyboard.
+          keyboardShouldPersistTaps="always"
           keyboardDismissMode="on-drag"
         >
           {errList.length > 0 ? (
