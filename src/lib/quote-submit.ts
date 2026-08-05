@@ -107,6 +107,13 @@ export async function submitAppBooking(
     // The structured columns the ingest trigger reads instead of parsing the
     // message string. Same keys the website writes.
     const structured: Record<string, unknown> = {
+      // Dispatch's contact affordances branch on trips.source: a web customer
+      // has to be reached by phone or email, an app customer can be pushed to
+      // once push exists. The ingest trigger used to hardcode 'web', so every
+      // app booking told dispatch to never offer push to someone holding the
+      // app. Structured, like every other booking_* field — never parsed back
+      // out of the message string.
+      booking_source: 'app',
       booking_reference: notify.reference,
       booking_origin: notify.route.fromLabel,
       booking_destination: notify.route.toLabel,

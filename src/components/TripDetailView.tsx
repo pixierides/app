@@ -77,7 +77,7 @@ export function TripDetailView({
     trip.status !== 'complete' && trip.status !== 'cancelled' && trip.status !== 'no_show';
   // Recomputed on focus (fetch re-renders); a formatted boundary, never a countdown.
   const pState = policyState(trip.pickup_at, new Date(), trip.free_cancel_until);
-  const freeCancelAt = cancelDeadline(trip.free_cancel_until);
+  const freeCancelAt = cancelDeadline(trip.free_cancel_until, trip.pickup_at);
   // "tonight" only if the pickup really is tonight. It was keyed off the
   // flight having landed, which says nothing about the time of day.
   const pickupToday = easternDate(trip.pickup_at) === easternToday();
