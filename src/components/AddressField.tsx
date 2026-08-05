@@ -19,7 +19,6 @@ import {
   MIN_QUERY_CHARS,
   newSessionToken,
   placeDetails,
-  placesConfigured,
   type PlaceSuggestion,
 } from '@/lib/places';
 import { useTheme } from '@/providers/theme';
@@ -57,6 +56,10 @@ export function AddressField({
   const [results, setResults] = useState<PlaceSuggestion[]>([]);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
+  // Whether the lookup service actually answered. Starts true: the empty state is
+  // only reachable after a completed search, and by then this is known. It is the
+  // difference between "no matches" and "we never asked" — see lib/places.
+  const [configured, setConfigured] = useState(true);
   // One token per session: every keystroke plus the details call that follows
   // is a single billable unit. Replaced after each completed selection.
   const session = useRef(newSessionToken());
@@ -64,7 +67,7 @@ export function AddressField({
   const seq = useRef(0);
 
   useEffect(() => {
-    if (!placesConfigured() || !open) return;
+    if (!open) return;
     const query = value.trim();
     if (query.length < MIN_QUERY_CHARS) {
       setResults([]);
@@ -75,7 +78,8 @@ export function AddressField({
     const timer = setTimeout(async () => {
       const found = await autocomplete(query, session.current);
       if (mine !== seq.current) return;
-      setResults(found);
+      setConfigured(found.configured);
+      setResults(found.suggestions);
       setLoading(false);
     }, DEBOUNCE_MS);
     return () => clearTimeout(timer);
@@ -110,7 +114,7 @@ export function AddressField({
   // is unavailable — web, or a missing key — nothing was looked up, and saying
   // otherwise tells the customer their address is unknown when it isn't.
   const showEmpty =
-    placesConfigured() &&
+    configured &&
     open &&
     !loading &&
     value.trim().length >= MIN_QUERY_CHARS &&
