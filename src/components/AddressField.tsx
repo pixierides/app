@@ -100,8 +100,15 @@ export function AddressField({
     }
   };
 
+  // Only claim "no matches" when something was actually searched. Where Places
+  // is unavailable — web, or a missing key — nothing was looked up, and saying
+  // otherwise tells the customer their address is unknown when it isn't.
   const showEmpty =
-    open && !loading && value.trim().length >= MIN_QUERY_CHARS && results.length === 0;
+    placesConfigured() &&
+    open &&
+    !loading &&
+    value.trim().length >= MIN_QUERY_CHARS &&
+    results.length === 0;
 
   return (
     <View style={styles.wrap}>

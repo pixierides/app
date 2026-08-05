@@ -35,7 +35,15 @@ import { Platform } from 'react-native';
 const KEY =
   Platform.OS === 'android'
     ? process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_ANDROID
-    : process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_IOS;
+    : Platform.OS === 'ios'
+      ? process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY_IOS
+      : // Web has no key of its own. A browser request carries no bundle id, so
+        // the iOS key rejects it every time — "iosBundleId: <empty>",
+        // API_KEY_IOS_APP_BLOCKED. Don't spend a request to be told that:
+        // the field stays plain text on web, which is what dispatch needs
+        // anyway. Add a browser-restricted key here if the web surface ever
+        // wants suggestions.
+        undefined;
 
 /**
  * MCO. Without a bias, "Grand Floridian" competes with hotels in other states.
