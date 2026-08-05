@@ -275,7 +275,14 @@ export default function BookForm() {
           // choosing a place takes two taps — the press fires on release, after
           // the scroll view has already decided the tap was for the keyboard.
           keyboardShouldPersistTaps="always"
-          keyboardDismissMode="on-drag"
+          // No keyboardDismissMode="on-drag" here, deliberately. A finger that
+          // moves a pixel while tapping an address suggestion counts as a drag:
+          // the keyboard collapses mid-touch, the layout shifts the row out from
+          // under the finger, and the press is cancelled. Proven from a device
+          // log — pressIn, keyboardWillHide, pressOut, no press — which is why
+          // choosing a place sometimes took two taps. Selection has to be
+          // reliable; dismissing the keyboard by scrolling is a convenience, and
+          // picking a suggestion closes it anyway (see AddressField.choose).
         >
           {errList.length > 0 ? (
             <View style={styles.errSummary} accessibilityRole="alert">
