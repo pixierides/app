@@ -428,9 +428,12 @@ export default function BookForm() {
 
               {isAirportPickup ? (
                 <View>
+                  {/* No placeholder. A sample flight number renders in the same
+                      tone as a real value on this theme, so it reads as already
+                      filled in — and this is the field that decides which plane we
+                      watch. Empty is unambiguous. */}
                   <Input
                     label="Flight number"
-                    placeholder="DL1247"
                     value={draft.flight}
                     onChangeText={(v) => update({ flight: v })}
                     autoCapitalize="characters"
@@ -442,19 +445,22 @@ export default function BookForm() {
               ) : null}
 
               {/* A driver at Port Canaveral with no ship name is looking for a
-                  needle. The line is optional; the ship is not. */}
+                  needle. The line is optional; the ship is not.
+
+                  No sample values here either: on this theme a placeholder renders
+                  in the same tone as a real value, so "Harmony of the Seas" reads
+                  as already answered — and a confidently wrong ship is worse than
+                  an empty field somebody has to fill. */}
               {isPort ? (
                 <View style={styles.stepBody}>
                   <Input
                     label="Cruise line"
-                    placeholder="Royal Caribbean"
                     value={draft.cruiseLine}
                     onChangeText={(v) => update({ cruiseLine: v })}
                     autoCorrect={false}
                   />
                   <Input
                     label="Ship name"
-                    placeholder="Harmony of the Seas"
                     value={draft.cruiseShip}
                     onChangeText={(v) => update({ cruiseShip: v })}
                     autoCorrect={false}
@@ -545,7 +551,6 @@ export default function BookForm() {
                       the one where being late costs someone a plane. */}
                   <Input
                     label="Return flight number (optional)"
-                    placeholder="DL1248"
                     value={draft.rFlight}
                     onChangeText={(v) => update({ rFlight: v })}
                     autoCapitalize="characters"
