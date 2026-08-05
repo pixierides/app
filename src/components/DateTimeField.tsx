@@ -9,7 +9,7 @@
  */
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useRef, useState } from 'react';
-import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 import { font, ls, radius, space, track } from '@/theme/tokens';
@@ -116,21 +116,50 @@ export function DateTimeField({
           {shown ?? placeholder ?? 'Choose…'}
         </Text>
       </Pressable>
-      {open ? (
+      {/*
+        iOS gets the wheel in a CENTRED overlay, not inline.
+
+        Rendered in the form flow it appeared wherever the field happened to sit —
+        halfway down a scrolling step, pushing the rest of the form around, with
+        its Done control adrift in the middle of the page. A picker is a modal act:
+        it should land in the same place every time, over the form rather than
+        inside it.
+
+        Android is untouched: its picker is already an OS dialog, centred by the
+        system, and wrapping that in a Modal of our own would fight it.
+      */}
+      {Platform.OS === 'ios' ? (
+        <Modal visible={open} transparent animationType="fade" onRequestClose={done}>
+          {/* Tapping outside commits what the wheel is showing, same as Done —
+              the two must not disagree about what the customer just saw. */}
+          <Pressable style={styles.backdrop} onPress={done}>
+            <Pressable style={styles.sheet} onPress={() => {}}>
+              <Text style={styles.sheetTitle}>{label}</Text>
+              <DateTimePicker
+                value={initial()}
+                mode={mode}
+                display="spinner"
+                minimumDate={mode === 'date' && minDate ? toDate('date', minDate) : undefined}
+                minuteInterval={mode === 'time' ? MINUTE_STEP : undefined}
+                themeVariant={th.mode === 'dark' ? 'dark' : 'light'}
+                onChange={handle}
+                style={styles.wheel}
+              />
+              <Pressable accessibilityRole="button" onPress={done} style={styles.done}>
+                <Text style={styles.doneText}>Done</Text>
+              </Pressable>
+            </Pressable>
+          </Pressable>
+        </Modal>
+      ) : open ? (
         <DateTimePicker
           value={initial()}
           mode={mode}
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+          display="default"
           minimumDate={mode === 'date' && minDate ? toDate('date', minDate) : undefined}
           minuteInterval={mode === 'time' ? MINUTE_STEP : undefined}
-          themeVariant={th.mode === 'dark' ? 'dark' : 'light'}
           onChange={handle}
         />
-      ) : null}
-      {open && Platform.OS === 'ios' ? (
-        <Pressable accessibilityRole="button" onPress={done} style={styles.done}>
-          <Text style={styles.doneText}>Done</Text>
-        </Pressable>
       ) : null}
     </View>
   );
@@ -156,8 +185,40 @@ const makeStyles = (t: Theme) =>
     },
     value: { fontFamily: font.body600, fontSize: 16, color: t.textHeading },
     placeholder: { fontFamily: font.body400, fontSize: 16, color: t.textDim },
-    done: { alignSelf: 'flex-end', paddingVertical: space.s2, paddingHorizontal: space.s3 },
-    doneText: { fontFamily: font.body600, fontSize: 15, color: t.textHeading },
+    // Centred, not bottom-anchored: the wheel is the only thing being decided,
+    // so it sits where the eye already is.
+    backdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: space.s5,
+    },
+    sheet: {
+      width: '100%',
+      maxWidth: 420,
+      borderRadius: radius.card,
+      backgroundColor: t.surfaceCard,
+      paddingTop: space.s4,
+      paddingHorizontal: space.s4,
+      paddingBottom: space.s2,
+      gap: space.s2,
+    },
+    sheetTitle: {
+      fontFamily: font.body600,
+      fontSize: 16,
+      color: t.textHeading,
+      textAlign: 'center',
+    },
+    wheel: { alignSelf: 'stretch' },
+    done: {
+      minHeight: 48,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderTopWidth: 1,
+      borderTopColor: t.divider,
+    },
+    doneText: { fontFamily: font.body600, fontSize: 16, color: t.textHeading },
   });
 
 const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };
