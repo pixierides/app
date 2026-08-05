@@ -15,6 +15,7 @@
  * Nothing here is allowed to block a booking. Every failure resolves to an
  * empty list and a console line; the customer keeps typing.
  */
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { Platform } from 'react-native';
 
 /**
@@ -25,12 +26,10 @@ import { Platform } from 'react-native';
  * exist until the first Android build. It must be locked to the package name
  * and signing certificate before any store release.
  *
- * ⚠️ The iOS key is restricted to com.pixierides.app, so it is REJECTED inside
- * Expo Go — Expo Go's requests carry its own bundle id, host.exp.Exponent.
- * Verified: 403 "Requests from this iOS client application host.exp.Exponent
- * are blocked." Add host.exp.Exponent to the key's allowed bundle ids to test
- * in Expo Go, or use a dev build. Autocomplete degrades to plain text until
- * then, so booking still works either way.
+ * ⚠️ The iOS key is app-restricted, which a plain fetch only satisfies if it
+ * sends the bundle id itself — see appRestrictionHeaders() below. That header
+ * being absent is what killed autocomplete on every screen; allowlisting the
+ * Expo Go bundle id was necessary but did nothing without it.
  */
 const KEY =
   Platform.OS === 'android'
@@ -90,6 +89,42 @@ export function placesConfigured(): boolean {
 }
 
 /**
+ * The header Google checks an application restriction against.
+ *
+ * This is the whole reason autocomplete was dead on every screen. An
+ * iOS-app-restricted key is matched against X-Ios-Bundle-Identifier, and plain
+ * fetch does not send it — the native Places SDK does, which is why every
+ * example that "just works" is using the SDK. Without the header the request is
+ * treated as coming from an empty bundle id and refused outright:
+ *
+ *   403 PERMISSION_DENIED
+ *   "Requests from this iOS client application <empty> are blocked."
+ *
+ * Allowlisting host.exp.Exponent on the key was necessary but did nothing on its
+ * own, because the request never said who it was.
+ *
+ * The value has to be the bundle id actually running, not the configured one:
+ * inside Expo Go that is Expo Go's own id, and only in a dev or store build is
+ * it ours. Verified against the live API — both ids return suggestions, no
+ * header returns 403.
+ *
+ * Android sends nothing here. Its key is currently unrestricted, so plain fetch
+ * is accepted; an Android restriction is matched on X-Android-Package plus
+ * X-Android-Cert, and that cert is the release signing SHA-1, which JS has no
+ * business knowing. Locking the Android key down — required before any store
+ * release — therefore means moving these calls behind our own endpoint, the way
+ * /api/rates already works. Until then this is honest about doing nothing.
+ */
+function appRestrictionHeaders(): Record<string, string> {
+  if (Platform.OS !== 'ios') return {};
+  const bundleId =
+    Constants.executionEnvironment === ExecutionEnvironment.StoreClient
+      ? 'host.exp.Exponent'
+      : (Constants.expoConfig?.ios?.bundleIdentifier ?? 'com.pixierides.app');
+  return { 'X-Ios-Bundle-Identifier': bundleId };
+}
+
+/**
  * Autocomplete. Biased to Orlando — without the bias "Grand Floridian"
  * competes with hotels in other states.
  */
@@ -104,6 +139,7 @@ export async function autocomplete(
       headers: {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': KEY as string,
+        ...appRestrictionHeaders(),
       },
       body: JSON.stringify({
         input,
@@ -162,6 +198,7 @@ export async function placeDetails(
         headers: {
           'X-Goog-Api-Key': KEY as string,
           'X-Goog-FieldMask': 'id,displayName,formattedAddress,location',
+          ...appRestrictionHeaders(),
         },
       },
     );
