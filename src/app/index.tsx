@@ -116,18 +116,20 @@ export default function Home() {
           </Card>
         ) : null}
 
+        {/* These prefill the booking form's exact-address fields (step 2).
+            Someone who has already typed where they are shouldn't type it
+            again — the form's own zone pickers are step 1. */}
         <View style={styles.form}>
           <AddressField
             onDark
             label="Pickup"
-            value={draft.origin}
+            value={draft.pickupAddr}
             onChange={(p) =>
               update({
-                origin: p.label,
-                originAddress: p.address,
-                originPlaceId: p.placeId,
-                originLat: p.lat,
-                originLng: p.lng,
+                pickupAddr: p.label,
+                pickupPlaceId: p.placeId,
+                pickupLat: p.lat,
+                pickupLng: p.lng,
               })
             }
           />
@@ -135,14 +137,13 @@ export default function Home() {
             onDark
             label="Drop-off"
             placeholder="Hotel, resort or port"
-            value={draft.destination}
+            value={draft.dropoffAddr}
             onChange={(p) =>
               update({
-                destination: p.label,
-                destinationAddress: p.address,
-                destinationPlaceId: p.placeId,
-                destinationLat: p.lat,
-                destinationLng: p.lng,
+                dropoffAddr: p.label,
+                dropoffPlaceId: p.placeId,
+                dropoffLat: p.lat,
+                dropoffLng: p.lng,
               })
             }
           />
@@ -153,7 +154,7 @@ export default function Home() {
           <IncludedRow onDark>Car seats free, fitted before we leave</IncludedRow>
         </View>
 
-        <Button size="lg" fullWidth onPress={() => router.push('/book/route')}>
+        <Button size="lg" fullWidth onPress={() => router.push('/book')}>
           See my price
         </Button>
 

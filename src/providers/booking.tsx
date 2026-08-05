@@ -1,58 +1,120 @@
 /**
- * Booking wizard state — client-side only, forward-only wizard
- * (3 steps + contact). Cleared after the request submits.
+ * Booking wizard state — a port of the website's QuoteCard state, field for
+ * field. Three steps plus contact, forward-only, cleared after submission.
+ *
+ * The draft lives above the screen so it survives the hop out to phone
+ * verification and back. Nothing here is derived — prices come from the rate
+ * table, not from state.
  */
 import React, { createContext, useCallback, useContext, useMemo, useState } from 'react';
 
 export type BookingDraft = {
-  origin: string;
-  destination: string;
-  /**
-   * What Places returned, when the customer picked a suggestion. All null for
-   * a typed address — which is a perfectly valid booking, so nothing here is
-   * ever required.
-   */
-  originAddress: string | null;
-  originPlaceId: string | null;
-  originLat: number | null;
-  originLng: number | null;
-  destinationAddress: string | null;
-  destinationPlaceId: string | null;
-  destinationLat: number | null;
-  destinationLng: number | null;
-  adults: number;
-  children: number;
-  seats: number;
-  flightNumber: string;
-  /** 'today' | 'tomorrow' | ISO date (yyyy-mm-dd) */
-  travelDay: string;
-  /** "11:22pm" — when the flight lands (or pickup time if no flight) */
-  landsAt: string;
-  priceCents: number | null;
-  customerName: string;
+  // ——— Step 1 · route ———
+  from: string;
+  to: string;
+  guests: string;
+  /** 'one' | 'round' */
+  trip: string;
+
+  // ——— Step 2 · trip details ———
+  pickupAddr: string;
+  dropoffAddr: string;
+  /** Google place data for the addresses. Null when typed by hand. */
+  pickupPlaceId: string | null;
+  pickupLat: number | null;
+  pickupLng: number | null;
+  dropoffPlaceId: string | null;
+  dropoffLat: number | null;
+  dropoffLng: number | null;
+  /** 'YYYY-MM-DD' */
+  date: string;
+  /** 'HH:MM' 24h */
+  time: string;
+  /** No default: luggage volume decides the vehicle, so it must be chosen. */
+  suitcases: string;
+  seatCount: number;
+  seatTypes: string[];
+  stroller: string;
+  flight: string;
+  cruiseLine: string;
+  cruiseShip: string;
+
+  // Return leg. Defaults to the reversed outbound pair and keeps mirroring
+  // until the customer edits a field — then that field latches and is never
+  // overwritten again. A family can change resorts, so a return is not always
+  // a straight reversal. Touched state is per FIELD, not per form.
+  rPickup: string;
+  rDropoff: string;
+  rPickupTouched: boolean;
+  rDropoffTouched: boolean;
+  rDate: string;
+  rTime: string;
+  rFlight: string;
+
+  // ——— Step 3 · contact ———
+  name: string;
+  mobile: string;
   email: string;
+  contactMethod: string;
+  notes: string;
+
+  // The quote as it stood when the customer pressed the button. Frozen here and
+  // carried through phone verification, so the price we email is the price they
+  // agreed to — not one re-derived afterwards against a table that may have
+  // refreshed underneath them. Null on a group request: there is no flat rate.
+  quotedPrice: number | null;
+  quotedReturnOffer: number | null;
+  vehicleLabel: string;
+
+  /** Set once submitted, for the confirmation screen. */
+  reference: string;
 };
 
 const EMPTY: BookingDraft = {
-  origin: 'MCO — Orlando Intl',
-  destination: '',
-  originAddress: null,
-  originPlaceId: null,
-  originLat: null,
-  originLng: null,
-  destinationAddress: null,
-  destinationPlaceId: null,
-  destinationLat: null,
-  destinationLng: null,
-  adults: 2,
-  children: 0,
-  seats: 0,
-  flightNumber: '',
-  travelDay: 'today',
-  landsAt: '',
-  priceCents: null,
-  customerName: '',
+  // These three defaults produce a price the moment the flow opens — that
+  // immediate number is the point of the whole thing.
+  from: 'MCO',
+  to: 'DISNEY',
+  guests: '1-4',
+  trip: 'one',
+
+  pickupAddr: '',
+  dropoffAddr: '',
+  pickupPlaceId: null,
+  pickupLat: null,
+  pickupLng: null,
+  dropoffPlaceId: null,
+  dropoffLat: null,
+  dropoffLng: null,
+  date: '',
+  time: '',
+  suitcases: '',
+  seatCount: 0,
+  seatTypes: [],
+  stroller: 'None',
+  flight: '',
+  cruiseLine: '',
+  cruiseShip: '',
+
+  rPickup: '',
+  rDropoff: '',
+  rPickupTouched: false,
+  rDropoffTouched: false,
+  rDate: '',
+  rTime: '',
+  rFlight: '',
+
+  name: '',
+  mobile: '',
   email: '',
+  contactMethod: 'Text message',
+  notes: '',
+
+  quotedPrice: null,
+  quotedReturnOffer: null,
+  vehicleLabel: 'Premium SUV',
+
+  reference: '',
 };
 
 type BookingState = {
@@ -80,38 +142,47 @@ export function useBooking() {
   return ctx;
 }
 
-/** "11:22pm" → {h,m} 24h, or null. */
-export function parseClock(text: string): { h: number; m: number } | null {
-  const m = text.trim().match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)$/i);
-  if (!m) return null;
-  let h = parseInt(m[1], 10);
-  const min = m[2] ? parseInt(m[2], 10) : 0;
-  if (h < 1 || h > 12 || min > 59) return null;
-  const mer = m[3].toLowerCase();
-  if (mer === 'pm' && h !== 12) h += 12;
-  if (mer === 'am' && h === 12) h = 0;
-  return { h, m: min };
+/** 'YYYY-MM-DD' for today, Orlando — the min bound on the date fields. */
+export function todayStr(): string {
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/New_York',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  }).format(new Date());
 }
 
-/** Resolve draft day + lands-at into the pickup Date (lands + 18 min buffer). */
-export function pickupFromDraft(draft: BookingDraft): Date | null {
-  const clock = parseClock(draft.landsAt);
-  if (!clock) return null;
-  const d = new Date();
-  if (draft.travelDay === 'tomorrow') d.setDate(d.getDate() + 1);
-  else if (draft.travelDay !== 'today') {
-    const parsed = new Date(`${draft.travelDay}T00:00:00`);
-    if (!isNaN(parsed.getTime())) {
-      d.setFullYear(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
-    }
+/** 'HH:MM' now, Orlando — for the "that time has passed" check on today. */
+export function nowClock(): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'America/New_York',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(new Date());
+}
+
+/** The pickup as a naive Eastern wall-clock string, the shape ingest expects. */
+export function pickupIso(draft: BookingDraft): string {
+  return draft.date && draft.time ? `${draft.date}T${draft.time}` : draft.date;
+}
+
+export function returnIso(draft: BookingDraft): string {
+  return draft.rDate && draft.rTime ? `${draft.rDate}T${draft.rTime}` : draft.rDate;
+}
+
+/** "2× Backless booster, 1× Rear-facing infant seat" — grouped, like the website. */
+export function seatSummary(seatTypes: string[]): { type: string; count: number }[] {
+  const acc: Record<string, number> = {};
+  for (const t of seatTypes) {
+    if (!t) continue;
+    acc[t] = (acc[t] || 0) + 1;
   }
-  d.setHours(clock.h, clock.m, 0, 0);
-  // Pickup is after they've landed and reached the kerb.
-  return new Date(d.getTime() + 18 * 60000);
+  return Object.entries(acc).map(([type, count]) => ({ type, count }));
 }
 
-/** "1 booster · free" style label for the seats stepper. */
-export function seatsLabel(seats: number): string | null {
-  if (!seats) return null;
-  return `${seats} booster${seats === 1 ? '' : 's'} · free`;
+export function seatText(seatTypes: string[]): string {
+  return seatSummary(seatTypes)
+    .map(({ type, count }) => `${count}× ${type}`)
+    .join(', ');
 }

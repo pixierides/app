@@ -2,16 +2,23 @@
  * Verify-first: the code proves the number before the request exists.
  * It's how you sign in and the only way back to this trip.
  * On success the request submits — already yours, no wall, no claiming.
+ *
+ * This is where an app booking joins the website's path. It builds the same
+ * NotifyDetails the website builds and hands it to submitAppBooking, which
+ * inserts into contact_submissions and POSTs /api/notify. One set of email
+ * templates, one ingest trigger, and an app booking that produces exactly the
+ * two emails a website booking does. See lib/quote-submit.ts.
  */
 import { router, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { BookScaffold } from '@/components/BookScaffold';
 import { Button } from '@/components/ui';
-import { submitRideRequest } from '@/lib/booking';
+import { submitAppBooking, type NotifyDetails } from '@/lib/quote-submit';
+import { isGroup, makeReference, ZONE_SHORT } from '@/lib/zones';
 import { useAuth } from '@/providers/auth';
-import { pickupFromDraft, seatsLabel, useBooking } from '@/providers/booking';
-import { color, font, radius, space } from '@/theme/tokens';
+import { pickupIso, returnIso, seatSummary, seatText, useBooking } from '@/providers/booking';
+import { font, radius, space } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 
@@ -22,7 +29,7 @@ export default function BookVerify() {
   const styles = themed[th.mode];
   const { phone, display } = useLocalSearchParams<{ phone: string; display?: string }>();
   const { verifyCode, signInWithPhone } = useAuth();
-  const { draft, reset } = useBooking();
+  const { draft, update } = useBooking();
   const [code, setCode] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,35 +46,103 @@ export default function BookVerify() {
       setCode('');
       return;
     }
-    try {
-      const pickupAt = pickupFromDraft(draft);
-      if (!pickupAt) throw new Error('missing pickup time');
-      const tripId = await submitRideRequest({
-        origin: draft.origin,
-        destination: draft.destination,
-        pickupAt,
-        adults: draft.adults,
-        children: draft.children,
-        carSeats: seatsLabel(draft.seats),
-        flightNumber: draft.flightNumber.trim() || null,
-        customerName: draft.customerName,
+    const ref = makeReference();
+    const quoteOnly = isGroup(draft.guests);
+    const isAirportPickup = draft.from === 'MCO';
+    const isPort = draft.from === 'PORT' || draft.to === 'PORT';
+    const at = pickupIso(draft);
+
+    // The human-readable message string. Kept for the Supabase record only —
+    // the emails render from the structured details below, never from this.
+    const lines: string[] = [
+      `Route: ${ZONE_SHORT[draft.from]} → ${ZONE_SHORT[draft.to]} (${
+        draft.trip === 'round' ? 'round trip' : 'one way'
+      })`,
+      `Guests: ${draft.guests} · Suitcases: ${draft.suitcases}`,
+    ];
+    const seatLine = seatText(draft.seatTypes);
+    if (seatLine) lines.push(`Car seats (free): ${seatLine}`);
+    if (draft.stroller && draft.stroller !== 'None') lines.push(`Stroller: ${draft.stroller}`);
+    if (isAirportPickup && draft.flight) lines.push(`Flight: ${draft.flight}`);
+    if (isPort && (draft.cruiseLine || draft.cruiseShip))
+      lines.push(`Cruise: ${[draft.cruiseLine, draft.cruiseShip].filter(Boolean).join(' / ')}`);
+    if (draft.trip === 'round')
+      lines.push(
+        `Return: ${draft.rPickup} → ${draft.rDropoff} on ${draft.rDate} ${draft.rTime}` +
+          (draft.rFlight ? ` (flight ${draft.rFlight})` : ''),
+      );
+    lines.push(`Preferred contact: ${draft.contactMethod}`);
+    if (draft.notes.trim()) lines.push(`Notes: ${draft.notes.trim()}`);
+    lines.push('Booked in the app.');
+
+    const notify: NotifyDetails = {
+      reference: ref,
+      // The price the customer saw and agreed to, frozen when they pressed the
+      // button — not re-derived here against a table that may have refreshed.
+      price: draft.quotedPrice,
+      vehicle: draft.vehicleLabel,
+      group: quoteOnly,
+      contact: {
+        name: draft.name,
+        phone: draft.mobile,
         email: draft.email,
-        pickupAddress: draft.originAddress,
-        pickupPlaceId: draft.originPlaceId,
-        pickupLat: draft.originLat,
-        pickupLng: draft.originLng,
-        dropoffAddress: draft.destinationAddress,
-        dropoffPlaceId: draft.destinationPlaceId,
-        dropoffLat: draft.destinationLat,
-        dropoffLng: draft.destinationLng,
-      });
-      reset();
-      router.replace({ pathname: '/book/received', params: { tripId } });
-    } catch (e: any) {
-      setError(e?.message ?? 'Something went wrong. Try again.');
-    } finally {
-      setBusy(false);
+        method: draft.contactMethod,
+      },
+      route: {
+        from: draft.from,
+        to: draft.to,
+        fromLabel: ZONE_SHORT[draft.from],
+        toLabel: ZONE_SHORT[draft.to],
+        tripType: draft.trip,
+      },
+      pickup: { address: draft.pickupAddr, dropoffAddress: draft.dropoffAddr, at },
+      flight: isAirportPickup && draft.flight ? draft.flight : null,
+      returnLeg:
+        draft.trip === 'round'
+          ? {
+              pickup: draft.rPickup,
+              dropoff: draft.rDropoff,
+              at: returnIso(draft),
+              flight: draft.rFlight.trim() || null,
+              fromLabel: ZONE_SHORT[draft.to],
+              toLabel: ZONE_SHORT[draft.from],
+            }
+          : null,
+      returnOfferPrice: draft.quotedReturnOffer,
+      guests: draft.guests,
+      suitcases: draft.suitcases,
+      carSeats: seatSummary(draft.seatTypes),
+      stroller: draft.stroller,
+      notes: draft.notes.trim() || null,
+    };
+
+    const { ok } = await submitAppBooking(
+      {
+        name: draft.name,
+        email: draft.email,
+        phone: draft.mobile,
+        pickup: draft.pickupAddr,
+        dropoff: draft.dropoffAddr,
+        date: at,
+        passengers: draft.guests,
+        luggage: draft.suitcases,
+        message: lines.join('\n'),
+        reference: ref,
+        price: draft.quotedPrice != null ? String(draft.quotedPrice) : '',
+        vehicle: draft.vehicleLabel,
+      },
+      notify,
+    );
+
+    setBusy(false);
+    if (!ok) {
+      setError('Something went wrong. Try again, or call 407-373-8735.');
+      return;
     }
+    // The draft is NOT cleared here — the confirmation screen renders the trip
+    // summary from it, and clears it on the way out.
+    update({ reference: ref });
+    router.replace('/book/received');
   };
 
   const onChange = (t: string) => {
