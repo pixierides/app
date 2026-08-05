@@ -8,9 +8,11 @@
     "scheme": "pixieapp",
     "userInterfaceStyle": "automatic",
     "ios": {
+      "bundleIdentifier": "com.pixierides.app",
       "icon": "./assets/images/icon.png"
     },
     "android": {
+      "package": "com.pixierides.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
