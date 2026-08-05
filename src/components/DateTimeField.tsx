@@ -8,13 +8,57 @@
  * plus the browser preview both need these fields to work.
  */
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 import { font, ls, radius, space, track } from '@/theme/tokens';
 
 const pad = (n: number) => String(n).padStart(2, '0');
+
+/**
+ * ONE wheel open at a time, across the whole app.
+ *
+ * Each field used to own its own `open` flag, so tapping Pickup date and then
+ * Pickup time opened both — two spinners side by side, each with its own Done,
+ * and no way to tell which one a scroll belonged to. Nothing closed the other
+ * because nothing knew about it.
+ *
+ * So which field is open lives above all of them. Opening one closes the rest,
+ * and a field that loses the slot just closes: it does NOT commit, because the
+ * customer dismissed nothing — they reached for a different field.
+ */
+let openFieldId: string | null = null;
+const openListeners = new Set<() => void>();
+
+function announce() {
+  openListeners.forEach((notify) => notify());
+}
+function claimWheel(id: string) {
+  openFieldId = id;
+  announce();
+}
+function releaseWheel(id: string) {
+  if (openFieldId === id) {
+    openFieldId = null;
+    announce();
+  }
+}
+function useWheelOpen(id: string): boolean {
+  const [, bump] = useState(0);
+  useEffect(() => {
+    const notify = () => bump((n) => n + 1);
+    openListeners.add(notify);
+    return () => {
+      openListeners.delete(notify);
+      // Unmounting while holding the slot must not leave it held forever.
+      releaseWheel(id);
+    };
+  }, [id]);
+  return openFieldId === id;
+}
+
+let nextFieldId = 0;
 
 /** The spinner's minute step. Nobody schedules an airport pickup for 6:37. */
 const MINUTE_STEP = 5;
@@ -60,7 +104,10 @@ export function DateTimeField({
 }) {
   const th = useTheme();
   const styles = themed[th.mode];
-  const [open, setOpen] = useState(false);
+  // Stable per mounted field, and only used to identify who holds the wheel.
+  const fieldId = useRef<string>('');
+  if (!fieldId.current) fieldId.current = `dtf-${nextFieldId++}`;
+  const open = useWheelOpen(fieldId.current);
   // iOS's spinner only fires onChange when the wheel actually moves. Someone who
   // opens it, sees today already under the marker and taps Done has changed
   // nothing — so without this the field would stay empty while showing a date.
@@ -73,8 +120,8 @@ export function DateTimeField({
       : `${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
   const handle = (_e: DateTimePickerEvent, picked?: Date) => {
-    // Android's dialog closes itself; iOS's inline spinner stays until tapped away.
-    if (Platform.OS === 'android') setOpen(false);
+    // Android's dialog closes itself; iOS's spinner stays until Done.
+    if (Platform.OS === 'android') releaseWheel(fieldId.current);
     if (!picked) return;
     moved.current = true;
     onChange(format(picked));
@@ -82,14 +129,14 @@ export function DateTimeField({
 
   const openPicker = () => {
     moved.current = false;
-    setOpen(true);
+    claimWheel(fieldId.current);
   };
 
   /** Where the wheel opens: the current value, or now when there isn't one. */
   const initial = () => toDate(mode, value);
 
   const done = () => {
-    setOpen(false);
+    releaseWheel(fieldId.current);
     if (moved.current || value) return;
     // Commit the position the wheel was resting at. Time snaps down to the
     // 5-minute step the spinner shows, so the stored value matches it exactly.
