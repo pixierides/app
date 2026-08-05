@@ -27,12 +27,28 @@ const KEY = Deno.env.get("GOOGLE_PLACES_KEY");
 
 /**
  * MCO. Without a bias, "Grand Floridian" competes with hotels in other states.
+ *
  * 50km is the API's hard ceiling — 64km is rejected outright. Port Canaveral is
  * ~68km out and so sits outside the circle, which is fine: this is a BIAS, not a
- * restriction, so the cruise terminals still resolve, they just aren't boosted.
+ * restriction, so the cruise terminals and KSC still resolve, they just aren't
+ * boosted. Re-verified through this function: "port canaveral" and "kennedy
+ * space center" both return results with this bias, without it, and with a
+ * wider rectangle — the bias does not gate them.
  */
 const BIAS_CENTRE = { latitude: 28.4312, longitude: -81.3081 };
 const BIAS_RADIUS_M = 50_000;
+
+/**
+ * Google requires the session token to be "a URL and filename safe base64
+ * string". A UUID qualifies; anything with a dot in it does not, and the request
+ * is rejected outright with INVALID_ARGUMENT.
+ *
+ * This is checked here so a malformed token fails loudly instead of looking
+ * exactly like "no matches" — which is precisely how it fooled me: a probe token
+ * built from Math.random() carried a dot, every query came back empty, and the
+ * empty results read as a location bias suppressing half the service area.
+ */
+const SAFE_TOKEN = /^[A-Za-z0-9_-]{8,128}$/;
 
 const MIN_QUERY_CHARS = 3;
 const MAX_QUERY_CHARS = 200;
@@ -88,8 +104,14 @@ async function autocomplete(input: string, sessionToken: string) {
     }),
   });
   if (!res.ok) {
-    console.warn("places autocomplete failed:", res.status, await res.text());
-    return { suggestions: [] as Suggestion[] };
+    // Surfaced, not just logged. An empty list and a REJECTED request looked
+    // identical from outside, and that ambiguity cost real time: a malformed
+    // session token returned nothing for every query, which read convincingly as
+    // a location bias suppressing half the service area. The client ignores this
+    // field; whoever is debugging should not have to infer the cause.
+    const detail = await res.text();
+    console.warn("places autocomplete failed:", res.status, detail);
+    return { suggestions: [] as Suggestion[], upstreamError: `${res.status} ${detail.slice(0, 300)}` };
   }
   const data = await res.json();
   const suggestions: Suggestion[] = (data.suggestions ?? [])
@@ -115,8 +137,9 @@ async function details(placeId: string, sessionToken: string) {
     },
   });
   if (!res.ok) {
-    console.warn("place details failed:", res.status, await res.text());
-    return { place: null };
+    const detail = await res.text();
+    console.warn("place details failed:", res.status, detail);
+    return { place: null, upstreamError: `${res.status} ${detail.slice(0, 300)}` };
   }
   const d = await res.json();
   return {
@@ -154,6 +177,9 @@ Deno.serve(async (req: Request) => {
 
   const sessionToken = typeof body.sessionToken === "string" ? body.sessionToken : "";
   if (!sessionToken) return json({ error: "missing_session_token" }, 400);
+  if (!SAFE_TOKEN.test(sessionToken)) {
+    return json({ error: "invalid_session_token", detail: "must be URL-safe base64" }, 400);
+  }
 
   try {
     if (body.action === "autocomplete") {
