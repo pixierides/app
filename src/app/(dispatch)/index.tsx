@@ -25,6 +25,7 @@ import {
   type Driver,
 } from '@/lib/dispatch';
 import { needsFlightCheck } from '@/lib/flight';
+import { noCheckIn, unreachableDriver } from '@/lib/trips';
 import { adjustmentLine, fetchOpenAdjustments, type PriceAdjustment } from '@/lib/dispatch-edit';
 import { easternDate, easternToday } from '@/lib/calendar';
 import { firstName, formatTime, greetingWord } from '@/lib/format';
@@ -61,6 +62,17 @@ function proximity(pickupAtIso: string): string {
 
 /** "flight moved" / "cutoff passed — decide" / ... reasons for Needs a look. */
 function lookReason(t: DispatchTrip): string | null {
+  // A failed car outranks everything: there is a customer with no driver.
+  if (t.status === 'reassigning') {
+    return t.reassign_reason
+      ? `car failed — find a replacement (${t.reassign_reason})`
+      : 'car failed — find a replacement';
+  }
+  // The pickup has passed and nobody tapped. Dispatch has had this signal all
+  // along and was never shown it.
+  if (noCheckIn(t)) return `pickup passed — ${t.driver_name ?? 'the driver'} hasn't checked in`;
+  // The customer is on a screen telling them to wait for a text they cannot answer.
+  if (unreachableDriver(t)) return "live run with no driver number — customer can't reach them";
   if (staleHolding(t)) return `${STALE_HOLDING_MINUTES}+ min in the cell lot — check on the driver`;
   if (pastCutoff(t)) return 'cutoff passed — decide';
   if (t.pickup_at_was) return 'flight moved';
@@ -112,7 +124,21 @@ export default function Board() {
   // Confirmed but the money hasn't landed — the same set the calendar paints
   // yellow. A 'requested' trip isn't unpaid yet: nobody has been asked.
   const unpaid = open.filter((t) => t.status === 'confirmed' && !t.paid_at);
-  const unassigned = open.filter((t) => t.status === 'paid' && !t.driver_id);
+  /**
+   * Paid with nobody driving it — plus the runs whose car has failed, which are
+   * the same problem arriving later and with a passenger already waiting. They
+   * sort first, oldest failure first, because a reassignment is measured in
+   * minutes while an unassigned booking usually has days.
+   */
+  const unassigned = open
+    .filter((t) => (t.status === 'paid' || t.status === 'reassigning') && !t.driver_id)
+    .sort((a, b) => {
+      if (!!a.reassigning_at !== !!b.reassigning_at) return a.reassigning_at ? -1 : 1;
+      if (a.reassigning_at && b.reassigning_at) {
+        return a.reassigning_at < b.reassigning_at ? -1 : 1;
+      }
+      return a.pickup_at < b.pickup_at ? -1 : 1;
+    });
   const rolling = open.filter((t) => (ROLLING_STATES as readonly string[]).includes(t.driver_state));
 
   // The single most urgent item: the oldest unconfirmed request.
@@ -285,7 +311,10 @@ export default function Board() {
                           t,
                           filter === 'rolling'
                             ? `${RUN_STATE_LABELS[t.driver_state]} · ${t.driver_name ?? 'no driver'} · ${t.reference}`
-                            : `${t.reference} · ${t.origin} → ${t.destination} · ${formatTime(t.pickup_at)}`,
+                            : // A failed car sits in the same queue as a booking
+                              // nobody has got to yet, and they are not the same
+                              // job. The row has to say which it is.
+                              `${t.status === 'reassigning' ? 'CAR FAILED · ' : ''}${t.reference} · ${t.origin} → ${t.destination} · ${formatTime(t.pickup_at)}`,
                         ),
                       )}
                     </Card>

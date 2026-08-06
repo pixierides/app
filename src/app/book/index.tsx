@@ -506,13 +506,17 @@ export default function BookForm() {
                       tone as a real value on this theme, so it reads as already
                       filled in — and this is the field that decides which plane we
                       watch. Empty is unambiguous. */}
+                  {/* Not "moves on its own": the flight is checked by a person,
+                      and a promise of automation that isn't there fails silently
+                      at 1am. What the customer needs is that they don't have to do
+                      anything, which is true either way. */}
                   <Input
                     label="Flight number"
                     value={draft.flight}
                     onChangeText={(v) => update({ flight: v })}
                     autoCapitalize="characters"
                     autoCorrect={false}
-                    hint="We track it. If you land late, your pickup time moves on its own."
+                    hint="We track it. If you land late, we move your pickup — you don't need to tell us."
                   />
                   <FieldError>{errors.flight}</FieldError>
                 </View>

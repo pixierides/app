@@ -38,6 +38,7 @@ import { firstName, formatTime, partOfDay, terminalLabel } from '@/lib/format';
 import { easternDate, easternToday } from '@/lib/calendar';
 import { flightLabel } from '@/lib/airlines';
 import { arrivalWord, hasLanded } from '@/lib/flight';
+import { noCheckIn, runIsLive as isLiveRun, unreachableDriver } from '@/lib/trips';
 import { callDispatch, callNumber, DISPATCH_PHONE, textNumber } from '@/lib/links';
 import { cancelDeadline, formatDeadline, policyState } from '@/lib/policy';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
@@ -49,7 +50,9 @@ function dateLine(t: CustomerTrip): string {
   const day = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   const bits = [day, formatTime(t.pickup_at)];
   if (t.car_seats) bits.push(t.car_seats.split(' · ')[0]);
-  if (t.flight_number) bits.push(`${flightLabel(t.flight_number)}${t.status === 'paid' ? ' watched' : ''}`);
+  // "tracked", not "watched": a person checks a flight board, and "watched"
+  // implies a system that does not exist.
+  if (t.flight_number) bits.push(`${flightLabel(t.flight_number)}${t.status === 'paid' ? ' tracked' : ''}`);
   return bits.join(' · ');
 }
 
@@ -65,7 +68,7 @@ export function TripDetailView({
   const styles = themed[th.mode];
 
   const spineIndex = Math.max(0, SPINE_ORDER.indexOf(trip.status));
-  const landed = hasLanded(trip.flight_landed_at);
+  const landed = hasLanded(trip.flight_landed_at, trip.flight_arrival_is_actual);
   // The driver is parked in the cell lot and will make contact himself. The
   // customer has nothing to tap: day-of communication is the driver's job.
   const driverHolding = trip.driver_state === 'holding';
@@ -88,8 +91,17 @@ export function TripDetailView({
   const driverOr = driver ?? 'Your driver';
   // Day-of contact is the driver's job, so the number is offered only while
   // the run is actually live — not from the moment they were assigned.
-  const canReachDriver =
-    !!trip.driver_phone && (driverHolding || driverCalled || driverHere || onTrip);
+  const runLive = isLiveRun(trip.driver_state);
+  const canReachDriver = !!trip.driver_phone && runLive;
+  /**
+   * A live run with no driver number is an operational fault, not a display case.
+   * The customer is being told to wait for a text from someone they cannot reach,
+   * so dispatch stands in — at the same weight the driver buttons would have had,
+   * not buried in the footer. It is flagged on the board too.
+   */
+  const needsDispatchInstead = unreachableDriver(trip);
+  // The board flags the same two faults, from the same two functions.
+  const awaitingCheckIn = noCheckIn(trip);
 
   // Same two-button treatment the dispatch line uses, pointed at the driver.
   const driverContact = (
@@ -103,6 +115,14 @@ export function TripDetailView({
       </Button>
       <Button variant="ghost" onDark onPress={() => callNumber(trip.driver_phone!)}>
         Call {driver ?? 'driver'}
+      </Button>
+    </View>
+  );
+
+  const dispatchInstead = (
+    <View style={styles.policyActions}>
+      <Button variant="secondary" onDark onPress={callDispatch}>
+        We'll connect you — call {DISPATCH_PHONE}
       </Button>
     </View>
   );
@@ -140,7 +160,7 @@ export function TripDetailView({
         </Text>
         {trip.pickup_at_was ? (
           <Text style={styles.wasNow}>
-            was {formatTime(trip.pickup_at_was)} → now {formatTime(trip.pickup_at)} — we watched
+            was {formatTime(trip.pickup_at_was)} → now {formatTime(trip.pickup_at)} — we tracked
             your flight.
           </Text>
         ) : null}
@@ -209,6 +229,23 @@ export function TripDetailView({
           </Card>
         ) : null}
 
+        {/* ——— the car has failed and dispatch is finding another ———
+             Never entered automatically: a stalled run is a human's call. The
+             15-minute figure is what dispatch works to, not a countdown. */}
+        {trip.status === 'reassigning' ? (
+          <Card tone="surface" texture pad={20} style={styles.block}>
+            <Text style={styles.eyebrow}>WE'RE ON IT</Text>
+            <Text style={styles.blockTitle}>Something's come up with your car.</Text>
+            <Text style={styles.blockBody}>
+              We're getting you another driver now. We'll message you the moment it's sorted —
+              usually within 15 minutes.
+            </Text>
+            <Button variant="secondary" onDark fullWidth onPress={callDispatch}>
+              Call {DISPATCH_PHONE}
+            </Button>
+          </Card>
+        ) : null}
+
         {/* ——— status-specific block ——— */}
         {trip.status === 'requested' ? (
           <Card tone="surface" texture pad={20} style={styles.block}>
@@ -243,7 +280,8 @@ export function TripDetailView({
             <IncludedRow onDark>Paid in full — nothing to pay at pickup.</IncludedRow>
             {trip.flight_number && !trip.pickup_at_was ? (
               <IncludedRow onDark>
-                We're watching {trip.flight_number} — pickup moves on its own if it slips.
+                We're tracking {trip.flight_number}. If it slips, we move your pickup and tell
+                you — you don't need to do anything.
               </IncludedRow>
             ) : null}
           </Card>
@@ -254,7 +292,7 @@ export function TripDetailView({
           <Card tone="surface" texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>
               {trip.flight_number && trip.flight_landed_at
-                ? `${flightLabel(trip.flight_number).toUpperCase()} · ${arrivalWord(trip.flight_landed_at)} ${formatTime(trip.flight_landed_at).toUpperCase()}`
+                ? `${flightLabel(trip.flight_number).toUpperCase()} · ${arrivalWord(trip.flight_landed_at, trip.flight_arrival_is_actual)} ${formatTime(trip.flight_landed_at).toUpperCase()}`
                 : 'YOUR DRIVER IS WAITING'}
             </Text>
             <Text style={styles.blockTitle}>Take your time.</Text>
@@ -263,6 +301,7 @@ export function TripDetailView({
               your luggage and the car comes to the door.
             </Text>
             {canReachDriver ? driverContact : null}
+            {needsDispatchInstead ? dispatchInstead : null}
           </Card>
         ) : null}
 
@@ -277,10 +316,30 @@ export function TripDetailView({
               {terminal ? `Head out from ${terminal}` : 'Head for the pickup doors'} — a few minutes.
             </Text>
             {canReachDriver ? driverContact : null}
+            {needsDispatchInstead ? dispatchInstead : null}
           </Card>
         ) : null}
 
-        {trip.status === 'driver_assigned' && !driverHolding && !driverCalled && !driverHere && !onTrip ? (
+        {awaitingCheckIn ? (
+          <Card tone="surface" texture pad={20} style={styles.block}>
+            <Text style={styles.eyebrow}>YOUR DRIVER</Text>
+            <Text style={styles.blockTitle}>We're checking on your driver.</Text>
+            <Text style={styles.blockBody}>
+              {driver ? `${driver} hasn't` : "Your driver hasn't"} checked in yet. Give us a call
+              and we'll find out where they are.
+            </Text>
+            <Button variant="secondary" onDark fullWidth onPress={callDispatch}>
+              Call {DISPATCH_PHONE}
+            </Button>
+          </Card>
+        ) : null}
+
+        {trip.status === 'driver_assigned' &&
+        !awaitingCheckIn &&
+        !driverHolding &&
+        !driverCalled &&
+        !driverHere &&
+        !onTrip ? (
           <Card tone="surface" texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>
               {landed && trip.flight_number
@@ -298,7 +357,7 @@ export function TripDetailView({
               <Text style={styles.blockBody}>
                 {trip.vehicle}.{' '}
                 {terminal
-                  ? `${driverOr} will be at ${terminal} holding a sign with your name.`
+                  ? `${driverOr} will meet you at ${terminal}, holding a sign with your name.`
                   : `${driverOr} will be holding a sign with your name.`}
               </Text>
             ) : null}
@@ -324,6 +383,7 @@ export function TripDetailView({
               name.
             </Text>
             {canReachDriver ? driverContact : null}
+            {needsDispatchInstead ? dispatchInstead : null}
             <Button
               size="lg"
               fullWidth
@@ -342,6 +402,8 @@ export function TripDetailView({
               {driverOr} has you. Sit back — the price is settled and the route is taken care
               of.
             </Text>
+            {canReachDriver ? driverContact : null}
+            {needsDispatchInstead ? dispatchInstead : null}
           </Card>
         ) : null}
 
@@ -359,10 +421,17 @@ export function TripDetailView({
           </Card>
         ) : null}
 
-        {/* ——— the spine ——— */}
-        <View style={styles.spineWrap}>
-          <TripStatus steps={steps} current={spineIndex} onDark />
-        </View>
+        {/* ——— the spine ———
+             Reassurance during the waiting days, noise on the night: once the
+             run is live the block above tracks holding → called → at_kerb, and
+             two progress systems on one screen disagree by design. Hidden during
+             a reassignment too — 'reassigning' is deliberately not on the spine,
+             so it would sit at "Requested" and read as a lost booking. */}
+        {runLive || trip.status === 'reassigning' ? null : (
+          <View style={styles.spineWrap}>
+            <TripStatus steps={steps} current={spineIndex} onDark />
+          </View>
+        )}
 
         {/* ——— itinerary ——— */}
         <Card tone="surface" pad={20} style={styles.block}>
@@ -457,7 +526,15 @@ export function TripDetailView({
               </>
             ) : (
               <>
-                <Text style={styles.blockBody}>Pickup is soon. Call us for any changes.</Text>
+                {/* Running ten minutes late is a message to the driver, not a
+                    phone call to the office — and in this state the driver is
+                    reachable. The office stays available underneath. */}
+                <Text style={styles.blockBody}>
+                  {canReachDriver
+                    ? `Pickup is soon. Running late or need the car moved? Text ${driver ?? 'your driver'}.`
+                    : 'Pickup is soon. Call us for any changes.'}
+                </Text>
+                {canReachDriver ? driverContact : null}
                 <View style={styles.policyActions}>
                   <Button variant="secondary" onDark onPress={callDispatch}>
                     Call {DISPATCH_PHONE}

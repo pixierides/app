@@ -26,6 +26,7 @@ import {
   listDrivers,
   pastCutoff,
   paymentDeadline,
+  reassignTrip,
   releaseTrip,
   RUN_STATE_LABELS,
   setRunState,
@@ -62,6 +63,8 @@ export default function DispatchJob() {
   const [vehicle, setVehicle] = useState(DEFAULT_VEHICLE);
   const [meetPoint, setMeetPoint] = useState(DEFAULT_MEET);
   const [confirmUnassign, setConfirmUnassign] = useState(false);
+  const [failOpen, setFailOpen] = useState(false);
+  const [failReason, setFailReason] = useState('');
   const [overrideOpen, setOverrideOpen] = useState(false);
   const [flightOpen, setFlightOpen] = useState(false);
   // The sheet can be opened two ways: to check a flight, or because assignment
@@ -334,6 +337,77 @@ export default function DispatchJob() {
                   This run has already started. To change the driver now, call them.
                 </Text>
               )}
+
+              {/* ——— the car has failed ———
+                  Separate from "wrong driver": that is a scheduling correction,
+                  this is a breakdown with a customer already waiting. It is
+                  offered at every run state, because the states where it matters
+                  most are the ones where the run has already started.
+
+                  It hands the trip back and tells the customer. It does NOT pick
+                  a replacement, cancel, or refund — the next decision is yours. */}
+              <View style={styles.failWrap}>
+                {failOpen ? (
+                  <>
+                    <Text style={styles.blockBodyDim}>
+                      {trip.customer_name.split(' ')[0]} is told we&apos;re finding another
+                      driver, usually within 15 minutes. The trip goes back to the top of
+                      unassigned. Nothing is cancelled and nothing is refunded — that stays
+                      your call.
+                    </Text>
+                    <Input
+                      onDark
+                      label="What happened"
+                      placeholder="Breakdown on the 528"
+                      value={failReason}
+                      onChangeText={setFailReason}
+                    />
+                    <Button
+                      variant="secondary"
+                      onDark
+                      fullWidth
+                      onPress={() =>
+                        run(async () => {
+                          await reassignTrip(trip.id, failReason.trim());
+                          setFailOpen(false);
+                          setFailReason('');
+                        })
+                      }
+                    >
+                      {busy ? 'One moment…' : 'Yes — find another car'}
+                    </Button>
+                    <Button variant="ghost" onDark fullWidth onPress={() => setFailOpen(false)}>
+                      Never mind
+                    </Button>
+                  </>
+                ) : (
+                  <Button variant="ghost" onDark fullWidth onPress={() => setFailOpen(true)}>
+                    Reassign — car has failed
+                  </Button>
+                )}
+              </View>
+            </Card>
+          ) : null}
+
+          {/* ——— it already failed and is waiting on you ———
+               The assigned card is gone (the driver was cleared), so without this
+               the screen would show an ordinary unassigned trip and lose the one
+               fact that matters: a customer is waiting and has been told so. */}
+          {trip.status === 'reassigning' ? (
+            <Card tone="dark-raised" pad={20} style={styles.block}>
+              <Text style={styles.eyebrow}>CAR FAILED</Text>
+              <Text style={styles.blockTitle}>
+                {trip.reassigning_at
+                  ? `Reported ${formatTime(trip.reassigning_at)}`
+                  : 'Waiting on another car'}
+              </Text>
+              {trip.reassign_reason ? (
+                <Text style={styles.blockBody}>{trip.reassign_reason}</Text>
+              ) : null}
+              <Text style={styles.blockBodyDim}>
+                {trip.customer_name.split(' ')[0]} has been told we&apos;re finding another
+                driver. Assign one below, or cancel the trip if you can&apos;t.
+              </Text>
             </Card>
           ) : null}
 
@@ -373,7 +447,11 @@ export default function DispatchJob() {
               </Text>
               <Text style={styles.blockBody}>
                 {trip.flight_landed_at
-                  ? `${hasLanded(trip.flight_landed_at) ? 'Landed' : 'Arriving'} ${formatTime(trip.flight_landed_at)}`
+                  ? `${
+                      hasLanded(trip.flight_landed_at, trip.flight_arrival_is_actual)
+                        ? 'Landed'
+                        : 'Due'
+                    } ${formatTime(trip.flight_landed_at)}`
                   : 'Arrival not checked yet'}
                 {trip.flight_status_note ? ` — ${trip.flight_status_note}` : ''}
               </Text>
@@ -455,9 +533,19 @@ export default function DispatchJob() {
               <Text style={styles.blockTitle}>
                 {RUN_STATE_LABELS[trip.driver_state]}
                 {trip.driver_state === 'holding' && trip.flight_landed_at
-                  ? hasLanded(trip.flight_landed_at)
+                  ? hasLanded(trip.flight_landed_at, trip.flight_arrival_is_actual)
                     ? ` · ${Math.round((Date.now() - new Date(trip.flight_landed_at).getTime()) / 60000)} min since landing`
-                    : ` · lands in ${Math.round((new Date(trip.flight_landed_at).getTime() - Date.now()) / 60000)} min`
+                    : /* An unconfirmed arrival whose time has gone is the case
+                         worth showing dispatch: the driver is in the cell lot
+                         waiting on a plane nobody has confirmed is down. */
+                      (() => {
+                        const min = Math.round(
+                          (new Date(trip.flight_landed_at).getTime() - Date.now()) / 60000,
+                        );
+                        return min >= 0
+                          ? ` · due in ${min} min`
+                          : ` · was due ${-min} min ago, unconfirmed`;
+                      })()
                   : ''}
               </Text>
 
@@ -656,8 +744,8 @@ export default function DispatchJob() {
         facts={trip}
         pickupAt={trip.pickup_at}
         onClose={() => setFlightOpen(false)}
-        onSave={async (arrival, terminal, note) => {
-          await updateFlightAsDispatch(trip.id, arrival, terminal, note);
+        onSave={async (arrival, terminal, note, isActual) => {
+          await updateFlightAsDispatch(trip.id, arrival, terminal, note, isActual);
           await load();
         }}
       />
@@ -670,8 +758,8 @@ export default function DispatchJob() {
         pickupAt={trip.pickup_at}
         gateNote="Arrival time first. The pickup time is calculated from it."
         onClose={() => setGateOpen(false)}
-        onSave={async (arrival, terminal, note) => {
-          await updateFlightAsDispatch(trip.id, arrival, terminal, note);
+        onSave={async (arrival, terminal, note, isActual) => {
+          await updateFlightAsDispatch(trip.id, arrival, terminal, note, isActual);
           await load();
           setGateOpen(false);
           setPickerShown(true);
@@ -766,6 +854,15 @@ const styles = StyleSheet.create({
     fontFamily: font.body600,
     fontSize: 14,
     color: color.foam,
+  },
+  // A hairline above it: reassigning is a different kind of decision from the
+  // assignment controls it sits under, and shouldn't read as one more of them.
+  failWrap: {
+    gap: space.s3,
+    marginTop: space.s4,
+    paddingTop: space.s4,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: 'rgba(240,247,255,0.14)',
   },
   writeoffRow: {
     flexDirection: 'row',

@@ -20,6 +20,8 @@ export type Terminal = 'A' | 'B' | 'C';
 export type FlightFacts = {
   flight_number: string | null;
   flight_landed_at: string | null;
+  /** Whether flight_landed_at is observed or merely expected. */
+  flight_arrival_is_actual?: boolean | null;
   flight_terminal: string | null;
   flight_status_note: string | null;
   flight_checked_at: string | null;
@@ -34,17 +36,24 @@ export function openFlightSearch(flightNumber: string | null | undefined) {
   Linking.openURL(`https://www.google.com/search?q=${encodeURIComponent(q)}`);
 }
 
+/**
+ * `isActual` is what the customer's screen reads to choose between "landed" and
+ * "due". It defaults to false because a time read off a board is an expectation,
+ * and the safe default is the weaker claim.
+ */
 export async function updateFlightAsDriver(
   tripId: string,
   arrivalIso: string | null,
   terminal: Terminal | null,
   note: string | null,
+  isActual = false,
 ): Promise<void> {
   const { error } = await supabase.rpc('driver_update_flight', {
     p_trip_id: tripId,
     p_arrival: arrivalIso,
     p_terminal: terminal,
     p_note: note,
+    p_is_actual: isActual,
   });
   if (error) throw error;
 }
@@ -54,12 +63,14 @@ export async function updateFlightAsDispatch(
   arrivalIso: string | null,
   terminal: Terminal | null,
   note: string | null,
+  isActual = false,
 ): Promise<void> {
   const { error } = await supabase.rpc('dispatch_update_flight', {
     p_trip_id: tripId,
     p_arrival: arrivalIso,
     p_terminal: terminal,
     p_note: note,
+    p_is_actual: isActual,
   });
   if (error) throw error;
 }
@@ -73,13 +84,32 @@ export async function setInternational(tripId: string, intl: boolean): Promise<v
 }
 
 /** True once the arrival time has actually passed. */
-export function hasLanded(arrivalIso: string | null | undefined): boolean {
-  return !!arrivalIso && new Date(arrivalIso).getTime() <= Date.now();
+/**
+ * On the ground — and CONFIRMED to be.
+ *
+ * The stored arrival time is whatever dispatch or the driver typed, which is
+ * usually read off a departures board and is therefore an expectation. A time in
+ * the past does not mean the plane is down; it means the plane was due. Claiming
+ * "landed" on an estimate sends a customer to a kerb to stand in the dark, so the
+ * confirmation flag is required, not inferred from the clock.
+ */
+export function hasLanded(
+  arrivalIso: string | null | undefined,
+  isActual?: boolean | null,
+): boolean {
+  return !!arrivalIso && isActual === true && new Date(arrivalIso).getTime() <= Date.now();
 }
 
-/** "LANDED 3:20 PM" once it has, "ARRIVING 3:20 PM" while it is still an estimate. */
-export function arrivalWord(arrivalIso: string | null | undefined): string {
-  return hasLanded(arrivalIso) ? 'LANDED' : 'ARRIVING';
+/**
+ * "LANDED 3:20 PM" only when someone confirmed it. "DUE 3:20 PM" otherwise —
+ * including for a time that has already passed, because a late plane is still due
+ * rather than down.
+ */
+export function arrivalWord(
+  arrivalIso: string | null | undefined,
+  isActual?: boolean | null,
+): string {
+  return hasLanded(arrivalIso, isActual) ? 'LANDED' : 'DUE';
 }
 
 /** The buffer the server will apply. Mirrored here only to preview the result. */

@@ -14,6 +14,12 @@
  * No negative adjustments. A flight landing early is handled by the 30-minute
  * rule server-side, and dragging a pickup earlier by hand is not something a
  * driver should be doing from a cell lot.
+ *
+ * The fourth thing a Google result gives you is whether that time has HAPPENED.
+ * A time typed off a departures board is an expectation, and the customer's screen
+ * turns it into "LANDED 11:22 PM" — which sends someone to a kerb in the dark on
+ * the strength of a guess. So the time comes with a claim about itself, and the
+ * weaker claim is the default.
  */
 import { useEffect, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -32,7 +38,10 @@ import { themes, type Theme } from '@/theme/themes';
 import { font, fs, ls, radius, space, track } from '@/theme/tokens';
 
 const TERMINALS: Terminal[] = ['A', 'B', 'C'];
-const NOTES = ['On time', 'Delayed', 'Landed'];
+// 'Landed' is gone from here: it belongs to the certainty row below, which
+// actually changes what the customer is told. Two places to say the same thing
+// is two places to contradict yourself.
+const NOTES = ['On time', 'Delayed'];
 
 export function FlightUpdateSheet({
   visible,
@@ -48,7 +57,12 @@ export function FlightUpdateSheet({
   /** Shown at the top when the sheet was opened by the assignment gate. */
   gateNote?: string | null;
   onClose: () => void;
-  onSave: (arrivalIso: string | null, terminal: Terminal | null, note: string | null) => Promise<void>;
+  onSave: (
+    arrivalIso: string | null,
+    terminal: Terminal | null,
+    note: string | null,
+    isActual: boolean,
+  ) => Promise<void>;
 }) {
   const th = useTheme();
   const styles = themed[th.mode];
@@ -57,6 +71,7 @@ export function FlightUpdateSheet({
   const [arrivalIso, setArrivalIso] = useState<string | null>(null);
   const [terminal, setTerminal] = useState<Terminal | null>(null);
   const [note, setNote] = useState('');
+  const [isActual, setIsActual] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -77,6 +92,9 @@ export function FlightUpdateSheet({
     // Never the pickup time itself — that would make an untouched Save push
     // the pickup a whole buffer later.
     setArrivalIso(facts.flight_landed_at ?? scheduledIso);
+    // Never carried forward as true by default: re-opening the sheet to nudge a
+    // time is not a fresh confirmation that the plane is down.
+    setIsActual(facts.flight_arrival_is_actual === true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
@@ -104,7 +122,7 @@ export function FlightUpdateSheet({
     setBusy(true);
     setError(null);
     try {
-      await onSave(arrivalIso, terminal, note.trim() || null);
+      await onSave(arrivalIso, terminal, note.trim() || null, isActual);
       onClose();
     } catch (e: any) {
       setError(e?.message ?? "That didn't go through.");
@@ -142,6 +160,29 @@ export function FlightUpdateSheet({
               onChange={setArrivalIso}
             />
             {outcome ? <Text style={styles.outcome}>{outcome}</Text> : null}
+
+            <Text style={styles.label}>IS THAT TIME EXPECTED, OR HAS IT LANDED?</Text>
+            <View style={styles.chipRow}>
+              {[
+                { on: !isActual, label: 'Still due', value: false },
+                { on: isActual, label: "It's on the ground", value: true },
+              ].map((c) => (
+                <Pressable
+                  key={c.label}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: c.on }}
+                  onPress={() => setIsActual(c.value)}
+                  style={[styles.chip, styles.chipShort, c.on && styles.chipOn]}
+                >
+                  <Text style={[styles.chipTextSm, c.on && styles.chipTextOn]}>{c.label}</Text>
+                </Pressable>
+              ))}
+            </View>
+            <Text style={styles.hint}>
+              {isActual
+                ? 'The customer sees LANDED. Only say this once the board says it has landed.'
+                : 'The customer sees DUE. The pickup still moves — we just don’t claim the plane is down.'}
+            </Text>
 
             <Text style={styles.label}>TERMINAL</Text>
             <View style={styles.chipRow}>

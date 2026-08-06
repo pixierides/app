@@ -44,6 +44,13 @@ export type DispatchTrip = {
   hold_until: string | null;
   status: TripStatus;
   driver_state: DriverRunState;
+  /** Set when a car failed and the run went back in the queue. Sorts urgent. */
+  reassigning_at: string | null;
+  reassign_reason: string | null;
+  /** Needed to spot a live run nobody can be reached on. */
+  driver_phone: string | null;
+  /** False means flight_landed_at is expected, not observed. */
+  flight_arrival_is_actual: boolean | null;
   called_by: string | null;
   kerb_loops: number;
   customer_id: string | null;
@@ -113,7 +120,7 @@ export async function fetchDispatchTrips(): Promise<DispatchTrip[]> {
   const { data, error } = await supabase
     .from('trips')
     .select(
-      'id, created_at, reference, source, customer_name, customer_phone, customer_email, party_label, guests, suitcases, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, flight_origin, flight_landed_at, flight_terminal, flight_status_note, flight_checked_at, flight_checked_by_role, international, international_confirmed_at, return_at, return_flight, adults, children, car_seats, stroller, notes, price_cents, paid_at, payment_due_at, hold_until, status, driver_state, called_by, kerb_loops, customer_id, driver_id, driver_name, vehicle, written_off',
+      'id, created_at, reference, source, customer_name, customer_phone, customer_email, party_label, guests, suitcases, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, flight_origin, flight_landed_at, flight_terminal, flight_status_note, flight_checked_at, flight_checked_by_role, international, international_confirmed_at, return_at, return_flight, adults, children, car_seats, stroller, notes, price_cents, paid_at, payment_due_at, hold_until, status, driver_state, called_by, kerb_loops, customer_id, driver_id, driver_name, vehicle, written_off, reassigning_at, reassign_reason, driver_phone, flight_arrival_is_actual',
     )
     .order('pickup_at', { ascending: true });
   if (error) throw error;
@@ -164,6 +171,22 @@ export async function writeoffAndSend(
 /** Undo a mis-assignment. Refused once the run is in motion. */
 export async function unassignDriver(tripId: string): Promise<void> {
   const { error } = await supabase.rpc('dispatch_unassign_driver', { p_trip_id: tripId });
+  if (error) throw error;
+}
+
+/**
+ * The car has failed on OUR side. Clears the driver, returns the trip to the
+ * unassigned queue marked urgent, and shows the customer what happened.
+ *
+ * Nothing about it is automatic and nothing follows from it: no cancellation, no
+ * refund, no replacement driver picked by the app. Dispatch either assigns
+ * another car or cancels, and the existing cancelled path handles the money.
+ */
+export async function reassignTrip(tripId: string, reason: string): Promise<void> {
+  const { error } = await supabase.rpc('dispatch_reassign_trip', {
+    p_trip_id: tripId,
+    p_reason: reason,
+  });
   if (error) throw error;
 }
 

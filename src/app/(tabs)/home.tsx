@@ -96,7 +96,11 @@ export default function Home() {
   // ——— 1 · active ———
   // The trip fills the screen. Rendered by the shared component, so the day-of
   // surface here and at /trip/[id] can never disagree.
-  if (next && (runUnderway(next) || hoursAway(next.pickup_at) <= 24)) {
+  // A failed car counts as active whatever the clock says. The run isn't under
+  // way — driver_state was reset — so without this a reassignment more than a
+  // day out would show the summary card reading "Paid. Your driver's details
+  // arrive before pickup", which is the opposite of what is happening.
+  if (next && (runUnderway(next) || next.status === 'reassigning' || hoursAway(next.pickup_at) <= 24)) {
     return <TripDetailView trip={next} topSlot="none" />;
   }
 

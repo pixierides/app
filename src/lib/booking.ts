@@ -12,7 +12,10 @@ export type TripStatus =
   | 'driver_assigned'
   | 'complete'
   | 'cancelled'
-  | 'no_show';
+  | 'no_show'
+  // The car failed on our side. Only dispatch or the driver sets it, and it
+  // leaves again by dispatch either assigning a replacement or cancelling.
+  | 'reassigning';
 
 /** The five canonical spine labels — never paraphrased. */
 export const SPINE_LABELS: Record<string, string> = {
@@ -28,6 +31,9 @@ export const STATUS_LABELS: Record<string, string> = {
   ...SPINE_LABELS,
   cancelled: 'Cancelled',
   no_show: 'No-show',
+  // Ours failed, not theirs. Deliberately outside the spine: it is not a step
+  // forward, it is the same step being done again with a different car.
+  reassigning: 'Finding another driver',
 };
 
 export const SPINE_ORDER: TripStatus[] = [
@@ -62,6 +68,10 @@ export type CustomerTrip = {
   free_cancel_until: string | null;
   status: TripStatus;
   driver_state: DriverRunState;
+  /** Set when a car failed and dispatch put the run back in the queue. */
+  reassigning_at: string | null;
+  /** False means flight_landed_at is expected, not observed. See lib/flight. */
+  flight_arrival_is_actual: boolean | null;
   driver_name: string | null;
   /** Copied onto the trip at assignment — the customer's only way to reach them. */
   driver_phone: string | null;
@@ -132,7 +142,7 @@ export async function fetchMyTrips(): Promise<CustomerTrip[]> {
   const { data, error } = await supabase
     .from('trips')
     .select(
-      'id, created_at, reference, customer_name, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, flight_landed_at, flight_terminal, flight_status_note, adults, children, car_seats, price_cents, paid_at, payment_due_at, free_cancel_until, status, driver_state, driver_name, driver_phone, vehicle, hold_until',
+      'id, created_at, reference, customer_name, origin, destination, pickup_at, pickup_at_was, meet_point, flight_number, flight_landed_at, flight_terminal, flight_status_note, adults, children, car_seats, price_cents, paid_at, payment_due_at, free_cancel_until, status, driver_state, driver_name, driver_phone, vehicle, hold_until, reassigning_at, flight_arrival_is_actual',
     )
     .order('pickup_at', { ascending: true });
   if (error) throw error;

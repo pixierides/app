@@ -34,6 +34,7 @@ import {
 import { callNumber, navigateTo, navigateToPoint, textNumber } from '@/lib/links';
 import { CELL_LOT, laneLabel, lanePhrase, terminalPickup } from '@/lib/terminals';
 import {
+  cannotRun,
   fetchDriverRuns,
   kerbLoop,
   ratePassenger,
@@ -92,7 +93,9 @@ function FlightBlock({
       </Text>
       <Text style={styles.flightState}>
         {run.flight_landed_at
-          ? `${hasLanded(run.flight_landed_at) ? 'Landed' : 'Arriving'} ${formatTime(run.flight_landed_at)}`
+          ? `${
+              hasLanded(run.flight_landed_at, run.flight_arrival_is_actual) ? 'Landed' : 'Arriving'
+            } ${formatTime(run.flight_landed_at)}`
           : 'Arrival not checked yet'}
         {run.flight_status_note ? ` — ${run.flight_status_note}` : ''}
       </Text>
@@ -116,6 +119,7 @@ export default function RunScreen() {
   const [busy, setBusy] = useState(false);
   const [rated, setRated] = useState<number | null>(null);
   const [flightOpen, setFlightOpen] = useState(false);
+  const [failOpen, setFailOpen] = useState(false);
 
   const load = useCallback(async () => {
     try {
@@ -174,6 +178,61 @@ export default function RunScreen() {
       setBusy(false);
     }
   };
+
+  /**
+   * ——— "I can't make this run" ———
+   *
+   * A driver who has broken down on the 528 should not be hunting for a phone
+   * number. This hands the run back and puts it at the top of dispatch's queue
+   * with the customer already told — the same state dispatch can set itself.
+   *
+   * Quiet and behind a confirm, because it is not a step in the run and the
+   * consequence is somebody's flight. It does not find a replacement: dispatch
+   * decides that, and the money is never touched here.
+   */
+  const cannotRunBlock = (
+    <View style={styles.failWrap}>
+      {failOpen ? (
+        <>
+          <Text style={styles.failBody}>
+            Dispatch gets this straight away and starts finding another car.{' '}
+            {firstName(run.customer_name)} is told too, so you don&apos;t have to. Only use
+            this if you genuinely can&apos;t do the run.
+          </Text>
+          <Button
+            variant="secondary"
+            onDark
+            fullWidth
+            onPress={async () => {
+              if (busy) return;
+              setBusy(true);
+              try {
+                await cannotRun(run.id, '');
+                setFailOpen(false);
+                router.replace('/');
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            {busy ? 'One moment…' : "Yes — I can't do it"}
+          </Button>
+          <Button variant="ghost" onDark fullWidth onPress={() => setFailOpen(false)}>
+            Never mind
+          </Button>
+        </>
+      ) : (
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => setFailOpen(true)}
+          hitSlop={8}
+          style={styles.failLinkWrap}
+        >
+          <Text style={styles.failLink}>I can&apos;t make this run</Text>
+        </Pressable>
+      )}
+    </View>
+  );
 
   const back = (
     <Pressable
@@ -262,6 +321,7 @@ export default function RunScreen() {
           <Text style={styles.caption}>
             You&apos;ll text {firstName(run.customer_name)} from there.
           </Text>
+          {cannotRunBlock}
         </ScrollView>
       </SafeAreaView>
     );
@@ -369,6 +429,7 @@ export default function RunScreen() {
           <Text style={styles.caption}>
             Bags take 20 to 50 minutes after a plane lands. Tap when they tell you, not before.
           </Text>
+          {cannotRunBlock}
         </ScrollView>
 
         <FlightUpdateSheet
@@ -376,8 +437,8 @@ export default function RunScreen() {
           facts={run}
           pickupAt={run.pickup_at}
           onClose={() => setFlightOpen(false)}
-          onSave={async (arrival, terminal, note) => {
-            await updateFlightAsDriver(run.id, arrival, terminal, note);
+          onSave={async (arrival, terminal, note, isActual) => {
+            await updateFlightAsDriver(run.id, arrival, terminal, note, isActual);
             await load();
           }}
         />
@@ -458,6 +519,7 @@ export default function RunScreen() {
           <Button size="lg" fullWidth onPress={() => advance('at_kerb')}>
             I&apos;m at the kerb
           </Button>
+          {cannotRunBlock}
         </ScrollView>
       </SafeAreaView>
     );
@@ -569,6 +631,7 @@ export default function RunScreen() {
           <Button size="lg" fullWidth onPress={() => advance('on_trip')}>
             They&apos;re in
           </Button>
+          {cannotRunBlock}
         </ScrollView>
       </SafeAreaView>
     );
@@ -830,6 +893,28 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontSize: 13,
     color: t.textDim,
     textAlign: 'center',
+  },
+  // Set well below the run's own controls, at link weight. A driver reaching for
+  // "I'm in the cell lot" must never land on this by accident.
+  failWrap: {
+    gap: space.s3,
+    marginTop: space.s6,
+  },
+  failLinkWrap: {
+    alignSelf: 'center',
+    paddingVertical: space.s2,
+  },
+  failLink: {
+    fontFamily: font.body400,
+    fontSize: 13,
+    color: t.textDim,
+    textDecorationLine: 'underline',
+  },
+  failBody: {
+    fontFamily: font.body400,
+    fontSize: 14,
+    lineHeight: 21,
+    color: t.textBody,
   },
   notifyLine: {
     fontFamily: font.body400,
