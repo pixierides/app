@@ -20,8 +20,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   Keyboard,
-  KeyboardAvoidingView,
-  Platform,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -251,10 +249,18 @@ export default function BookForm() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.flex}
-      >
+      {/*
+        No KeyboardAvoidingView.
+        It padded this whole column, which lifted the price panel up above the
+        keyboard — and the panel plus the keyboard together then covered the
+        bottom of the form, so the field being typed into sat half hidden behind
+        them. Two fixed things competing for the same space.
+        The panel now stays where it is and the keyboard covers it while typing,
+        which is the right trade: a price you cannot see for a moment costs
+        nothing, a field you cannot see costs the booking. It comes back the
+        instant the keyboard goes, and the keyboard goes on a tap or a scroll.
+      */}
+      <View style={styles.flex}>
         <View style={styles.head}>
           <Pressable
             accessibilityRole="button"
@@ -292,6 +298,11 @@ export default function BookForm() {
           // gesture past the touch slop — by which point the press is cancelled
           // anyway, because a scroll is not a tap. A wobbly tap never reaches it.
           onScrollBeginDrag={Keyboard.dismiss}
+          // Lets the scroll view inset itself by however much the keyboard
+          // actually overlaps it, so the focused field scrolls clear instead of
+          // hiding under it. iOS-only; on Android the window resizes and the
+          // shorter scroll view brings the field into view by itself.
+          automaticallyAdjustKeyboardInsets
         >
           {/* Tapping quiet space dismisses the keyboard. keyboardShouldPersistTaps
               ="always" is what makes one tap pick an address suggestion, and its
@@ -722,7 +733,7 @@ export default function BookForm() {
         {/* Outside the step conditionals, like the panel — a sheet that unmounted
             with its step would take the form's scroll position with it. */}
         <SizeGuideSheet visible={guideOpen} onClose={() => setGuideOpen(false)} />
-      </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 }
