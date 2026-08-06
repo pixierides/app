@@ -35,6 +35,7 @@ import { FieldError, Picker, Segmented, Stepper } from '@/components/FormControl
 import { SizeGuideSheet } from '@/components/SizeGuideSheet';
 import { Button, Input } from '@/components/ui';
 import { cacheAge, oneWayPrice, roundTripPrice, useRates } from '@/lib/rates';
+import { submitBookingFromDraft } from '@/lib/quote-submit';
 import { formatUsPhone, toE164 } from '@/lib/phone';
 import {
   CONTACT_METHODS,
@@ -228,8 +229,16 @@ export default function BookForm() {
   /**
    * The app's one departure from the website: the number is verified before the
    * request exists. The code proves the mobile, and it is also how the customer
-   * signs in and gets back to this trip. Submission happens on the far side —
-   * see book/verify.tsx — using the draft this screen has filled in.
+   * signs in and gets back to this trip.
+   *
+   * UNLESS they are already signed in on that very number. Then the code would
+   * prove something already proven — a round trip through an SMS that tells us
+   * nothing, on the step most likely to lose a booking. Those submit straight from
+   * here, through the same submitter book/verify.tsx uses.
+   *
+   * The comparison is on the E.164 form of both, so formatting cannot make a
+   * match look like a mismatch. Anything else — signed out, or booking on a
+   * different number than the account — still goes through the code.
    */
   async function requestRide() {
     const e = validateStep3();
@@ -241,14 +250,30 @@ export default function BookForm() {
     // The quote figures are settled here and carried through verification, so
     // the price the customer agreed to is the price we email — not one
     // re-derived later against a table that may have refreshed underneath.
-    update({
+    const quoted = {
       quotedPrice: price,
       quotedReturnOffer:
         !quoteOnly && trip === 'one' && returnLegPrice && returnLegPrice > 0
           ? returnLegPrice
           : null,
       vehicleLabel,
-    });
+    };
+    update(quoted);
+    // Already proven? Submit, and skip the code entirely.
+    if (profile?.phone && profile.phone === phone) {
+      const { ok, reference } = await submitBookingFromDraft({ ...draft, ...quoted });
+      setSending(false);
+      if (!ok) {
+        setSendError('Something went wrong. Try again, or call 407-373-8735.');
+        return;
+      }
+      // Not cleared here — the confirmation screen renders the summary from the
+      // draft and clears it on the way out.
+      update({ reference });
+      router.replace('/book/received');
+      return;
+    }
+
     const res = await signInWithPhone(phone);
     setSending(false);
     if (res.error) {

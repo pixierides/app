@@ -13,6 +13,14 @@
  * website, and this calls it.
  */
 import { supabase } from './supabase';
+import { isGroup, makeReference, ZONE_SHORT } from './zones';
+import {
+  pickupIso,
+  returnIso,
+  seatSummary,
+  seatText,
+  type BookingDraft,
+} from '@/providers/booking';
 
 const NOTIFY_URL = 'https://pixierides.com/api/notify';
 
@@ -152,4 +160,107 @@ export async function submitAppBooking(
     console.warn('booking submit threw:', err);
     return { ok: false };
   }
+}
+
+/**
+ * A draft, submitted. One definition, called from two places.
+ *
+ * This used to live inside book/verify.tsx, which was fine while every booking
+ * went through the code screen. A customer already signed in on the number they
+ * are booking with skips that screen — they proved the number when they signed in
+ * — so the form submits directly. Two copies of this construction would be two
+ * definitions of what a booking IS, and the emails render from it.
+ */
+export async function submitBookingFromDraft(
+  draft: BookingDraft,
+): Promise<{ ok: boolean; reference: string }> {
+  const ref = makeReference();
+  const quoteOnly = isGroup(draft.guests);
+  const isAirportPickup = draft.from === 'MCO';
+  const isPort = draft.from === 'PORT' || draft.to === 'PORT';
+  const at = pickupIso(draft);
+
+  // The human-readable message string. Kept for the Supabase record only — the
+  // emails render from the structured details below, never from this.
+  const lines: string[] = [
+    `Route: ${ZONE_SHORT[draft.from]} → ${ZONE_SHORT[draft.to]} (${
+      draft.trip === 'round' ? 'round trip' : 'one way'
+    })`,
+    `Guests: ${draft.guests} · Suitcases: ${draft.suitcases}`,
+  ];
+  const seatLine = seatText(draft.seatTypes);
+  if (seatLine) lines.push(`Car seats (free): ${seatLine}`);
+  if (draft.stroller && draft.stroller !== 'None') lines.push(`Stroller: ${draft.stroller}`);
+  if (isAirportPickup && draft.flight) lines.push(`Flight: ${draft.flight}`);
+  if (isPort && (draft.cruiseLine || draft.cruiseShip))
+    lines.push(`Cruise: ${[draft.cruiseLine, draft.cruiseShip].filter(Boolean).join(' / ')}`);
+  if (draft.trip === 'round')
+    lines.push(
+      `Return: ${draft.rPickup} → ${draft.rDropoff} on ${draft.rDate} ${draft.rTime}` +
+        (draft.rFlight ? ` (flight ${draft.rFlight})` : ''),
+    );
+  lines.push(`Preferred contact: ${draft.contactMethod}`);
+  if (draft.notes.trim()) lines.push(`Notes: ${draft.notes.trim()}`);
+  lines.push('Booked in the app.');
+
+  const notify: NotifyDetails = {
+    reference: ref,
+    // The price the customer saw and agreed to, frozen when they pressed the
+    // button — not re-derived here against a table that may have refreshed.
+    price: draft.quotedPrice,
+    vehicle: draft.vehicleLabel,
+    group: quoteOnly,
+    contact: {
+      name: draft.name,
+      phone: draft.mobile,
+      email: draft.email,
+      method: draft.contactMethod,
+    },
+    route: {
+      from: draft.from,
+      to: draft.to,
+      fromLabel: ZONE_SHORT[draft.from],
+      toLabel: ZONE_SHORT[draft.to],
+      tripType: draft.trip,
+    },
+    pickup: { address: draft.pickupAddr, dropoffAddress: draft.dropoffAddr, at },
+    flight: isAirportPickup && draft.flight ? draft.flight : null,
+    returnLeg:
+      draft.trip === 'round'
+        ? {
+            pickup: draft.rPickup,
+            dropoff: draft.rDropoff,
+            at: returnIso(draft),
+            flight: draft.rFlight.trim() || null,
+            fromLabel: ZONE_SHORT[draft.to],
+            toLabel: ZONE_SHORT[draft.from],
+          }
+        : null,
+    returnOfferPrice: draft.quotedReturnOffer,
+    guests: draft.guests,
+    suitcases: draft.suitcases,
+    carSeats: seatSummary(draft.seatTypes),
+    stroller: draft.stroller,
+    notes: draft.notes.trim() || null,
+  };
+
+  const { ok } = await submitAppBooking(
+    {
+      name: draft.name,
+      email: draft.email,
+      phone: draft.mobile,
+      pickup: draft.pickupAddr,
+      dropoff: draft.dropoffAddr,
+      date: at,
+      passengers: draft.guests,
+      luggage: draft.suitcases,
+      message: lines.join('\n'),
+      reference: ref,
+      price: draft.quotedPrice != null ? String(draft.quotedPrice) : '',
+      vehicle: draft.vehicleLabel,
+    },
+    notify,
+  );
+
+  return { ok, reference: ref };
 }
