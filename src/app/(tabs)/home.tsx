@@ -94,7 +94,7 @@ export default function Home() {
   // The trip fills the screen. Rendered by the shared component, so the day-of
   // surface here and at /trip/[id] can never disagree.
   if (next && (runUnderway(next) || hoursAway(next.pickup_at) <= 24)) {
-    return <TripDetailView trip={next} topSlot="trips" />;
+    return <TripDetailView trip={next} topSlot="none" />;
   }
 
   // ——— 2 · upcoming ———
@@ -142,25 +142,18 @@ export default function Home() {
         <Button variant="ghost" size="lg" fullWidth onPress={() => router.push('/book')}>
           Book another ride
         </Button>
-        <Pressable accessibilityRole="button" onPress={() => router.push('/trips')} hitSlop={8}>
-          <Text style={styles.quiet}>Your trips</Text>
-        </Pressable>
       </Shell>
     );
   }
 
   // ——— 3 · no trip ———
-  // One action. They installed the app; they know what it does.
+  // One action, and only one. The Trips tab is a tap away, so a second button
+  // here would just be the tab bar written out in words.
   return (
     <Shell>
       <Button size="lg" fullWidth onPress={() => router.push('/book')}>
         Book a ride
       </Button>
-      {trips.length > 0 ? (
-        <Button variant="ghost" size="lg" fullWidth onPress={() => router.push('/trips')}>
-          Your trips
-        </Button>
-      ) : null}
     </Shell>
   );
 }
@@ -231,13 +224,6 @@ const makeStyles = (t: Theme) =>
       borderTopColor: t.divider,
       paddingTop: space.s3,
       marginTop: space.s1,
-    },
-    quiet: {
-      fontFamily: font.body600,
-      fontSize: 14,
-      color: t.textDim,
-      textAlign: 'center',
-      paddingVertical: space.s2,
     },
   });
 

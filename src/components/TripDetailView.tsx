@@ -16,12 +16,12 @@
  * The caller owns loading and refreshing; this renders a trip it is handed.
  *
  * `topSlot` decides what occupies the row above the trip, because a back chevron
- * is meaningless when this view IS the root. On home it becomes a quiet "Your
- * trips" link: "nothing else on it" is there to stop a booking pitch competing
- * with a live trip, not to trap someone for 24 hours with no route out. It is
- * navigation, deliberately not "Book another ride" — someone whose car arrives
- * in two hours should be able to leave without being sold to, and booking is one
- * tap further on from the trips list.
+ * is meaningless when this view IS the root.
+ *
+ * On home it is empty. It briefly held a "Your trips" link, added when the
+ * customer had no navigation at all and this screen could trap them for 24 hours.
+ * There are tabs now, so the link is redundant — and on this screen especially it
+ * competed with the one thing the state exists to hold attention on.
  */
 import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -58,8 +58,8 @@ export function TripDetailView({
   topSlot = 'back',
 }: {
   trip: CustomerTrip;
-  /** 'back' on the trip route; 'trips' when this view is the home screen. */
-  topSlot?: 'back' | 'trips';
+  /** 'back' on the trip route; 'none' when this view IS the home screen. */
+  topSlot?: 'back' | 'none';
 }) {
   const th = useTheme();
   const styles = themed[th.mode];
@@ -124,17 +124,7 @@ export function TripDetailView({
             >
               <Text style={styles.backGlyph}>‹</Text>
             </Pressable>
-          ) : (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel="Your trips"
-              onPress={() => router.push('/trips')}
-              hitSlop={12}
-              style={styles.trips}
-            >
-              <Text style={styles.tripsText}>Your trips</Text>
-            </Pressable>
-          )}
+          ) : null}
         </View>
 
         <View style={styles.headerRow}>
@@ -506,19 +496,6 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     width: 44,
     height: 44,
     justifyContent: 'center',
-  },
-  // Quiet on purpose: a way out, not an offer. Sits in the slot the back
-  // chevron uses on the trip route, so it competes with nothing.
-  trips: {
-    height: 44,
-    justifyContent: 'center',
-    alignSelf: 'flex-start',
-    paddingRight: space.s3,
-  },
-  tripsText: {
-    fontFamily: font.body600,
-    fontSize: 14,
-    color: t.textDim,
   },
   backGlyph: {
     color: t.textBody,
