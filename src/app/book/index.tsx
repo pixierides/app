@@ -68,7 +68,7 @@ export default function BookForm() {
   const th = useTheme();
   const styles = themed[th.mode];
   const { draft, update } = useBooking();
-  const { signInWithPhone } = useAuth();
+  const { signInWithPhone, profile } = useAuth();
   const { rates, reload } = useRates();
   const [step, setStep] = useState(1);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -108,6 +108,32 @@ export default function BookForm() {
     },
     [draft, update],
   );
+
+  /**
+   * Someone already signed in should not retype what the account already knows.
+   *
+   * Only EMPTY fields are filled, and only once the profile has loaded — a
+   * booking half-typed before the session restored must never be overwritten by
+   * it. The placeholders that used to sit here read as filled-in values on this
+   * theme, so a signed-in customer saw a name and a number that were not theirs
+   * and were not actually in the field either.
+   */
+  useEffect(() => {
+    if (!profile) return;
+    const patch: Partial<typeof draft> = {};
+    if (!draft.name.trim() && profile.full_name?.trim()) {
+      patch.name = profile.full_name.trim();
+    }
+    if (!draft.mobile.trim() && profile.phone) {
+      // Stored E.164; shown the way the field formats everything else.
+      patch.mobile = formatUsPhone(profile.phone.replace(/^\+1/, ''));
+    }
+    if (!draft.email.trim() && profile.email?.trim()) {
+      patch.email = profile.email.trim();
+    }
+    if (Object.keys(patch).length) update(patch);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile]);
 
   // Picking Round trip mounts the return fields — fill them from the reversal.
   useEffect(() => {
@@ -585,7 +611,6 @@ export default function BookForm() {
               <Text style={styles.stepTitle}>Contact</Text>
               <Input
                 label="Name for the pickup sign"
-                placeholder="Sarah Whitfield"
                 value={draft.name}
                 onChangeText={(v) => update({ name: v })}
                 autoComplete="name"
@@ -593,7 +618,6 @@ export default function BookForm() {
               <FieldError>{errors.name}</FieldError>
               <Input
                 label="Mobile"
-                placeholder="(407) 555-0142"
                 value={draft.mobile}
                 onChangeText={(v) => update({ mobile: formatUsPhone(v) })}
                 keyboardType="phone-pad"
@@ -603,7 +627,6 @@ export default function BookForm() {
               <FieldError>{errors.mobile}</FieldError>
               <Input
                 label="Email"
-                placeholder="sarah@example.com"
                 value={draft.email}
                 onChangeText={(v) => update({ email: v })}
                 keyboardType="email-address"
