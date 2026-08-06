@@ -25,8 +25,11 @@ import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TripDetailView } from '@/components/TripDetailView';
 import { Button, Card, Logo } from '@/components/ui';
-import { dollars, fetchMyTrips, STATUS_LABELS, type CustomerTrip } from '@/lib/booking';
+import { dollars, fetchMyTrips, type CustomerTrip } from '@/lib/booking';
 import { formatTime } from '@/lib/format';
+import { paymentDeadline } from '@/lib/dispatch';
+import { formatDeadline } from '@/lib/policy';
+import { textNumber } from '@/lib/links';
 import { useAuth } from '@/providers/auth';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
@@ -98,51 +101,98 @@ export default function Home() {
   }
 
   // ——— 2 · upcoming ———
+  // Top-aligned, deliberately. The card answers the only question the customer
+  // opened the app to ask, so it goes where reading starts — directly under the
+  // logo. The empty space belongs BELOW it: air at the bottom reads as calm, air
+  // at the top reads as a screen that failed to load.
   if (next) {
     const paymentDue = !next.paid_at && next.status === 'confirmed';
+    const driverReady = !!next.driver_name && next.status === 'driver_assigned';
     return (
-      <Shell>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={`Your trip, ${next.origin} to ${next.destination}, ${whenLine(next)}`}
-          onPress={() => router.push(`/trip/${next.id}` as never)}
-        >
-          <Card tone="surface" texture pad={20} style={styles.card}>
-            <Text style={styles.route}>
-              {next.origin} <Text style={styles.arrow}>→</Text> {next.destination}
-            </Text>
-            <Text style={styles.when}>{whenLine(next)}</Text>
-            <View style={styles.metaRow}>
-              <Text style={styles.ref}>{next.reference}</Text>
-              <Text style={styles.price}>{dollars(next.price_cents)}</Text>
-            </View>
-            <Text style={styles.status}>
-              {paymentDue
-                ? 'Payment due to lock in your ride'
-                : next.paid_at
-                  ? next.driver_name
-                    ? `${next.driver_name} is driving you`
-                    : "You're all set — we'll introduce your driver nearer the time"
-                  : (STATUS_LABELS[next.status] ?? next.status)}
-            </Text>
-          </Card>
-        </Pressable>
+      <SafeAreaView style={styles.screen} edges={['top']}>
+        <View style={styles.topBody}>
+          <Logo variant="auto" size={13} />
 
-        {/* When payment is due, that is the action — not "see this trip". */}
-        {paymentDue ? (
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={`Your trip, ${next.origin} to ${next.destination}, ${whenLine(next)}`}
+            onPress={() => router.push(`/trip/${next.id}` as never)}
+          >
+            <Card tone="surface" texture pad={20} style={styles.card}>
+              <Text style={styles.route}>
+                {next.origin} <Text style={styles.arrow}>→</Text> {next.destination}
+              </Text>
+              <Text style={styles.when}>{whenLine(next)}</Text>
+              <View style={styles.metaRow}>
+                {/* Small and selectable: this is what they read back over the
+                    phone, not something to decorate. */}
+                <Text style={styles.ref} selectable>
+                  {next.reference}
+                </Text>
+                <Text style={styles.price}>{dollars(next.price_cents)}</Text>
+              </View>
+
+              {/* The next action, or the reason there isn't one. Facts alone left
+                  the customer to work out what to do. */}
+              <View style={styles.action}>
+                {paymentDue ? (
+                  <>
+                    <Button
+                      size="lg"
+                      fullWidth
+                      onPress={() => router.push(`/trip/${next.id}/pay` as never)}
+                    >
+                      Pay {dollars(next.price_cents)}
+                    </Button>
+                    <Text style={styles.actionNoteUnder}>
+                      Due by {formatDeadline(paymentDeadline(next))}
+                    </Text>
+                  </>
+                ) : driverReady ? (
+                  <>
+                    <Text style={styles.actionLead}>{next.driver_name} is driving you.</Text>
+                    {next.vehicle ? (
+                      <Text style={styles.actionNote}>{next.vehicle}</Text>
+                    ) : null}
+                    {next.driver_phone ? (
+                      <Button
+                        variant="secondary"
+                        fullWidth
+                        onPress={() => textNumber(next.driver_phone!)}
+                      >
+                        Message {next.driver_name}
+                      </Button>
+                    ) : null}
+                  </>
+                ) : next.paid_at ? (
+                  <Text style={styles.actionLead}>
+                    Paid. Your driver&apos;s details arrive before pickup.
+                  </Text>
+                ) : (
+                  <Text style={styles.actionLead}>
+                    We&apos;re confirming your ride. You&apos;ll hear within the hour.
+                  </Text>
+                )}
+              </View>
+            </Card>
+          </Pressable>
+
+          <View style={styles.spacer} />
+
+          {/* Reasonable to offer someone who already has a trip, never the
+              loudest thing on the screen. Outlined even when nothing else is
+              orange: orange marks the action that advances things, and booking
+              again does not. */}
           <Button
+            variant="secondary"
             size="lg"
             fullWidth
-            onPress={() => router.push(`/trip/${next.id}/pay` as never)}
+            onPress={() => router.push('/book')}
           >
-            Pay now
+            Book another ride
           </Button>
-        ) : null}
-
-        <Button variant="ghost" size="lg" fullWidth onPress={() => router.push('/book')}>
-          Book another ride
-        </Button>
-      </Shell>
+        </View>
+      </SafeAreaView>
     );
   }
 
@@ -194,7 +244,43 @@ const makeStyles = (t: Theme) =>
       paddingBottom: space.s5,
       gap: space.s3,
     },
+    topBody: {
+      flex: 1,
+      paddingHorizontal: space.s5,
+      paddingTop: space.s3,
+      paddingBottom: space.s4,
+      gap: space.s4,
+      maxWidth: 480,
+      width: '100%',
+      alignSelf: 'center',
+    },
     card: { gap: space.s2 },
+    action: {
+      gap: space.s2,
+      borderTopWidth: 1,
+      borderTopColor: t.divider,
+      paddingTop: space.s4,
+      marginTop: space.s2,
+    },
+    actionLead: {
+      fontFamily: font.body600,
+      fontSize: 15,
+      lineHeight: 22,
+      color: t.textHeading,
+    },
+    actionNote: {
+      fontFamily: font.body400,
+      fontSize: 13,
+      lineHeight: 19,
+      color: t.textDim,
+    },
+    actionNoteUnder: {
+      fontFamily: font.body400,
+      fontSize: 13,
+      lineHeight: 19,
+      color: t.textDim,
+      textAlign: 'center',
+    },
     route: {
       fontFamily: font.display700,
       fontSize: fs.h3,
@@ -215,16 +301,6 @@ const makeStyles = (t: Theme) =>
       color: t.textDim,
     },
     price: { fontFamily: font.display700, fontSize: 18, color: t.textHeading },
-    status: {
-      fontFamily: font.body400,
-      fontSize: 14,
-      lineHeight: 20,
-      color: t.textBody,
-      borderTopWidth: 1,
-      borderTopColor: t.divider,
-      paddingTop: space.s3,
-      marginTop: space.s1,
-    },
   });
 
 const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };
