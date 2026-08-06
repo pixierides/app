@@ -162,7 +162,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.body600,
     fontSize: fs.label,
     letterSpacing: ls(track.label, fs.label),
-    color: t.textDim,
+    color: t.textBody,
   },
   h1: {
     fontFamily: font.display700,
@@ -194,7 +194,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   paidNow: {
     fontFamily: font.body600,
     fontSize: 13,
-    color: t.textDim,
+    color: t.textBody,
   },
   hold: {
     fontFamily: font.body400,
@@ -264,7 +264,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   or: {
     fontFamily: font.body400,
     fontSize: 13,
-    color: t.textDim,
+    color: t.textBody,
     textAlign: 'center',
   },
   included: {

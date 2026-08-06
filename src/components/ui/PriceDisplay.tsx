@@ -34,7 +34,7 @@ export function PriceDisplay({
         {amount}
       </Text>
       {caption ? (
-        <Text style={[styles.caption, { color: t.textDim }]}>
+        <Text style={[styles.caption, { color: t.textBody }]}>
           {caption}
         </Text>
       ) : null}

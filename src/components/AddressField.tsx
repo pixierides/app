@@ -184,7 +184,7 @@ const makeStyles = (t: Theme) =>
     loadingText: {
       fontFamily: font.body400,
       fontSize: 13,
-      color: t.textDim,
+      color: t.textBody,
     },
     list: {
       borderRadius: radius.input,
@@ -208,12 +208,12 @@ const makeStyles = (t: Theme) =>
     secondary: {
       fontFamily: font.body400,
       fontSize: 13,
-      color: t.textDim,
+      color: t.textBody,
     },
     empty: {
       fontFamily: font.body400,
       fontSize: 13,
-      color: t.textDim,
+      color: t.textBody,
     },
   });
 

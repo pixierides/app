@@ -46,21 +46,28 @@ const DEFAULT_MEET = 'Terminal A · door 2';
 type ViewMode = 'day' | 'week' | 'month';
 
 /**
- * Operator status colours for the dispatch calendar — an internal ops surface,
- * so these sit outside the customer palette deliberately:
- *   red    unconfirmed   · yellow unpaid
- *   blue   unassigned    · green  assigned
- * A status word is always on the event too, so colour is never the only signal.
+ * Status paint for the dispatch calendar — badge-style tints from the brand
+ * palette, replacing the old red/yellow/blue ops colours (pure red is banned
+ * everywhere; problems are muted danger, not alarm). Three families:
+ *   needs attention  amber tint  — unconfirmed, or confirmed but unpaid
+ *   problem          danger tint — a failed car waiting on a decision
+ *   fine             sky tint    — paid and waiting on assignment
+ * Assigned/complete keep the green fill with a white glyph. The tints are
+ * fixed light chips in BOTH modes, like the fills. Day view renders the
+ * status word on every event; week view is compact and shows only time and
+ * route, so there the tint alone hints and the tap answers — both ambers
+ * mean "needs your attention" on purpose, so the ambiguity costs nothing.
  */
-const STATUS_INK = '#1E293B';
-
 function statusPaint(t: DispatchTrip): { bg: string; fg: string } {
-  if (t.status === 'requested') return { bg: '#DC2626', fg: color.white }; // red
-  if (t.status === 'confirmed' && !t.paid_at) return { bg: '#FACC15', fg: STATUS_INK }; // yellow
-  if (t.status === 'paid' && !t.driver_id) return { bg: '#2563EB', fg: color.white }; // blue
-  if (t.status === 'driver_assigned') return { bg: color.green, fg: color.white }; // green
+  if (t.status === 'reassigning') return { bg: color.danger100, fg: color.dangerFill };
+  if (t.status === 'requested') return { bg: color.amber100, fg: color.amberFill };
+  if (t.status === 'confirmed' && !t.paid_at) return { bg: color.amber100, fg: color.amberFill };
+  // navy700, not the guide's navy600 kicker tone: this text is ~11px and
+  // navy600 on the sky tint measures under 4.5:1.
+  if (t.status === 'paid' && !t.driver_id) return { bg: color.sky150, fg: color.navy700 };
+  if (t.status === 'driver_assigned') return { bg: color.greenFill, fg: color.white };
   if (t.status === 'complete') return { bg: color.greenText, fg: color.white };
-  return { bg: color.ink2, fg: color.white };
+  return { bg: color.danger100, fg: color.dangerFill };
 }
 
 export default function DispatchCalendar() {
@@ -317,7 +324,7 @@ export default function DispatchCalendar() {
                     calendarBackground: 'transparent',
                     monthTextColor: th.textHeading,
                     textMonthFontFamily: font.body600,
-                    textSectionTitleColor: th.textDim,
+                    textSectionTitleColor: th.textBody,
                     textDayHeaderFontFamily: font.body600,
                     arrowColor: th.textBody,
                   } as never
@@ -337,7 +344,7 @@ export default function DispatchCalendar() {
                           {
                             color:
                               state === 'disabled'
-                                ? th.textDim
+                                ? th.textBody
                                 : today
                                   ? color.onOrange
                                   : th.textPrimary,
@@ -475,7 +482,7 @@ const makeStyles = (t: Theme) =>
     chipText: {
       fontFamily: font.body600,
       fontSize: 14,
-      color: t.textDim,
+      color: t.textBody,
     },
     chipTextOn: {
       color: t.textHeading,
@@ -523,7 +530,7 @@ const makeStyles = (t: Theme) =>
     },
     sheetBackdrop: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.45)',
+      backgroundColor: color.scrim,
       justifyContent: 'flex-end',
     },
     sheet: {

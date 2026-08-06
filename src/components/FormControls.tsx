@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { font, fs, ls, radius, space, track } from '@/theme/tokens';
+import { color, font, fs, ls, radius, space, track } from '@/theme/tokens';
 
 export type Option = { value: string; label: string; disabled?: boolean };
 
@@ -199,7 +199,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body600,
       fontSize: 12,
       letterSpacing: ls(track.label, 12),
-      color: t.textDim,
+      color: t.textBody,
     },
     control: {
       minHeight: 52,
@@ -222,7 +222,7 @@ const makeStyles = (t: Theme) =>
     controlPlaceholder: {
       fontFamily: font.body400,
       fontSize: 16,
-      color: t.textDim,
+      color: t.textBody,
       flexShrink: 1,
     },
     chevron: {
@@ -234,7 +234,7 @@ const makeStyles = (t: Theme) =>
     hint: { marginTop: -2 },
     backdrop: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.45)',
+      backgroundColor: color.scrim,
       justifyContent: 'flex-end',
     },
     sheet: {
@@ -271,7 +271,7 @@ const makeStyles = (t: Theme) =>
       flexShrink: 1,
     },
     rowTextOn: { fontFamily: font.body600 },
-    rowTextOff: { color: t.textDim },
+    rowTextOff: { color: t.textBody },
     tick: {
       fontFamily: font.body600,
       fontSize: 16,
@@ -293,7 +293,7 @@ const makeStyles = (t: Theme) =>
     segText: {
       fontFamily: font.body600,
       fontSize: 14,
-      color: t.textDim,
+      color: t.textBody,
       textAlign: 'center',
     },
     segTextOn: { color: t.textHeading },
@@ -328,7 +328,7 @@ const makeStyles = (t: Theme) =>
     free: {
       fontFamily: font.body400,
       fontSize: 13,
-      color: t.textDim,
+      color: t.textBody,
       flexShrink: 1,
     },
     err: {

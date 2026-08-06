@@ -595,7 +595,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   arrow: {
     fontFamily: font.body400,
-    color: t.textDim,
+    color: t.textBody,
   },
   dateLine: {
     fontFamily: font.body400,
@@ -620,7 +620,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.body600,
     fontSize: 11,
     letterSpacing: ls(track.label, 11),
-    color: t.textDim,
+    color: t.textBody,
   },
   wasNowOld: {
     fontFamily: font.display700,
@@ -649,7 +649,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.body600,
     fontSize: fs.label,
     letterSpacing: ls(track.label, fs.label),
-    color: t.textDim,
+    color: t.textBody,
   },
   block: {
     gap: space.s3,
@@ -679,7 +679,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   kvLabel: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: t.textDim,
+    color: t.textBody,
   },
   kvValue: {
     fontFamily: font.body600,
@@ -691,7 +691,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   dispatchLine: {
     fontFamily: font.body400,
     fontSize: 13,
-    color: t.textDim,
+    color: t.textBody,
     textAlign: 'center',
     paddingVertical: space.s2,
   },

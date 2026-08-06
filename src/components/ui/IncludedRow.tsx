@@ -1,6 +1,6 @@
 /**
  * Included / confirmed marker row. Port of components/forms/IncludedRow.jsx.
- * Green fill tick + label. The tick is the FILL green (#4E9E7A) with a white
+ * Green fill tick + label. The tick is the FILL green (#3F8D6C) with a white
  * glyph. When the label itself is a green word ("free"), that word uses
  * Green-Text, never the fill.
  */

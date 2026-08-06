@@ -193,7 +193,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   chipText: {
     fontFamily: font.body600,
     fontSize: 15,
-    color: t.textDim,
+    color: t.textBody,
   },
   chipTextOn: {
     color: t.textHeading,
@@ -206,7 +206,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   routeNote: {
     fontFamily: font.body400,
     fontSize: 13,
-    color: t.textDim,
+    color: t.textBody,
     textDecorationLine: 'underline',
     marginTop: space.s2,
   },

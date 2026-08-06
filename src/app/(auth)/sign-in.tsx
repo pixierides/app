@@ -146,7 +146,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   prefix: {
     fontFamily: font.body600,
     fontSize: 16,
-    color: t.textDim,
+    color: t.textBody,
   },
   field: {
     marginTop: space.s2,
@@ -165,7 +165,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.body400,
     fontSize: 13,
     lineHeight: 13 * 1.5,
-    color: t.textDim,
+    color: t.textBody,
     textAlign: 'center',
   },
 });

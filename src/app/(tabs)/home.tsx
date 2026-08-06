@@ -276,13 +276,13 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body400,
       fontSize: 13,
       lineHeight: 19,
-      color: t.textDim,
+      color: t.textBody,
     },
     actionNoteUnder: {
       fontFamily: font.body400,
       fontSize: 13,
       lineHeight: 19,
-      color: t.textDim,
+      color: t.textBody,
       textAlign: 'center',
     },
     route: {
@@ -290,7 +290,7 @@ const makeStyles = (t: Theme) =>
       fontSize: fs.h3,
       color: t.textHeading,
     },
-    arrow: { color: t.textDim },
+    arrow: { color: t.textBody },
     when: { fontFamily: font.body600, fontSize: 15, color: t.textBody },
     metaRow: {
       flexDirection: 'row',
@@ -302,7 +302,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body600,
       fontSize: fs.label,
       letterSpacing: ls(track.label, fs.label),
-      color: t.textDim,
+      color: t.textBody,
     },
     price: { fontFamily: font.display700, fontSize: 18, color: t.textHeading },
   });

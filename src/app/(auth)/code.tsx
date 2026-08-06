@@ -222,7 +222,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   resendLabel: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: t.textDim,
+    color: t.textBody,
   },
   resendLink: {
     fontFamily: font.body600,

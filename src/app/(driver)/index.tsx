@@ -245,7 +245,7 @@ const makeStyles = (t: Theme) =>
     shiftText: {
       fontFamily: font.body600,
       fontSize: 14,
-      color: t.textDim,
+      color: t.textBody,
     },
     shiftTextOn: {
       color: t.textHeading,
@@ -254,7 +254,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body400,
       fontSize: 14,
       lineHeight: 21,
-      color: t.textDim,
+      color: t.textBody,
     },
     nextCard: {
       gap: space.s3,
@@ -263,7 +263,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body600,
       fontSize: fs.label,
       letterSpacing: ls(track.label, fs.label),
-      color: t.textDim,
+      color: t.textBody,
     },
     routeRow: {
       flexDirection: 'row',
@@ -287,7 +287,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body600,
       fontSize: 12,
       letterSpacing: ls(track.label, 12),
-      color: t.textDim,
+      color: t.textBody,
     },
     laterWrap: {
       gap: space.s3,
@@ -296,12 +296,12 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body600,
       fontSize: fs.label,
       letterSpacing: ls(track.label, fs.label),
-      color: t.textDim,
+      color: t.textBody,
     },
     flight: {
       fontFamily: font.body600,
       fontSize: 13,
-      color: t.textDim,
+      color: t.textBody,
     },
     empty: {
       flex: 1,

@@ -35,7 +35,7 @@ import {
 } from '@/lib/flight';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { font, fs, ls, radius, space, track } from '@/theme/tokens';
+import { color, font, fs, ls, radius, space, track } from '@/theme/tokens';
 
 const TERMINALS: Terminal[] = ['A', 'B', 'C'];
 // 'Landed' is gone from here: it belongs to the certainty row below, which
@@ -245,7 +245,7 @@ const makeStyles = (t: Theme) =>
   StyleSheet.create({
     backdrop: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.45)',
+      backgroundColor: color.scrim,
       justifyContent: 'flex-end',
     },
     sheet: {
@@ -271,7 +271,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body400,
       fontSize: 14,
       lineHeight: 20,
-      color: t.textDim,
+      color: t.textBody,
     },
     // Why the sheet opened, said before anything else on it.
     gate: {
@@ -284,7 +284,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body600,
       fontSize: fs.label,
       letterSpacing: ls(track.label, fs.label),
-      color: t.textDim,
+      color: t.textBody,
       marginTop: space.s2,
     },
     chipRow: {
@@ -316,7 +316,7 @@ const makeStyles = (t: Theme) =>
     chipTextSm: {
       fontFamily: font.body600,
       fontSize: 14,
-      color: t.textDim,
+      color: t.textBody,
     },
     chipTextOn: {
       color: t.textHeading,

@@ -264,7 +264,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body600,
       fontSize: fs.label,
       letterSpacing: ls(track.label, fs.label),
-      color: t.textDim,
+      color: t.textBody,
     },
     refValue: {
       fontFamily: font.display800,
@@ -276,7 +276,7 @@ const makeStyles = (t: Theme) =>
     refShareText: {
       fontFamily: font.body600,
       fontSize: 13,
-      color: t.textDim,
+      color: t.textBody,
       textDecorationLine: 'underline',
     },
     calendar: { alignSelf: 'flex-start' },
@@ -288,7 +288,7 @@ const makeStyles = (t: Theme) =>
     },
     summary: { gap: space.s3 },
     row: { flexDirection: 'row', justifyContent: 'space-between', gap: space.s4 },
-    rowKey: { fontFamily: font.body400, fontSize: 14, color: t.textDim },
+    rowKey: { fontFamily: font.body400, fontSize: 14, color: t.textBody },
     rowValue: {
       flexShrink: 1,
       fontFamily: font.body600,
@@ -316,7 +316,7 @@ const makeStyles = (t: Theme) =>
     ghost: {
       fontFamily: font.body600,
       fontSize: 14,
-      color: t.textDim,
+      color: t.textBody,
       textAlign: 'center',
     },
   });

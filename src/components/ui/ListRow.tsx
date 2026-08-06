@@ -47,7 +47,7 @@ export function ListRow({
           {title}
         </Text>
         {subtitle ? (
-          <Text style={[styles.subtitle, { color: t.textDim }]}>{subtitle}</Text>
+          <Text style={[styles.subtitle, { color: t.textBody }]}>{subtitle}</Text>
         ) : null}
       </View>
       {trailing ? <View style={styles.trailing}>{trailing}</View> : null}

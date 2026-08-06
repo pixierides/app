@@ -85,7 +85,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body600,
       fontSize: fs.label,
       letterSpacing: ls(track.label, fs.label),
-      color: t.textDim,
+      color: t.textBody,
       marginBottom: space.s1,
     },
     value: { fontFamily: font.body600, fontSize: 17, color: t.textHeading },
@@ -94,7 +94,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body400,
       fontSize: 12,
       lineHeight: 17,
-      color: t.textDim,
+      color: t.textBody,
       textAlign: 'center',
     },
   });

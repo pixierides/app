@@ -114,7 +114,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.body600,
     fontSize: fs.label,
     letterSpacing: ls(track.label, fs.label),
-    color: t.textDim,
+    color: t.textBody,
   },
   h1: {
     fontFamily: font.display700,

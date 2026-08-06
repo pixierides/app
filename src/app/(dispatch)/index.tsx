@@ -486,13 +486,13 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   moneyNote: {
     fontFamily: font.body400,
     fontSize: 12,
-    color: t.textDim,
+    color: t.textBody,
   },
   eyebrow: {
     fontFamily: font.body600,
     fontSize: fs.label,
     letterSpacing: ls(track.label, fs.label),
-    color: t.textDim,
+    color: t.textBody,
   },
   headRow: {
     flexDirection: 'row',
@@ -559,7 +559,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   tileLabel: {
     fontFamily: font.body600,
     fontSize: 12,
-    color: t.textDim,
+    color: t.textBody,
   },
   section: {
     gap: space.s2,
@@ -568,7 +568,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.body600,
     fontSize: fs.label,
     letterSpacing: ls(track.label, fs.label),
-    color: t.textDim,
+    color: t.textBody,
   },
   urgentCard: {
     backgroundColor: t.surfaceCard,
@@ -604,7 +604,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   urgentMore: {
     fontFamily: font.body400,
     fontSize: 13,
-    color: t.textDim,
+    color: t.textBody,
     textAlign: 'center',
     textDecorationLine: 'underline',
   },
@@ -618,7 +618,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   emptyQuiet: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: t.textDim,
+    color: t.textBody,
     paddingVertical: space.s2,
   },
 });

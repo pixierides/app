@@ -153,7 +153,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   tabText: {
     fontFamily: font.body600,
     fontSize: 14,
-    color: t.textDim,
+    color: t.textBody,
   },
   tabTextOn: {
     color: t.textHeading,

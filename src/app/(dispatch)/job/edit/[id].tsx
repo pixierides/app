@@ -560,7 +560,7 @@ const makeStyles = (t: Theme) =>
     head: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.s3, height: 48 },
     back: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
     backGlyph: { color: t.textBody, fontSize: 28, lineHeight: 30 },
-    headRef: { fontFamily: font.body600, fontSize: 14, color: t.textDim },
+    headRef: { fontFamily: font.body600, fontSize: 14, color: t.textBody },
     body_: { paddingHorizontal: space.s5, paddingBottom: space.s6, gap: space.s4 },
     h1: {
       fontFamily: font.display700,
@@ -570,7 +570,7 @@ const makeStyles = (t: Theme) =>
       color: t.textHeading,
     },
     body: { fontFamily: font.body400, fontSize: 15, lineHeight: 22, color: t.textBody, textAlign: 'center' },
-    hint: { fontFamily: font.body400, fontSize: 13, lineHeight: 19, color: t.textDim },
+    hint: { fontFamily: font.body400, fontSize: 13, lineHeight: 19, color: t.textBody },
     row2: { flexDirection: 'row', gap: space.s3 },
     col: { flex: 1 },
     leg: {
@@ -590,7 +590,7 @@ const makeStyles = (t: Theme) =>
     alertBody: { fontFamily: font.body400, fontSize: 14, lineHeight: 20, color: t.textBody },
     saved: { gap: space.s1, padding: space.s4, borderRadius: radius.card, backgroundColor: t.bgRaised },
     savedLead: { fontFamily: font.body600, fontSize: 14, color: t.confirmText },
-    savedItem: { fontFamily: font.body400, fontSize: 12, color: t.textDim },
+    savedItem: { fontFamily: font.body400, fontSize: 12, color: t.textBody },
     paidNote: {
       fontFamily: font.body400,
       fontSize: 13,
@@ -610,12 +610,12 @@ const makeStyles = (t: Theme) =>
       borderTopColor: t.divider,
       backgroundColor: t.bgRaised,
     },
-    count: { fontFamily: font.body600, fontSize: 13, color: t.textDim, textAlign: 'center' },
+    count: { fontFamily: font.body600, fontSize: 13, color: t.textBody, textAlign: 'center' },
     footNote: {
       fontFamily: font.body400,
       fontSize: 12,
       lineHeight: 17,
-      color: t.textDim,
+      color: t.textBody,
       textAlign: 'center',
     },
   });

@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { font, ls, radius, space, track } from '@/theme/tokens';
+import { color, font, ls, radius, space, track } from '@/theme/tokens';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -219,7 +219,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body600,
       fontSize: 12,
       letterSpacing: ls(track.label, 12),
-      color: t.textDim,
+      color: t.textBody,
     },
     control: {
       minHeight: 52,
@@ -231,12 +231,12 @@ const makeStyles = (t: Theme) =>
       justifyContent: 'center',
     },
     value: { fontFamily: font.body600, fontSize: 16, color: t.textHeading },
-    placeholder: { fontFamily: font.body400, fontSize: 16, color: t.textDim },
+    placeholder: { fontFamily: font.body400, fontSize: 16, color: t.textBody },
     // Centred, not bottom-anchored: the wheel is the only thing being decided,
     // so it sits where the eye already is.
     backdrop: {
       flex: 1,
-      backgroundColor: 'rgba(0,0,0,0.45)',
+      backgroundColor: color.scrim,
       alignItems: 'center',
       justifyContent: 'center',
       padding: space.s5,

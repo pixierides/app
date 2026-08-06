@@ -113,14 +113,14 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body400,
       fontSize: fs.bodySm,
       lineHeight: fs.bodySm * 1.5,
-      color: t.textDim,
+      color: t.textBody,
       textAlign: 'center',
     },
     actions: { alignSelf: 'stretch', gap: space.s3 },
     credentialsText: {
       fontFamily: font.body400,
       fontSize: 12,
-      color: t.textDim,
+      color: t.textBody,
       textAlign: 'center',
     },
   });

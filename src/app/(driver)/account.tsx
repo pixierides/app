@@ -148,7 +148,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body600,
       fontSize: fs.label,
       letterSpacing: ls(track.label, fs.label),
-      color: t.textDim,
+      color: t.textBody,
     },
     value: {
       fontFamily: font.body600,
@@ -159,7 +159,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body400,
       fontSize: 13,
       lineHeight: 20,
-      color: t.textDim,
+      color: t.textBody,
     },
     shiftRow: {
       flexDirection: 'row',

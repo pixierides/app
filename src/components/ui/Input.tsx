@@ -29,7 +29,7 @@ export function Input({ label, hint, leading, onDark: _onDark, style, ...rest }:
   return (
     <View style={[styles.wrap, style]}>
       {label ? (
-        <Text style={[styles.label, { color: t.textDim }]}>{label.toUpperCase()}</Text>
+        <Text style={[styles.label, { color: t.textBody }]}>{label.toUpperCase()}</Text>
       ) : null}
       <View
         style={[
@@ -44,7 +44,7 @@ export function Input({ label, hint, leading, onDark: _onDark, style, ...rest }:
           {...rest}
         />
       </View>
-      {hint ? <Text style={[styles.hint, { color: t.textDim }]}>{hint}</Text> : null}
+      {hint ? <Text style={[styles.hint, { color: t.textBody }]}>{hint}</Text> : null}
     </View>
   );
 }

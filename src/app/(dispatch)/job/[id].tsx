@@ -50,7 +50,8 @@ import {
 import { firstName, formatTime, partyLine } from '@/lib/format';
 import { callNumber, emailTo } from '@/lib/links';
 import { formatDeadline } from '@/lib/policy';
-import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { themes } from '@/theme/themes';
 
 const DEFAULT_VEHICLE = 'White Chevy Suburban · FL 8XK-221';
 const DEFAULT_MEET = 'Terminal A · door 2';
@@ -769,10 +770,18 @@ export default function DispatchJob() {
   );
 }
 
+/**
+ * Mode-locked: this screen is dark in both modes — dispatch works it at night
+ * and it holds money actions, so it must not change character with a toggle.
+ * It reads the DARK THEME rather than raw palette tokens, so a palette move
+ * lands here the same day it lands everywhere else.
+ */
+const t = themes.dark;
+
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: color.sea,
+    backgroundColor: t.bgPage,
   },
   scrollOuter: {
     paddingBottom: space.s6,
@@ -794,7 +803,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   backGlyph: {
-    color: color.foam,
+    color: t.textBody,
     fontSize: 28,
     lineHeight: 30,
   },
@@ -809,24 +818,24 @@ const styles = StyleSheet.create({
     fontFamily: font.display700,
     fontSize: fs.h3 + 2,
     letterSpacing: ls(track.h2, fs.h3 + 2),
-    color: color.white,
+    color: t.textHeading,
     flexShrink: 1,
   },
   meta: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
   },
   cutoffLine: {
     fontFamily: font.body600,
     fontSize: 14,
-    color: color.foam,
+    color: t.textBody,
   },
   eyebrow: {
     fontFamily: font.body600,
     fontSize: fs.label,
     letterSpacing: ls(track.label, fs.label),
-    color: color.foamDim,
+    color: t.textBody,
   },
   block: {
     gap: space.s3,
@@ -836,24 +845,25 @@ const styles = StyleSheet.create({
     fontSize: fs.h3 + 2,
     lineHeight: (fs.h3 + 2) * lh.tight,
     letterSpacing: ls(track.h2, fs.h3 + 2),
-    color: color.white,
+    color: t.textHeading,
   },
   blockBody: {
     fontFamily: font.body400,
     fontSize: 15,
     lineHeight: 15 * 1.5,
-    color: color.foam,
+    color: t.textBody,
   },
   blockBodyDim: {
     fontFamily: font.body400,
     fontSize: 14,
     lineHeight: 21,
-    color: color.foamDim,
+    color: t.textBody,
   },
   error: {
     fontFamily: font.body600,
     fontSize: 14,
-    color: color.foam,
+    // A failure must not read as ordinary copy.
+    color: t.dangerText,
   },
   // A hairline above it: reassigning is a different kind of decision from the
   // assignment controls it sits under, and shouldn't read as one more of them.
@@ -862,7 +872,7 @@ const styles = StyleSheet.create({
     marginTop: space.s4,
     paddingTop: space.s4,
     borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: 'rgba(240,247,255,0.14)',
+    borderTopColor: t.divider,
   },
   writeoffRow: {
     flexDirection: 'row',
@@ -879,7 +889,7 @@ const styles = StyleSheet.create({
     fontFamily: font.display800,
     fontSize: 34,
     letterSpacing: ls(track.price, 34),
-    color: color.white,
+    color: t.textHeading,
   },
   flightRow: {
     flexDirection: 'row',
@@ -899,48 +909,48 @@ const styles = StyleSheet.create({
     paddingHorizontal: space.s4,
     borderRadius: radius.pill,
     borderWidth: 1.5,
-    borderColor: 'rgba(168,205,226,0.3)',
+    borderColor: t.dividerStrong,
     alignItems: 'center',
     justifyContent: 'center',
   },
   driverChipOn: {
-    backgroundColor: color.sea2,
-    borderColor: color.foam,
+    backgroundColor: t.surfaceStrong,
+    borderColor: t.textHeading,
   },
   driverChipText: {
     fontFamily: font.body600,
     fontSize: 14,
-    color: color.foamDim,
+    color: t.textBody,
   },
   driverChipTextOn: {
-    color: color.white,
+    color: t.textHeading,
   },
   adjustLine: {
     fontFamily: font.body600,
     fontSize: 15,
     lineHeight: 22,
-    color: color.white,
+    color: t.textHeading,
   },
   adjustNote: {
     fontFamily: font.body400,
     fontSize: 13,
     lineHeight: 19,
-    color: color.foamDim,
+    color: t.textBody,
   },
   historyBlock: {
     gap: space.s2,
     paddingTop: space.s4,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(168,205,226,0.14)',
+    borderTopColor: t.divider,
   },
   historyLine: {
     fontFamily: font.body400,
     fontSize: 12,
     lineHeight: 18,
-    color: color.foam,
+    color: t.textBody,
   },
   historyWho: {
-    color: color.foamDim,
+    color: t.textBody,
   },
   contactRow: {
     flexDirection: 'row',

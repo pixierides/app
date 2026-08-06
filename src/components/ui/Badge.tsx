@@ -1,6 +1,6 @@
 /**
  * Small status/label chip — brand guide v2, both modes.
- * Green as a word uses the mode's text green (#367254 light, #8FD3B4 dark);
+ * Green as a word uses the mode's text green (#2F7051 light, #9DDEC2 dark);
  * fill green never changes. Never orange — orange is action only.
  */
 import React from 'react';

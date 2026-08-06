@@ -193,7 +193,7 @@ const makeStyles = (t: Theme) =>
       right: 8,
       fontFamily: font.body400,
       fontSize: 11,
-      color: t.textDim,
+      color: t.textBody,
     },
     hScroll: {
       flex: 1,

@@ -2,7 +2,7 @@
  * Trip-status stepper — the emotional spine of the app.
  * Port of components/feedback/TripStatus.jsx.
  * Completed steps get a green tick (confirmed meaning); the current step is
- * ringed in foam/white. Orange is NOT used for status (it stays reserved for
+ * ringed in the heading tone. Orange is NOT used for status (it stays reserved for
  * booking actions).
  *
  * Canonical five labels — never paraphrased:
@@ -27,7 +27,7 @@ export function TripStatus({
   const t = useTheme();
   const line = t.divider;
   const titleC = t.textPrimary;
-  const dimC = t.textDim;
+  const dimC = t.textBody;
 
   return (
     <View>
@@ -48,7 +48,7 @@ export function TripStatus({
                           backgroundColor: 'transparent',
                           borderWidth: 2.5,
                           borderColor: t.textHeading,
-                          boxShadow: `0 0 0 5px ${t.mode === 'dark' ? 'rgba(255,255,255,0.14)' : 'rgba(8,52,79,0.10)'}`,
+                          boxShadow: `0 0 0 5px ${t.divider}`,
                         }
                       : { backgroundColor: t.bgRaised },
                 ]}

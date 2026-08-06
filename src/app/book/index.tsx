@@ -814,7 +814,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body600,
       fontSize: fs.label,
       letterSpacing: ls(track.label, fs.label),
-      color: t.textDim,
+      color: t.textBody,
     },
     headStep: { fontFamily: font.body600, fontSize: 13, color: t.textHeading },
     body: {
@@ -835,7 +835,7 @@ const makeStyles = (t: Theme) =>
     },
     row2: { flexDirection: 'row', gap: space.s3 },
     col: { flex: 1 },
-    hint: { fontFamily: font.body400, fontSize: 13, lineHeight: 19, color: t.textDim },
+    hint: { fontFamily: font.body400, fontSize: 13, lineHeight: 19, color: t.textBody },
     hintLink: {
       fontFamily: font.body600,
       color: t.textHeading,
@@ -846,7 +846,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.body600,
       fontSize: 12,
       letterSpacing: ls(track.label, 12),
-      color: t.textDim,
+      color: t.textBody,
     },
     notesInput: {
       minHeight: 92,
@@ -918,25 +918,25 @@ const makeStyles = (t: Theme) =>
       letterSpacing: 0,
       color: t.textHeading,
     },
-    panelCap: { fontFamily: font.body400, fontSize: 13, lineHeight: 19, color: t.textDim },
+    panelCap: { fontFamily: font.body400, fontSize: 13, lineHeight: 19, color: t.textBody },
     saving: {
       fontFamily: font.body600,
       fontSize: 13,
       color: t.confirmText,
       marginTop: space.s1,
     },
-    stale: { fontFamily: font.body400, fontSize: 12, color: t.textDim, marginTop: space.s2 },
+    stale: { fontFamily: font.body400, fontSize: 12, color: t.textBody, marginTop: space.s2 },
     ctaSub: {
       fontFamily: font.body400,
       fontSize: 12,
       lineHeight: 17,
-      color: t.textDim,
+      color: t.textBody,
       textAlign: 'center',
     },
     foot: {
       fontFamily: font.body600,
       fontSize: 12,
-      color: t.textDim,
+      color: t.textBody,
       textAlign: 'center',
     },
   });

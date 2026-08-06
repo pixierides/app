@@ -21,7 +21,7 @@ const NODES = [
   { x: 560, y: 44, g: 'moon' },
 ] as const;
 
-const GLYPH_COLOR = '#F6C79E';
+const GLYPH_COLOR = color.orange100;
 
 /** Simple 24×24 glyphs (1.6 stroke) matching the bundle's plane/sign/moon. */
 function NodeGlyph({ kind }: { kind: string }) {

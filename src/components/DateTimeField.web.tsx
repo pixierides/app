@@ -70,7 +70,7 @@ export function DateTimeField({
 const makeStyles = (t: Theme) =>
   StyleSheet.create({
     field: { gap: space.s2 },
-    hint: { fontFamily: font.body400, fontSize: 13, color: t.textDim },
+    hint: { fontFamily: font.body400, fontSize: 13, color: t.textBody },
   });
 
 const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

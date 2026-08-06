@@ -167,7 +167,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   noTip: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: t.textDim,
+    color: t.textBody,
     textAlign: 'center',
   },
 });

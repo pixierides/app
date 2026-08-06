@@ -182,7 +182,7 @@ export function SizeGuideSheet({ visible, onClose }: { visible: boolean; onClose
 
 const makeStyles = (t: Theme) =>
   StyleSheet.create({
-    backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+    backdrop: { flex: 1, backgroundColor: color.scrim, justifyContent: 'flex-end' },
     backdropTap: { flex: 1, minHeight: 44 },
     panel: {
       backgroundColor: t.bgPage,
@@ -258,13 +258,13 @@ const makeStyles = (t: Theme) =>
     bagFlies: {
       fontFamily: font.body600,
       fontSize: 12,
-      color: t.textDim,
+      color: t.textBody,
       textAlign: 'center',
       marginTop: 2,
     },
     note: { fontFamily: font.body400, fontSize: 14, lineHeight: 21, color: t.textBody },
     noteLead: { fontFamily: font.body600, color: t.textHeading },
-    fine: { fontFamily: font.body400, fontSize: 12, lineHeight: 18, color: t.textDim },
+    fine: { fontFamily: font.body400, fontSize: 12, lineHeight: 18, color: t.textBody },
     table: {
       borderRadius: radius.input,
       overflow: 'hidden',

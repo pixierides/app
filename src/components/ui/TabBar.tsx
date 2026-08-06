@@ -7,6 +7,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { themes } from '@/theme/themes';
 import { color, font } from '@/theme/tokens';
 
 export type TabItem = { label: string; icon?: React.ReactNode };
@@ -50,7 +51,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: color.sea,
     paddingTop: 8,
-    boxShadow: '0 -1px 0 rgba(168,205,226,0.12)',
+    // The bar is permanently navy, so the hairline is the dark-mode line token.
+    boxShadow: `0 -1px 0 ${themes.dark.divider}`,
   },
   tab: {
     flex: 1,
@@ -75,6 +77,7 @@ const styles = StyleSheet.create({
     height: 5,
     borderRadius: 2.5,
     backgroundColor: color.orange,
+    // orange500 at 25% — a halo on the one attention dot, not a decoration.
     boxShadow: '0 0 0 3px rgba(249,115,22,0.25)',
   },
 });

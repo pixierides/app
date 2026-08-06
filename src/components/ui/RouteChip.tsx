@@ -22,7 +22,7 @@ export function RouteChip({
   const t = useTheme();
   const fsz = size === 'lg' ? 22 : size === 'sm' ? 15 : 18;
   const c = t.textPrimary;
-  const dim = t.textDim;
+  const dim = t.textBody;
   return (
     <View style={styles.row}>
       <Text style={[styles.end, { fontSize: fsz, letterSpacing: ls(-0.02, fsz), color: c }]}>

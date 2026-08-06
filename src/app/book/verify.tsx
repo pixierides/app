@@ -132,7 +132,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.body400,
     fontSize: 14,
     lineHeight: 21,
-    color: t.textDim,
+    color: t.textBody,
   },
   boxes: {
     flexDirection: 'row',
@@ -176,7 +176,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   resendLabel: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: t.textDim,
+    color: t.textBody,
   },
   resendLink: {
     fontFamily: font.body600,

@@ -1,28 +1,45 @@
 /**
- * Pixie Rides design tokens.
- * Ported 1:1 from handoff `designs/_ds/.../tokens/*.css` (brand guide v1.2).
+ * Pixie Rides design tokens — Aero (brand guide v3).
  * No colour outside this palette. Ever.
  */
 
 export const color = {
-  // Sea family (navy · structure)
-  sea: '#08344F',
-  sea2: '#0E4A6E',
-  sea3: '#175E88',
+  // Navy — the anchor (~20% of any screen): headings, structure, dark surfaces.
+  navy950: '#062B40', // deepest step — light-mode headings, scrim base
+  navy900: '#08344F', // Pixie Navy — the anchor
+  navy800: '#0E4A6E', // dark-mode solid card surface
+  navy700: '#175E88', // dark-mode strong surface
+  navy600: '#28779F', // focus borders, light-mode kicker text
 
-  // Sky family (light surfaces)
-  sky: '#EAF4FA',
-  sky2: '#DCEBF5',
-  sky3: '#C9DFED', // surface/border tone — never body text on white (1.38:1)
+  // Sky — atmosphere and air (~70% together, light mode).
+  sky50: '#F8FCFE', // Open Canvas — the light page
+  sky100: '#F1F8FC', // soft page wash
+  sky150: '#EAF4FA', // Pixie Sky — tinted surfaces, selected controls
+  sky200: '#DCEBF5', // strong tinted surface
+  sky300: '#C9DFED', // tonal step — never body text on white (1.38:1)
+  sky400: '#A8CDE2', // deepest sky — dark-mode muted text
 
-  // Action — orange means "act / look here". Never decorative.
-  orange: '#F97316',
-  orangeHi: '#EA580C', // pressed
-  onOrange: '#2B1206', // text on orange · NEVER white (fails at 3.20:1)
+  // Action — orange means "act / look here". Never decorative. (~10%)
+  orange500: '#F97316',
+  orange600: '#EA580C', // pressed
+  orange100: '#FFF0E5', // tint
+  onOrange: '#2B1206', // the ONLY text on orange · never white (2.80:1)
 
-  // Confirmed / included — fill vs text are different values on purpose
-  green: '#4E9E7A', // fills (tick backgrounds, badges)
-  greenText: '#367254', // green as small text on light
+  // Status — fill vs text are different values on purpose. A fill is a
+  // background carrying a white glyph and never changes with mode; status
+  // TEXT lives in themes.ts because it must invert between modes.
+  greenFill: '#3F8D6C',
+  green100: '#EAF7F1',
+  amberFill: '#8A5718',
+  amber100: '#FFF7E8',
+  dangerFill: '#9B453D',
+  danger100: '#FFF0EE',
+
+  white: '#FFFFFF',
+
+  // The one scrim behind every sheet and modal, both modes — navy-950 based,
+  // replacing six copy-pasted rgba(0,0,0,0.45)s.
+  scrim: 'rgba(6,43,64,0.45)',
 
   // Ratings only. A star reads as a star when it is gold; anything else and
   // people hunt for the meaning. Not part of the brand palette and used
@@ -30,35 +47,25 @@ export const color = {
   star: '#F5B301',
   starEmpty: '#C9DFED',
 
-  // Text & tone
-  ink: '#08344F',
-  ink2: '#3D6480',
-  foam: '#A8CDE2', // body text on navy
-  foamDim: '#7BA6C2', // muted labels on navy
-  white: '#FFFFFF',
-} as const;
-
-/** Semantic aliases (light theme — the app is navy-first). */
-export const semantic = {
-  bgPage: color.sky,
-  bgRaised: color.sky2,
-  bgDark: color.sea,
-  bgDarkRaised: color.sea2,
-  surfaceCard: color.white,
-  divider: color.sky3,
-
-  textHeading: color.sea,
-  textBody: color.ink2,
-  textPrimary: color.ink,
-  textOnDark: color.foam,
-  textOnDarkDim: color.foamDim,
-
-  action: color.orange,
-  actionPressed: color.orangeHi,
-  actionText: color.onOrange,
-
-  confirmFill: color.green,
-  confirmText: color.greenText,
+  // ——— Legacy names (pre-Aero) ———
+  // Same values as the palette above (sea=navy900, sky=sky150, foam=sky400…),
+  // kept so the mode-locked screens and older components keep compiling until
+  // later phases retire them. Two values MOVED with the Aero guide:
+  // green #4E9E7A → #3F8D6C and greenText #367254 → #2F7051.
+  // New code uses the names above, or better, the theme.
+  sea: '#08344F', // = navy900 (the retired `ink` alias had no consumers and is gone)
+  sea2: '#0E4A6E', // = navy800
+  sea3: '#175E88', // = navy700
+  sky: '#EAF4FA', // = sky150
+  sky2: '#DCEBF5', // = sky200
+  sky3: '#C9DFED', // = sky300
+  orange: '#F97316', // = orange500
+  orangeHi: '#EA580C', // = orange600
+  green: '#3F8D6C', // = greenFill
+  greenText: '#2F7051', // light-mode green-as-a-word (dark lives in themes.ts)
+  ink2: '#3D6480', // pre-Aero light body tone — superseded by themes.ts
+  foam: '#A8CDE2', // = sky400
+  foamDim: '#7BA6C2', // dark-mode faint — see themes.ts textDim
 } as const;
 
 /** Radius */
@@ -143,7 +150,8 @@ export const lh = {
 
 /** Signature dot-grid texture — drawn with react-native-svg (see ui/DotGrid). */
 export const texture = {
-  dotWarm: 'rgba(255,176,92,0.10)',
+  // Orange-500 at the same alpha the old off-palette warm tint used.
+  dotWarm: 'rgba(249,115,22,0.10)',
   dotInk: 'rgba(8,52,79,0.06)',
   cell: 16,
 } as const;

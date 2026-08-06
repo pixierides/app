@@ -808,7 +808,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.body600,
     fontSize: fs.label,
     letterSpacing: ls(track.label, fs.label),
-    color: t.textDim,
+    color: t.textBody,
   },
   h1: {
     fontFamily: font.display700,
@@ -860,7 +860,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   kvLabelDark: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: t.textDim,
+    color: t.textBody,
   },
   kvValueDark: {
     fontFamily: font.body600,
@@ -880,7 +880,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.body600,
     fontSize: fs.label,
     letterSpacing: ls(track.label, fs.label),
-    color: t.textDim,
+    color: t.textBody,
   },
   noteText: {
     fontFamily: font.body400,
@@ -891,7 +891,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   caption: {
     fontFamily: font.body400,
     fontSize: 13,
-    color: t.textDim,
+    color: t.textBody,
     textAlign: 'center',
   },
   // Set well below the run's own controls, at link weight. A driver reaching for
@@ -907,7 +907,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   failLink: {
     fontFamily: font.body400,
     fontSize: 13,
-    color: t.textDim,
+    color: t.textBody,
     textDecorationLine: 'underline',
   },
   failBody: {
@@ -941,7 +941,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   flightChecked: {
     fontFamily: font.body400,
     fontSize: 13,
-    color: t.textDim,
+    color: t.textBody,
     marginTop: 2,
   },
   clockWrap: {
@@ -961,7 +961,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   clockLabel: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: t.textDim,
+    color: t.textBody,
   },
   paxRow: {
     flexDirection: 'row',

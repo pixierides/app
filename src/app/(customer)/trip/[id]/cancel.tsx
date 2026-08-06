@@ -190,7 +190,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   tertiary: {
     fontFamily: font.body400,
     fontSize: 14,
-    color: t.textDim,
+    color: t.textBody,
     textAlign: 'center',
     textDecorationLine: 'underline',
     paddingVertical: space.s2,
