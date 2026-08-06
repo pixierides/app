@@ -231,14 +231,19 @@ export default function BookForm() {
    * request exists. The code proves the mobile, and it is also how the customer
    * signs in and gets back to this trip.
    *
-   * UNLESS they are already signed in on that very number. Then the code would
-   * prove something already proven — a round trip through an SMS that tells us
-   * nothing, on the step most likely to lose a booking. Those submit straight from
-   * here, through the same submitter book/verify.tsx uses.
+   * UNLESS they are already signed in. Then the code proves nothing the account
+   * has not already proven, and it costs a round trip through an SMS on the step
+   * most likely to lose a booking. Those submit straight from here, through the
+   * same submitter book/verify.tsx uses.
    *
-   * The comparison is on the E.164 form of both, so formatting cannot make a
-   * match look like a mismatch. Anything else — signed out, or booking on a
-   * different number than the account — still goes through the code.
+   * That holds even when the contact number is not the account's. Scoping it to a
+   * MATCHING number was wrong: verifying a different number signs the customer
+   * into that number's account, so someone booking a ride for their parents on
+   * their parents' phone would be quietly logged out of their own account and
+   * shown a stranger's trips. The prompt reads as "log in again" because it is one.
+   *
+   * A signed-out customer still gets the code. That is the case it exists for —
+   * it is how the trip becomes theirs.
    */
   async function requestRide() {
     const e = validateStep3();
@@ -259,8 +264,8 @@ export default function BookForm() {
       vehicleLabel,
     };
     update(quoted);
-    // Already proven? Submit, and skip the code entirely.
-    if (profile?.phone && profile.phone === phone) {
+    // Signed in? The account is already proven. Submit, and skip the code.
+    if (profile) {
       const { ok, reference } = await submitBookingFromDraft({ ...draft, ...quoted });
       setSending(false);
       if (!ok) {

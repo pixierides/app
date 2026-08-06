@@ -108,6 +108,10 @@ export async function submitAppBooking(
   notify: NotifyDetails,
 ): Promise<{ ok: boolean }> {
   try {
+    // Read from the session rather than taken as an argument: the caller cannot
+    // pass an id that is not its own.
+    const { data: auth } = await supabase.auth.getUser();
+    const accountId = auth?.user?.id ?? null;
     const row: Record<string, unknown> = Object.fromEntries(
       Object.entries(data).filter(([, v]) => v !== undefined && v !== ''),
     );
@@ -122,6 +126,11 @@ export async function submitAppBooking(
       // app. Structured, like every other booking_* field — never parsed back
       // out of the message string.
       booking_source: 'app',
+      // Who made it, when someone was signed in. The contact number may be
+      // somebody else's — a ride booked for a parent, on the parent's phone — and
+      // the trip still belongs in the Trips tab of the person who booked it. The
+      // ingest trigger prefers this over matching the phone against profiles.
+      booking_customer_id: accountId,
       booking_reference: notify.reference,
       booking_origin: notify.route.fromLabel,
       booking_destination: notify.route.toLabel,
