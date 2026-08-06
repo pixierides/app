@@ -236,7 +236,7 @@ const makeStyles = (t: Theme) =>
     shiftDot: {
       width: 8,
       height: 8,
-      borderRadius: 4,
+      borderRadius: radius.pill,
       backgroundColor: t.textDim,
     },
     shiftDotOn: {

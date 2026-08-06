@@ -186,8 +186,9 @@ const makeStyles = (t: Theme) =>
     backdropTap: { flex: 1, minHeight: 44 },
     panel: {
       backgroundColor: t.bgPage,
-      borderTopLeftRadius: radius.card,
-      borderTopRightRadius: radius.card,
+      borderTopLeftRadius: radius.sheet,
+      borderTopRightRadius: radius.sheet,
+      boxShadow: t.shadowSheet,
       maxHeight: '92%',
       width: '100%',
       maxWidth: 640,

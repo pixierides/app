@@ -114,7 +114,7 @@ export default function ChangePickup() {
 
         {error ? <Text style={styles.error}>{error}</Text> : null}
 
-        <Pressable accessibilityRole="button" onPress={callDispatch} hitSlop={8}>
+        <Pressable accessibilityRole="button" onPress={callDispatch} hitSlop={{ top: 12, bottom: 12 }} style={{ minHeight: 44, justifyContent: 'center' }}>
           <Text style={styles.routeNote}>
             Different hotel or airport? That re-prices — call {DISPATCH_PHONE}.
           </Text>

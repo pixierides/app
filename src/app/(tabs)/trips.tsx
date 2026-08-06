@@ -9,7 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Card, ListRow } from '@/components/ui';
 import { fetchMyTrips, STATUS_LABELS, type CustomerTrip } from '@/lib/booking';
 import { formatTime } from '@/lib/format';
-import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 
@@ -140,7 +140,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   tab: {
     height: 44,
     paddingHorizontal: space.s4,
-    borderRadius: 999,
+    borderRadius: radius.pill,
     borderWidth: 1.5,
     borderColor: t.divider,
     alignItems: 'center',

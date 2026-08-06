@@ -5,7 +5,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 import { useTheme } from '@/providers/theme';
-import { font } from '@/theme/tokens';
+import { font, radius } from '@/theme/tokens';
 
 export function ListRow({
   leading,
@@ -68,7 +68,7 @@ const styles = StyleSheet.create({
   leading: {
     width: 40,
     height: 40,
-    borderRadius: 10,
+    borderRadius: radius.btn,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: 0,

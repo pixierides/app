@@ -217,6 +217,8 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   checkbox: {
     width: 26,
     height: 26,
+    // Deliberately off-token: a 26px checkbox at radius.btn (12) reads as a
+    // blob, not a box. Proportional rounding for a control this small.
     borderRadius: 7,
     borderWidth: 2,
     borderColor: t.divider,

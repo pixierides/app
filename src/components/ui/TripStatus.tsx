@@ -11,7 +11,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/providers/theme';
-import { color, font } from '@/theme/tokens';
+import { color, font, radius } from '@/theme/tokens';
 
 export type TripStep = { title: string; detail?: string };
 
@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   node: {
     width: 26,
     height: 26,
-    borderRadius: 13,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
   curDot: {
     width: 8,
     height: 8,
-    borderRadius: 4,
+    borderRadius: radius.pill,
   },
   rule: {
     width: 2,

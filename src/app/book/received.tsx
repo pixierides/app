@@ -151,7 +151,7 @@ export default function BookReceived() {
             accessibilityRole="button"
             accessibilityLabel="Share these details"
             onPress={shareTrip}
-            hitSlop={8}
+            hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
             style={styles.refShare}
           >
             <Text style={styles.refShareText}>Share</Text>
@@ -192,7 +192,7 @@ export default function BookReceived() {
           <Pressable
             accessibilityRole="button"
             onPress={addToCalendar}
-            hitSlop={8}
+            hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
             style={styles.calendar}
           >
             <Text style={styles.calendarText}>Add to calendar</Text>
@@ -203,6 +203,8 @@ export default function BookReceived() {
           <Pressable
             accessibilityRole="link"
             onPress={() => Linking.openURL(`tel:${DISPATCH_PHONE.replace(/-/g, '')}`)}
+            hitSlop={{ top: 4, bottom: 4 }}
+            style={{ minHeight: 44, justifyContent: 'center' }}
           >
             <Text style={styles.escalate}>
               Picking up in the next 12 hours? Call {DISPATCH_PHONE} — we’ll confirm on the phone
@@ -216,7 +218,12 @@ export default function BookReceived() {
         <Button size="lg" fullWidth onPress={() => leave('trips')}>
           See my trips
         </Button>
-        <Pressable accessibilityRole="button" onPress={() => leave('/')} hitSlop={8}>
+        {/* 12px clear of the button above; the slop reaches the 44px floor below. */}
+        <Pressable
+          accessibilityRole="button"
+          onPress={() => leave('/')}
+          hitSlop={{ top: 12, bottom: 16, left: 24, right: 24 }}
+        >
           <Text style={styles.ghost}>Back to home</Text>
         </Pressable>
       </View>

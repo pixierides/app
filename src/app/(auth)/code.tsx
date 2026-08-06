@@ -120,7 +120,7 @@ export default function Code() {
 
           <View style={styles.resendRow}>
             <Text style={styles.resendLabel}>Didn't get it? </Text>
-            <Pressable accessibilityRole="button" onPress={resend} hitSlop={8}>
+            <Pressable accessibilityRole="button" onPress={resend} hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}>
               <Text style={styles.resendLink}>Send again</Text>
             </Pressable>
           </View>
@@ -218,6 +218,9 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   resendRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    // RN clips hitSlop to the parent's bounds, so the 44px floor must be the
+    // row's own height — slop alone dies in a hugging parent.
+    minHeight: 44,
   },
   resendLabel: {
     fontFamily: font.body400,

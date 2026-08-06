@@ -112,7 +112,7 @@ export default function BookVerify() {
             setError(null);
             signInWithPhone(phone!);
           }}
-          hitSlop={8}
+          hitSlop={{ top: 14, bottom: 14, left: 8, right: 8 }}
         >
           <Text style={styles.resendLink}>Send again</Text>
         </Pressable>
@@ -172,6 +172,9 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   resendRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    // RN clips hitSlop to the parent's bounds, so the 44px floor must be the
+    // row's own height — slop alone dies in a hugging parent.
+    minHeight: 44,
   },
   resendLabel: {
     fontFamily: font.body400,

@@ -52,8 +52,14 @@ export type Theme = {
   amberText: string;
   /** Danger as a word — pairs with color.danger100 chips. Muted, never red. */
   dangerText: string;
+  /** Every card. Navy-tinted in light — a white card on #F8FCFE dies without it. */
   shadowCard: string;
-  shadowRaised: string;
+  /** The ONE elevated block per screen (wired in Phase 3) + the urgent card. */
+  shadowFloat: string;
+  /** Bottom sheets and centred modals. */
+  shadowSheet: string;
+  /** The confirmed-badge ground — green-fill at .16 light, green-text at .20 dark. */
+  badgeGreenBg: string;
   /** Quiet pill/badge ground. */
   chipBg: string;
   inputBg: string;
@@ -80,8 +86,10 @@ export const themes: Record<ThemeMode, Theme> = {
     confirmText: color.greenText,
     amberText: color.amberFill, // amber text and fill share a value in light
     dangerText: color.dangerFill,
-    shadowCard: '0 1px 3px rgba(8,52,79,0.08)',
-    shadowRaised: '0 6px 20px rgba(8,52,79,0.10)',
+    shadowCard: '0 2px 4px rgba(6,43,64,0.05), 0 18px 48px rgba(6,43,64,0.08)',
+    shadowFloat: '0 3px 8px rgba(6,43,64,0.08), 0 22px 56px rgba(6,43,64,0.12)',
+    shadowSheet: '0 12px 30px rgba(6,43,64,0.10)',
+    badgeGreenBg: 'rgba(63,141,108,0.16)',
     chipBg: color.sky200,
     inputBg: color.white,
     inputBorder: 'rgba(8,52,79,0.18)',
@@ -105,8 +113,10 @@ export const themes: Record<ThemeMode, Theme> = {
     confirmText: '#9DDEC2', // light value measures 2.36:1 here — must invert
     amberText: '#F2C88A',
     dangerText: '#FFB4AB',
-    shadowCard: '0 1px 3px rgba(0,0,0,0.32)',
-    shadowRaised: '0 8px 24px rgba(0,0,0,0.40)',
+    shadowCard: '0 3px 8px rgba(0,0,0,0.20), 0 22px 56px rgba(0,0,0,0.24)',
+    shadowFloat: '0 4px 10px rgba(0,0,0,0.24), 0 26px 64px rgba(0,0,0,0.28)',
+    shadowSheet: '0 12px 30px rgba(0,0,0,0.26)',
+    badgeGreenBg: 'rgba(157,222,194,0.20)',
     chipBg: 'rgba(201,223,237,0.16)',
     inputBg: color.navy800,
     inputBorder: 'rgba(201,223,237,0.22)',

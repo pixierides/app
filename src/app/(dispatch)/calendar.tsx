@@ -421,7 +421,7 @@ const monthStyles = StyleSheet.create({
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 8,
+    borderRadius: radius.btn,
     gap: 1,
   },
   today: {
@@ -434,7 +434,7 @@ const monthStyles = StyleSheet.create({
   countPill: {
     minWidth: 16,
     height: 14,
-    borderRadius: 7,
+    borderRadius: radius.pill,
     paddingHorizontal: 3,
     backgroundColor: color.sea3,
     alignItems: 'center',
@@ -467,7 +467,9 @@ const makeStyles = (t: Theme) =>
       gap: space.s2,
     },
     chip: {
-      height: 40,
+      // The chips row hugs its children, so slop dies at its bounds — the
+      // chip itself carries the 44px floor.
+      height: 44,
       paddingHorizontal: space.s4,
       borderRadius: radius.pill,
       borderWidth: 1.5,
@@ -535,8 +537,9 @@ const makeStyles = (t: Theme) =>
     },
     sheet: {
       backgroundColor: t.surfaceCard,
-      borderTopLeftRadius: radius.card,
-      borderTopRightRadius: radius.card,
+      borderTopLeftRadius: radius.sheet,
+      borderTopRightRadius: radius.sheet,
+      boxShadow: t.shadowSheet,
       padding: space.s5,
       gap: space.s2,
       maxWidth: 560,

@@ -68,11 +68,12 @@ export const color = {
   foamDim: '#7BA6C2', // dark-mode faint — see themes.ts textDim
 } as const;
 
-/** Radius */
+/** Radius — Aero geometry. `sheet` is bottom sheets and centred modals ONLY. */
 export const radius = {
-  btn: 8,
-  input: 12,
-  card: 14,
+  btn: 12,
+  input: 16,
+  card: 20,
+  sheet: 28,
   pill: 999,
 } as const;
 
@@ -95,8 +96,9 @@ export const space = {
  * RN 0.76+ boxShadow strings (work on iOS, Android new-arch, and web).
  */
 export const shadow = {
-  card: '0 1px 3px rgba(8,52,79,0.08)',
-  raised: '0 6px 20px rgba(8,52,79,0.10)',
+  // The physical name-sign's dramatic paper lift — outside the three-tier
+  // model on purpose, used nowhere else. Card/float/sheet live in themes.ts
+  // because they are navy-tinted in light mode and black in dark.
   lifted: '0 20px 50px rgba(0,0,0,0.28)',
 } as const;
 
@@ -154,6 +156,20 @@ export const texture = {
   dotWarm: 'rgba(249,115,22,0.10)',
   dotInk: 'rgba(8,52,79,0.06)',
   cell: 16,
+} as const;
+
+/**
+ * Motion — applied to EXISTING transitions only; nothing new animates.
+ * Bezier args as tuples so RN (Easing.bezier(...motion.standard)) and web
+ * ('cubic-bezier(' + motion.standard.join() + ')') read the same source.
+ * Reduced motion (AccessibilityInfo.isReduceMotionEnabled) drops to none.
+ */
+export const motion = {
+  fast: 120,
+  base: 200,
+  slow: 320,
+  standard: [0.2, 0, 0, 1],
+  exit: [0.4, 0, 1, 1],
 } as const;
 
 /** Accessibility floor — hit targets never below 44px (mocks use 52–58). */

@@ -363,7 +363,7 @@ export default function Board() {
                         <Pressable
                           accessibilityRole="button"
                           onPress={() => router.push(`/job/${urgent.id}` as never)}
-                          hitSlop={8}
+                          hitSlop={{ top: 12, bottom: 16 }}
                         >
                           <Text style={styles.urgentMore}>Open the full request</Text>
                         </Pressable>
@@ -481,7 +481,9 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontSize: 14,
     lineHeight: 20,
     color: t.textHeading,
-    paddingVertical: space.s1,
+    // 20 + 24 = 44: each row owns its floor. Adjacent-row hitSlop contested
+    // the gap and left every row but the last at ~36px.
+    paddingVertical: space.s3,
   },
   moneyNote: {
     fontFamily: font.body400,
@@ -521,7 +523,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   deskDot: {
     width: 8,
     height: 8,
-    borderRadius: 4,
+    borderRadius: radius.pill,
     backgroundColor: color.green,
   },
   deskText: {
@@ -575,7 +577,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     borderRadius: radius.card,
     padding: space.s4,
     gap: space.s3,
-    boxShadow: t.shadowRaised,
+    boxShadow: t.shadowFloat,
   },
   urgentTop: {
     flexDirection: 'row',

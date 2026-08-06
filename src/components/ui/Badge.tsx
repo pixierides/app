@@ -22,7 +22,7 @@ export function Badge({
   const t = useTheme();
   const tones: Record<Tone, { bg: string; fg: string }> = {
     neutral: { bg: t.bgRaised, fg: t.textBody },
-    confirmed: { bg: 'rgba(78,158,122,0.16)', fg: t.confirmText },
+    confirmed: { bg: t.badgeGreenBg, fg: t.confirmText },
     solid: { bg: color.green, fg: color.white },
     // Historical name — now simply the quiet chip on the current ground.
     'on-dark': { bg: t.chipBg, fg: t.textBody },

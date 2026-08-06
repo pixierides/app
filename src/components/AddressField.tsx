@@ -194,6 +194,8 @@ const makeStyles = (t: Theme) =>
       overflow: 'hidden',
     },
     row: {
+      minHeight: 44,
+      justifyContent: 'center',
       paddingVertical: space.s3,
       paddingHorizontal: space.s4,
       borderBottomWidth: 1,

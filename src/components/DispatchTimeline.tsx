@@ -82,6 +82,10 @@ export function DispatchTimeline({
             key={trip.id}
             accessibilityRole="button"
             onPress={() => onPressEvent(trip.id)}
+            // Week-view rows are minHeight 33.6; ±6 clears the floor without
+            // depending on how many text lines happen to render. Overlapping
+            // events contest a few px — the later (nearer) row wins, rightly.
+            hitSlop={compact ? { top: 6, bottom: 6 } : undefined}
             style={({ pressed }) => [
               styles.event,
               {
@@ -119,7 +123,10 @@ export function DispatchTimeline({
       accessibilityRole={col.headerYmd ? 'button' : undefined}
       disabled={!col.headerYmd}
       onPress={() => col.headerYmd && onPressHeader?.(col.headerYmd)}
-      style={styles.colHeader}
+      // zIndex wins the slop overlap with the later-sibling body; top slop
+      // would fall outside the scroll bounds, so the bottom carries it all.
+      hitSlop={{ bottom: 10 }}
+      style={[styles.colHeader, { zIndex: 1 }]}
     >
       <Text style={styles.colHeaderText} numberOfLines={1}>
         {col.title}

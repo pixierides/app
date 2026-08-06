@@ -28,6 +28,7 @@ export function ThemeToggle() {
               accessibilityRole="button"
               accessibilityState={{ selected: on }}
               onPress={() => setMode(m.key)}
+              hitSlop={{ top: 4, bottom: 4 }}
               style={[styles.seg, on && { backgroundColor: t.surfaceCard, boxShadow: t.shadowCard }]}
             >
               <Text

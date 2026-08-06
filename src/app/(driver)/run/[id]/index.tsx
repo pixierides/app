@@ -903,6 +903,10 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   failLinkWrap: {
     alignSelf: 'center',
     paddingVertical: space.s2,
+    // The floor must live in the pressable's own bounds — the hugging wrap
+    // clips hitSlop. Deliberately no wider: mis-taps here cost a booking.
+    minHeight: 44,
+    justifyContent: 'center',
   },
   failLink: {
     fontFamily: font.body400,

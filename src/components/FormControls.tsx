@@ -239,8 +239,9 @@ const makeStyles = (t: Theme) =>
     },
     sheet: {
       backgroundColor: t.surfaceCard,
-      borderTopLeftRadius: radius.card,
-      borderTopRightRadius: radius.card,
+      borderTopLeftRadius: radius.sheet,
+      borderTopRightRadius: radius.sheet,
+      boxShadow: t.shadowSheet,
       padding: space.s5,
       gap: space.s2,
       maxHeight: '80%',
