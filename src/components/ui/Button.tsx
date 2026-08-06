@@ -20,7 +20,15 @@ const PADS: Record<Size, number> = { sm: 20, md: 28, lg: 32 };
 export type ButtonProps = {
   variant?: Variant;
   size?: Size;
-  /** Accepted for compatibility; colors now come from the theme. */
+  /**
+   * This button sits on a permanently navy surface — the dispatch job screen, a
+   * driver run, the name sign — rather than on the themed page background.
+   *
+   * It has to be honoured. Without it a secondary button takes its border and
+   * text from the theme, which in LIGHT mode means navy on navy: the control
+   * disappears entirely. That was true of every outlined and ghost button on
+   * those screens, not just the one someone happened to notice.
+   */
   onDark?: boolean;
   fullWidth?: boolean;
   disabled?: boolean;
@@ -31,7 +39,7 @@ export type ButtonProps = {
 export function Button({
   variant = 'primary',
   size = 'md',
-  onDark: _onDark,
+  onDark = false,
   fullWidth = false,
   disabled = false,
   children,
@@ -41,6 +49,10 @@ export function Button({
   const t = useTheme();
   const h = HEIGHTS[size];
 
+  // On navy, the outline is foam at 45% whatever the theme is doing; on a themed
+  // page it follows the theme as before.
+  const outline = onDark || t.mode === 'dark' ? 'rgba(234,244,250,0.45)' : color.sea;
+
   const variantView: ViewStyle =
     variant === 'primary'
       ? { backgroundColor: color.orange }
@@ -48,16 +60,22 @@ export function Button({
         ? {
             backgroundColor: 'transparent',
             borderWidth: 2,
-            borderColor: t.mode === 'dark' ? 'rgba(234,244,250,0.45)' : color.sea,
+            borderColor: outline,
           }
         : { backgroundColor: 'transparent' };
 
+  // Orange never changes meaning, so its label never changes either. On navy the
+  // palette is explicit: white reads as a heading, foam as body.
   const textColor =
     variant === 'primary'
       ? color.onOrange
-      : variant === 'secondary'
-        ? t.textHeading
-        : t.textBody;
+      : onDark
+        ? variant === 'secondary'
+          ? color.white
+          : color.foam
+        : variant === 'secondary'
+          ? t.textHeading
+          : t.textBody;
 
   return (
     <Pressable
