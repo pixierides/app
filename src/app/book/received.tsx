@@ -9,15 +9,26 @@
  * Rendered from the draft, which verify.tsx deliberately left intact. Leaving
  * this screen is what clears it.
  */
+import * as Calendar from 'expo-calendar';
 import { router } from 'expo-router';
 import { useCallback } from 'react';
-import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import {
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  Share,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Path } from 'react-native-svg';
 import { Button } from '@/components/ui';
 import { cancellation, formatWhen, hoursUntilPickup, INSIDE_CUTOFF_NOTE } from '@/lib/cancellation';
 import { DISPATCH_PHONE } from '@/lib/links';
 import { isGroup, ZONE_SHORT } from '@/lib/zones';
+import { easternToUtcIso } from '@/lib/quote-submit';
 import { pickupIso, useBooking } from '@/providers/booking';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
@@ -35,6 +46,62 @@ export default function BookReceived() {
   // out it is noise, so it stays hidden.
   const hoursOut = hoursUntilPickup(at);
   const insideEscalation = hoursOut != null && hoursOut >= 0 && hoursOut <= 12;
+
+  const route = `${ZONE_SHORT[draft.from]} → ${ZONE_SHORT[draft.to]}`;
+
+  /**
+   * The two things the website's confirmation offers, and for the same reasons.
+   *
+   * Share is how a reference reaches the person who is actually collecting the
+   * children, or gets pasted into a work thread. Calendar is how a pickup at 4am
+   * survives a week of other plans. Both are secondary: the reference above them
+   * is the thing that matters, and neither is a step in the flow.
+   */
+  async function shareTrip() {
+    try {
+      await Share.share({
+        title: `Pixie Rides — ${route}`,
+        message:
+          `Pixie Rides pickup, ${formatWhen(at)}.` +
+          '\n' +
+          `Reference ${draft.reference}.` +
+          (draft.quotedPrice != null ? ` $${draft.quotedPrice} flat.` : '') +
+          '\n' +
+          `Questions: ${DISPATCH_PHONE}`,
+      });
+    } catch {
+      // Dismissed the sheet. Nothing to report and nothing to undo.
+    }
+  }
+
+  /**
+   * Opens the system's own event editor, prefilled — the customer saves it. That
+   * needs no permission to read their calendars and no calendar picker of ours,
+   * and matches the hour-long event the website's .ics writes.
+   */
+  async function addToCalendar() {
+    const iso = easternToUtcIso(at);
+    if (!iso) return;
+    const start = new Date(iso);
+    try {
+      await Calendar.createEventInCalendarAsync({
+        title: `Pixie Rides — ${route}`,
+        startDate: start,
+        endDate: new Date(start.getTime() + 60 * 60 * 1000),
+        location: draft.pickupAddr || undefined,
+        notes: [
+          `Reference ${draft.reference}`,
+          draft.quotedPrice != null ? `$${draft.quotedPrice} flat, per vehicle.` : '',
+          "Your driver's name, photo and plate arrive before pickup.",
+          `Questions? Call ${DISPATCH_PHONE} — we're always open.`,
+        ]
+          .filter(Boolean)
+          .join('\n'),
+      });
+    } catch (err) {
+      console.warn('calendar event failed:', err);
+    }
+  }
 
   // Clearing on the way out, not on arrival — this screen reads from the draft.
   const leave = useCallback(
@@ -80,6 +147,15 @@ export default function BookReceived() {
           <Text style={styles.refValue} selectable>
             {draft.reference || '—'}
           </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel="Share these details"
+            onPress={shareTrip}
+            hitSlop={8}
+            style={styles.refShare}
+          >
+            <Text style={styles.refShareText}>Share</Text>
+          </Pressable>
         </View>
 
         <View style={styles.summary}>
@@ -109,6 +185,19 @@ export default function BookReceived() {
               ? `Free cancellation until ${cancel.deadlineText}.`
               : 'Free cancellation up to 48 hours before pickup.'}
         </Text>
+
+        {/* Absent on a group quote: there is no confirmed time or price to save
+            yet. Absent on web, where there is no device calendar to add to. */}
+        {!quoteOnly && Platform.OS !== 'web' ? (
+          <Pressable
+            accessibilityRole="button"
+            onPress={addToCalendar}
+            hitSlop={8}
+            style={styles.calendar}
+          >
+            <Text style={styles.calendarText}>Add to calendar</Text>
+          </Pressable>
+        ) : null}
 
         {insideEscalation ? (
           <Pressable
@@ -182,6 +271,20 @@ const makeStyles = (t: Theme) =>
       fontSize: 32,
       letterSpacing: ls(track.h2, 32),
       color: t.textHeading,
+    },
+    refShare: { paddingTop: space.s2 },
+    refShareText: {
+      fontFamily: font.body600,
+      fontSize: 13,
+      color: t.textDim,
+      textDecorationLine: 'underline',
+    },
+    calendar: { alignSelf: 'flex-start' },
+    calendarText: {
+      fontFamily: font.body600,
+      fontSize: 14,
+      color: t.textHeading,
+      textDecorationLine: 'underline',
     },
     summary: { gap: space.s3 },
     row: { flexDirection: 'row', justifyContent: 'space-between', gap: space.s4 },
