@@ -24,7 +24,10 @@ export function NameSign({
   return (
     <View style={[styles.card, style]}>
       <Logo variant="navy" size={15} />
-      <Text style={styles.name}>{name}</Text>
+      {/* One line, shrunk to fit — a sign never wraps a surname mid-word. */}
+      <Text style={styles.name} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.5}>
+        {name}
+      </Text>
       {foot ? <Text style={styles.foot}>{foot.toUpperCase()}</Text> : null}
     </View>
   );

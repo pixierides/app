@@ -26,6 +26,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef, useState } from 'react';
 import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { flightLabel } from '@/lib/airlines';
+import { hasLanded } from '@/lib/flight';
 import { formatTime, terminalLabel } from '@/lib/format';
 import { Logo } from '@/components/ui';
 import { useAuth } from '@/providers/auth';
@@ -87,7 +88,11 @@ export default function SignMode() {
   const flightLine = run
     ? [
         flightLabel(run.flight_number),
-        run.flight_landed_at ? `landed ${formatTime(run.flight_landed_at)}` : null,
+        // "landed" only when someone confirmed it — the same certainty rule
+        // every other surface follows; an estimate reads "due".
+        run.flight_landed_at
+          ? `${hasLanded(run.flight_landed_at, run.flight_arrival_is_actual) ? 'landed' : 'due'} ${formatTime(run.flight_landed_at)}`
+          : null,
         terminalLabel(run.flight_terminal, run.meet_point),
       ]
         .filter(Boolean)
