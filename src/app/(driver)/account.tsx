@@ -14,7 +14,7 @@ import { listVehicles, vehicleLabel, type Vehicle } from '@/lib/fleet';
 import { useAuth } from '@/providers/auth';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, ls, lsDisplay, radius, space, track } from '@/theme/tokens';
 
 export default function DriverAccount() {
   const th = useTheme();
@@ -127,7 +127,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.display700,
       fontSize: fs.h2,
       lineHeight: fs.h2 * lh.tight,
-      letterSpacing: ls(track.h2, fs.h2),
+      letterSpacing: lsDisplay(fs.h2),
       color: t.textHeading,
     },
     card: {
@@ -136,12 +136,12 @@ const makeStyles = (t: Theme) =>
     name: {
       fontFamily: font.display700,
       fontSize: fs.h3,
-      letterSpacing: ls(track.h2, fs.h3),
+      letterSpacing: lsDisplay(fs.h3),
       color: t.textHeading,
     },
     meta: {
       fontFamily: font.body400,
-      fontSize: 14,
+      fontSize: fs.sm,
       color: t.textBody,
     },
     eyebrow: {
@@ -152,13 +152,13 @@ const makeStyles = (t: Theme) =>
     },
     value: {
       fontFamily: font.body600,
-      fontSize: 16,
+      fontSize: fs.bodySm,
       color: t.textHeading,
     },
     hint: {
       fontFamily: font.body400,
-      fontSize: 13,
-      lineHeight: 20,
+      fontSize: fs.sm,
+      lineHeight: fs.sm * lh.body,
       color: t.textBody,
     },
     shiftRow: {
@@ -184,7 +184,7 @@ const makeStyles = (t: Theme) =>
     },
     switchAction: {
       fontFamily: font.body600,
-      fontSize: 14,
+      fontSize: fs.sm,
       color: t.textBody,
       textDecorationLine: 'underline',
     },

@@ -103,51 +103,67 @@ export const shadow = {
 } as const;
 
 /**
- * Type. Two families only.
- * Display — Bricolage Grotesque 600–800: headlines, the accent line, the price figure.
- * Body — Instrument Sans 400–600: body, UI, captions, uppercase eyebrow labels.
+ * Type. Two families, four weights — the whole set.
+ * Display — Manrope 600/700: headings, the accent line, the price figure.
+ * Body — Instrument Sans 400/600: body, UI, captions, eyebrow labels.
+ * Weights 500/700(body)/800 are retired; Manrope 600 at display sizes reads
+ * as confident where a heavier face reads as loud.
  * fontFamily strings match the keys loaded in theme/fonts.ts.
  */
 export const font = {
-  display600: 'BricolageGrotesque_600SemiBold',
-  display700: 'BricolageGrotesque_700Bold',
-  display800: 'BricolageGrotesque_800ExtraBold',
+  display600: 'Manrope_600SemiBold',
+  display700: 'Manrope_700Bold',
   body400: 'InstrumentSans_400Regular',
-  body500: 'InstrumentSans_500Medium',
   body600: 'InstrumentSans_600SemiBold',
-  body700: 'InstrumentSans_700Bold',
 } as const;
 
 /**
  * Tracking (em → RN letterSpacing is in px, so multiply by the font size).
- * display -0.022em · h2 -0.02em · price -0.05em · uppercase label +0.16em
+ * Display tracking tightens WITH size — one helper, no per-role constants:
+ * -.02em ≤20 · -.025em at 24–36 · -.03em at 48+. Eyebrow labels +.13em.
  */
 export const track = {
-  display: -0.022,
-  h2: -0.02,
-  accent: -0.02,
-  price: -0.05,
-  label: 0.16,
+  label: 0.13,
 } as const;
 
 /** letterSpacing helper: em value × px size → RN letterSpacing. */
 export const ls = (em: number, size: number) => em * size;
 
-/** Mobile type scale (px) — from tokens/typography.css mobile values. */
+/** Display letterSpacing in px for a display size — the approved-render curve. */
+export const lsDisplay = (size: number) =>
+  (size >= 48 ? -0.03 : size >= 24 ? -0.025 : -0.02) * size;
+
+/**
+ * Type scale — 12 14 16 18 20 24 30 36 48. Nothing off-scale; tripwire 10
+ * is live for type again. Display sizes above 48 exist only for the
+ * name-sign class of screens (fsDisplay).
+ */
 export const fs = {
-  h1: 38, // --fs-h1-mobile
-  h2: 30, // --fs-h2-mobile
-  accent: 27,
+  h1: 36,
+  h2: 30,
+  accent: 24,
   h3: 20,
   body: 18,
-  bodySm: 17,
+  bodySm: 16,
+  sm: 14,
   label: 12,
-  price: 52,
+  price: 48,
+} as const;
+
+/** The name-sign stops — read across an arrivals hall, chosen by name length. */
+export const fsDisplay = {
+  sm: 48,
+  md: 60,
+  lg: 80,
 } as const;
 
 export const lh = {
-  tight: 1.04,
-  body: 1.6,
+  /** Headings — 1.1–1.2 on the new face. */
+  tight: 1.15,
+  /** Body copy. */
+  body: 1.55,
+  /** Data rows — label/value lines. */
+  data: 1.4,
 } as const;
 
 /** Signature dot-grid texture — drawn with react-native-svg (see ui/DotGrid). */

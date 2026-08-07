@@ -9,7 +9,7 @@ import { Button, ListRow } from '@/components/ui';
 import { listVehicles, setMyVehicle, vehicleLabel, type Vehicle } from '@/lib/fleet';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { color, font, radius, space } from '@/theme/tokens';
+import { color, font, fs, radius, space } from '@/theme/tokens';
 
 export function VehiclePicker({
   visible,
@@ -109,7 +109,7 @@ const makeStyles = (t: Theme) =>
     },
     title: {
       fontFamily: font.body600,
-      fontSize: 16,
+      fontSize: fs.bodySm,
       color: t.textHeading,
       marginBottom: space.s2,
     },
@@ -118,18 +118,18 @@ const makeStyles = (t: Theme) =>
     },
     tick: {
       fontFamily: font.body600,
-      fontSize: 16,
+      fontSize: fs.bodySm,
       color: color.green,
     },
     empty: {
       fontFamily: font.body400,
-      fontSize: 15,
+      fontSize: fs.bodySm,
       color: t.textBody,
       paddingVertical: space.s3,
     },
     error: {
       fontFamily: font.body600,
-      fontSize: 14,
+      fontSize: fs.sm,
       color: t.textBody,
     },
   });

@@ -33,7 +33,7 @@ import { textNumber } from '@/lib/links';
 import { useAuth } from '@/providers/auth';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { font, fs, ls, space, track } from '@/theme/tokens';
+import { font, fs, lh, ls, space, track } from '@/theme/tokens';
 
 /** The trip is over, one way or another — it is not what the customer is here for. */
 const isClosed = (t: CustomerTrip) =>
@@ -268,20 +268,20 @@ const makeStyles = (t: Theme) =>
     },
     actionLead: {
       fontFamily: font.body600,
-      fontSize: 15,
-      lineHeight: 22,
+      fontSize: fs.bodySm,
+      lineHeight: fs.bodySm * lh.body,
       color: t.textHeading,
     },
     actionNote: {
       fontFamily: font.body400,
-      fontSize: 13,
-      lineHeight: 19,
+      fontSize: fs.sm,
+      lineHeight: fs.sm * lh.body,
       color: t.textBody,
     },
     actionNoteUnder: {
       fontFamily: font.body400,
-      fontSize: 13,
-      lineHeight: 19,
+      fontSize: fs.sm,
+      lineHeight: fs.sm * lh.body,
       color: t.textBody,
       textAlign: 'center',
     },
@@ -291,7 +291,7 @@ const makeStyles = (t: Theme) =>
       color: t.textHeading,
     },
     arrow: { color: t.textBody },
-    when: { fontFamily: font.body600, fontSize: 15, color: t.textBody },
+    when: { fontFamily: font.body600, fontSize: fs.bodySm, color: t.textBody },
     metaRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -304,7 +304,7 @@ const makeStyles = (t: Theme) =>
       letterSpacing: ls(track.label, fs.label),
       color: t.textBody,
     },
-    price: { fontFamily: font.display700, fontSize: 18, color: t.textHeading },
+    price: { fontFamily: font.display700, fontSize: fs.body, color: t.textHeading },
   });
 
 const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

@@ -6,7 +6,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 import { useTheme } from '@/providers/theme';
-import { color, font, radius } from '@/theme/tokens';
+import { color, font, fs, radius } from '@/theme/tokens';
 
 type Tone = 'neutral' | 'confirmed' | 'solid' | 'on-dark';
 
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: font.body600,
-    fontSize: 12,
+    fontSize: fs.label,
     letterSpacing: 0.48,
   },
 });

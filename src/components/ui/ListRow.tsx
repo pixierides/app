@@ -5,7 +5,7 @@
 import React from 'react';
 import { View, Text, Pressable, StyleSheet, type ViewStyle } from 'react-native';
 import { useTheme } from '@/providers/theme';
-import { font, radius } from '@/theme/tokens';
+import { font, fs, radius } from '@/theme/tokens';
 
 export function ListRow({
   rule = false,
@@ -83,11 +83,11 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: font.body600,
-    fontSize: 16,
+    fontSize: fs.bodySm,
   },
   subtitle: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     marginTop: 2,
   },
   trailing: {
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   },
   chevron: {
     flexShrink: 0,
-    fontSize: 20,
-    lineHeight: 20,
+    fontSize: fs.h3,
+    lineHeight: fs.h3 * 1.0,
   },
 });

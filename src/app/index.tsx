@@ -23,7 +23,7 @@ import { Button, Logo } from '@/components/ui';
 import { useAuth } from '@/providers/auth';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { font, fs, lh, lsDisplay, space, track } from '@/theme/tokens';
 
 export default function Landing() {
   const th = useTheme();
@@ -105,7 +105,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.display700,
       fontSize: fs.h2,
       lineHeight: fs.h2 * lh.tight,
-      letterSpacing: ls(track.h2, fs.h2),
+      letterSpacing: lsDisplay(fs.h2),
       color: t.textHeading,
       textAlign: 'center',
     },
@@ -119,7 +119,7 @@ const makeStyles = (t: Theme) =>
     actions: { alignSelf: 'stretch', gap: space.s3 },
     credentialsText: {
       fontFamily: font.body400,
-      fontSize: 12,
+      fontSize: fs.label,
       color: t.textBody,
       textAlign: 'center',
     },

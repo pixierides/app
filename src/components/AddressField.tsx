@@ -183,7 +183,7 @@ const makeStyles = (t: Theme) =>
     },
     loadingText: {
       fontFamily: font.body400,
-      fontSize: 13,
+      fontSize: fs.sm,
       color: t.textBody,
     },
     list: {
@@ -204,17 +204,17 @@ const makeStyles = (t: Theme) =>
     },
     primary: {
       fontFamily: font.body600,
-      fontSize: 15,
+      fontSize: fs.bodySm,
       color: t.textHeading,
     },
     secondary: {
       fontFamily: font.body400,
-      fontSize: 13,
+      fontSize: fs.sm,
       color: t.textBody,
     },
     empty: {
       fontFamily: font.body400,
-      fontSize: 13,
+      fontSize: fs.sm,
       color: t.textBody,
     },
   });

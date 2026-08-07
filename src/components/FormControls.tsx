@@ -13,7 +13,7 @@ import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { color, font, fs, ls, radius, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
 
 export type Option = { value: string; label: string; disabled?: boolean };
 
@@ -197,7 +197,7 @@ const makeStyles = (t: Theme) =>
     // different kind of thing.
     label: {
       fontFamily: font.body600,
-      fontSize: 12,
+      fontSize: fs.label,
       letterSpacing: ls(track.label, 12),
       color: t.textBody,
     },
@@ -215,19 +215,19 @@ const makeStyles = (t: Theme) =>
     },
     controlValue: {
       fontFamily: font.body600,
-      fontSize: 16,
+      fontSize: fs.bodySm,
       color: t.textHeading,
       flexShrink: 1,
     },
     controlPlaceholder: {
       fontFamily: font.body400,
-      fontSize: 16,
+      fontSize: fs.bodySm,
       color: t.textBody,
       flexShrink: 1,
     },
     chevron: {
       fontFamily: font.body600,
-      fontSize: 18,
+      fontSize: fs.body,
       color: t.textDim,
       marginTop: -6,
     },
@@ -251,7 +251,7 @@ const makeStyles = (t: Theme) =>
     },
     sheetTitle: {
       fontFamily: font.body600,
-      fontSize: 16,
+      fontSize: fs.bodySm,
       color: t.textHeading,
       marginBottom: space.s2,
     },
@@ -267,7 +267,7 @@ const makeStyles = (t: Theme) =>
     },
     rowText: {
       fontFamily: font.body400,
-      fontSize: 16,
+      fontSize: fs.bodySm,
       color: t.textHeading,
       flexShrink: 1,
     },
@@ -275,7 +275,7 @@ const makeStyles = (t: Theme) =>
     rowTextOff: { color: t.textBody },
     tick: {
       fontFamily: font.body600,
-      fontSize: 16,
+      fontSize: fs.bodySm,
       color: t.textHeading,
     },
     segRow: { flexDirection: 'row', gap: space.s2 },
@@ -293,7 +293,7 @@ const makeStyles = (t: Theme) =>
     segOn: { borderColor: t.textHeading, backgroundColor: t.bgRaised },
     segText: {
       fontFamily: font.body600,
-      fontSize: 14,
+      fontSize: fs.sm,
       color: t.textBody,
       textAlign: 'center',
     },
@@ -315,27 +315,27 @@ const makeStyles = (t: Theme) =>
     },
     stepGlyph: {
       fontFamily: font.body600,
-      fontSize: 22,
+      fontSize: fs.accent,
       color: t.textHeading,
     },
     stepGlyphOff: { color: t.divider },
     stepN: {
       fontFamily: font.display700,
-      fontSize: 18,
+      fontSize: fs.body,
       color: t.textHeading,
       minWidth: 28,
       textAlign: 'center',
     },
     free: {
       fontFamily: font.body400,
-      fontSize: 13,
+      fontSize: fs.sm,
       color: t.textBody,
       flexShrink: 1,
     },
     err: {
       fontFamily: font.body600,
-      fontSize: 13,
-      lineHeight: 19,
+      fontSize: fs.sm,
+      lineHeight: fs.sm * lh.body,
       color: t.textBody,
     },
   });

@@ -44,7 +44,7 @@ import {
   KERB_MINUTES,
 } from '@/lib/trips';
 import { useAuth } from '@/providers/auth';
-import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { color, font, fs, fsDisplay, lh, ls, lsDisplay, radius, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 
@@ -791,8 +791,8 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   backGlyph: {
     color: t.textBody,
-    fontSize: 28,
-    lineHeight: 30,
+    fontSize: fs.h2,
+    lineHeight: fs.h2 * 1.07,
   },
   eyebrow: {
     fontFamily: font.body600,
@@ -804,12 +804,12 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.display700,
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
-    letterSpacing: ls(track.h2, fs.h2),
+    letterSpacing: lsDisplay(fs.h2),
     color: t.textHeading,
   },
   subLine: {
     fontFamily: font.body400,
-    fontSize: 15,
+    fontSize: fs.bodySm,
     color: t.textBody,
   },
   infoCard: {
@@ -818,12 +818,12 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   cardName: {
     fontFamily: font.display700,
     fontSize: fs.h3,
-    letterSpacing: ls(track.h2, fs.h3),
+    letterSpacing: lsDisplay(fs.h3),
     color: t.textPrimary,
   },
   cardSub: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   kvRows: {
@@ -837,24 +837,24 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   kvLabel: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   kvValue: {
     fontFamily: font.body600,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textPrimary,
     flexShrink: 1,
     textAlign: 'right',
   },
   kvLabelDark: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   kvValueDark: {
     fontFamily: font.body600,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
     flexShrink: 1,
     textAlign: 'right',
@@ -874,13 +874,13 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   noteText: {
     fontFamily: font.body400,
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: fs.bodySm,
+    lineHeight: fs.bodySm * lh.body,
     color: t.textPrimary,
   },
   caption: {
     fontFamily: font.body400,
-    fontSize: 13,
+    fontSize: fs.sm,
     color: t.textBody,
     textAlign: 'center',
   },
@@ -900,20 +900,20 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   failLink: {
     fontFamily: font.body400,
-    fontSize: 13,
+    fontSize: fs.sm,
     color: t.textBody,
     textDecorationLine: 'underline',
   },
   failBody: {
     fontFamily: font.body400,
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: fs.sm,
+    lineHeight: fs.sm * lh.body,
     color: t.textBody,
   },
   notifyLine: {
     fontFamily: font.body400,
-    fontSize: 16,
-    lineHeight: 16 * 1.5,
+    fontSize: fs.bodySm,
+    lineHeight: fs.bodySm * 1.0 * 1.5,
     color: t.textBody,
   },
   flightBlock: {
@@ -922,19 +922,19 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   // Big enough to read at arm's length from the driver's seat.
   flightNumber: {
     fontFamily: font.display700,
-    fontSize: 30,
-    lineHeight: 34,
-    letterSpacing: ls(track.h2, 30),
+    fontSize: fs.h2,
+    lineHeight: fs.h2 * lh.tight,
+    letterSpacing: lsDisplay(30),
     color: t.textHeading,
   },
   flightState: {
     fontFamily: font.body600,
-    fontSize: 17,
+    fontSize: fs.bodySm,
     color: t.textBody,
   },
   flightChecked: {
     fontFamily: font.body400,
-    fontSize: 13,
+    fontSize: fs.sm,
     color: t.textBody,
     marginTop: 2,
   },
@@ -946,15 +946,15 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   // Neutral on purpose — no red, no alarm. Circling is part of the job.
   clock: {
     fontFamily: font.display700,
-    fontSize: 64,
-    lineHeight: 68,
-    letterSpacing: ls(track.h2, 64),
+    fontSize: fsDisplay.md,
+    lineHeight: fsDisplay.md * 1.06,
+    letterSpacing: lsDisplay(64),
     color: t.textHeading,
     fontVariant: ['tabular-nums'],
   },
   clockLabel: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   paxRow: {
@@ -1010,7 +1010,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   avatarGlyph: {
     fontFamily: font.display700,
-    fontSize: 18,
+    fontSize: fs.body,
     color: t.textHeading,
   },
   passengerBody: {
@@ -1024,7 +1024,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   rateLabel: {
     fontFamily: font.body600,
-    fontSize: 15,
+    fontSize: fs.bodySm,
     color: t.textBody,
   },
   stars: {
@@ -1032,8 +1032,8 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     gap: space.s3,
   },
   star: {
-    fontSize: 30,
-    lineHeight: 34,
+    fontSize: fs.h2,
+    lineHeight: fs.h2 * lh.tight,
   },
 });
 

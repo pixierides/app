@@ -13,7 +13,7 @@ import {
   type TextInputProps,
 } from 'react-native';
 import { useTheme } from '@/providers/theme';
-import { font, ls, radius, track } from '@/theme/tokens';
+import { font, fs, ls, radius, track } from '@/theme/tokens';
 
 export type InputProps = {
   label?: string;
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: font.body600,
-    fontSize: 12,
+    fontSize: fs.label,
     letterSpacing: ls(track.label, 12),
   },
   field: {
@@ -73,12 +73,12 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    fontSize: 16,
+    fontSize: fs.bodySm,
     fontFamily: font.body400,
     paddingVertical: 0,
   },
   hint: {
     fontFamily: font.body400,
-    fontSize: 13,
+    fontSize: fs.sm,
   },
 });

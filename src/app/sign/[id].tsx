@@ -30,7 +30,7 @@ import { formatTime, terminalLabel } from '@/lib/format';
 import { Logo } from '@/components/ui';
 import { useAuth } from '@/providers/auth';
 import { fetchDriverRuns, type DriverRun } from '@/lib/trips';
-import { color, font } from '@/theme/tokens';
+import { color, font, fs, fsDisplay, lsDisplay } from '@/theme/tokens';
 
 const KEEP_AWAKE_TAG = 'pixie-sign-mode';
 
@@ -94,6 +94,9 @@ export default function SignMode() {
         .join(' · ')
     : '';
 
+  const nameLen = (run?.customer_name ?? '').length;
+  const nameStop = nameLen <= 14 ? fsDisplay.lg : nameLen <= 22 ? fsDisplay.md : fsDisplay.sm;
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -116,13 +119,17 @@ export default function SignMode() {
         ) : null}
       </View>
 
-      {/* The name owns whatever is left and scales itself down to fit. */}
+      {/* The name starts at a display stop chosen by length — 80 for short
+          names, 60, then 48 for the long ones — and keeps the shrink net for
+          a marathon surname on a small phone in landscape. Verified: at the
+          48 stop, "Alexandra Konstantinopoulos" fits on anything 780pt wide
+          and shrinks a step on a 667pt SE-class screen. */}
       <View style={styles.nameWrap}>
         <Text
-          style={styles.name}
+          style={[styles.name, { fontSize: nameStop, letterSpacing: lsDisplay(nameStop), lineHeight: nameStop * 1.1 }]}
           numberOfLines={1}
           adjustsFontSizeToFit
-          minimumFontScale={0.25}
+          minimumFontScale={0.5}
         >
           {run?.customer_name ?? ''}
         </Text>
@@ -155,7 +162,7 @@ const styles = StyleSheet.create({
   // they pick their own name out of a crowd.
   flight: {
     fontFamily: font.body600,
-    fontSize: 22,
+    fontSize: fs.accent,
     letterSpacing: 0.2,
     color: color.ink2,
     flexShrink: 1,
@@ -168,10 +175,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   name: {
-    fontFamily: font.display800,
-    fontSize: 118,
-    lineHeight: 124,
-    letterSpacing: 118 * -0.03,
+    fontFamily: font.display700,
     color: color.sea,
     textAlign: 'center',
     width: '100%',
@@ -179,7 +183,7 @@ const styles = StyleSheet.create({
   driver: {
     alignSelf: 'center',
     fontFamily: font.body600,
-    fontSize: 22,
+    fontSize: fs.accent,
     letterSpacing: 0.2,
     color: color.ink2,
   },

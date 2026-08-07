@@ -9,7 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Card, IncludedRow, RouteChip } from '@/components/ui';
 import { dollars, fetchMyTrips, type CustomerTrip } from '@/lib/booking';
 import { formatTime } from '@/lib/format';
-import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, lsDisplay, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 
@@ -108,14 +108,14 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   backGlyph: {
     color: t.textBody,
-    fontSize: 28,
-    lineHeight: 30,
+    fontSize: fs.h2,
+    lineHeight: fs.h2 * 1.07,
   },
   h1: {
     fontFamily: font.display700,
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
-    letterSpacing: ls(track.h2, fs.h2),
+    letterSpacing: lsDisplay(fs.h2),
     color: t.textHeading,
   },
   card: {
@@ -130,17 +130,17 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   rowLabel: {
     fontFamily: font.body400,
-    fontSize: 15,
+    fontSize: fs.bodySm,
     color: t.textBody,
   },
   rowValue: {
     fontFamily: font.body600,
-    fontSize: 15,
+    fontSize: fs.bodySm,
     color: t.textPrimary,
   },
   rowIncluded: {
     fontFamily: font.body600,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.confirmText,
   },
   totalRule: {
@@ -150,23 +150,23 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   totalLabel: {
     fontFamily: font.body600,
-    fontSize: 16,
+    fontSize: fs.bodySm,
     color: t.textPrimary,
   },
   totalValue: {
-    fontFamily: font.display800,
-    fontSize: 28,
-    letterSpacing: ls(track.price, 28),
+    fontFamily: font.display700,
+    fontSize: fs.h2,
+    letterSpacing: lsDisplay(28),
     color: color.orange,
   },
   paidLine: {
     fontFamily: font.body400,
-    fontSize: 13,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   noTip: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
     textAlign: 'center',
   },

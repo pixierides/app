@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DismissKeyboardArea } from '@/components/DismissKeyboardArea';
-import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, ls, lsDisplay, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 
@@ -99,8 +99,8 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   backGlyph: {
     color: t.textBody,
-    fontSize: 28,
-    lineHeight: 30,
+    fontSize: fs.h2,
+    lineHeight: fs.h2 * 1.07,
   },
   body: {
     paddingHorizontal: space.s5,
@@ -120,7 +120,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.display700,
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
-    letterSpacing: ls(track.h2, fs.h2),
+    letterSpacing: lsDisplay(fs.h2),
     color: t.textHeading,
   },
   footer: {

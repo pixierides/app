@@ -10,7 +10,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Input } from '@/components/ui';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { font, space } from '@/theme/tokens';
+import { font, fs, space } from '@/theme/tokens';
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const TIME_RE = /^([01]\d|2[0-3]):[0-5]\d$/;
@@ -70,7 +70,7 @@ export function DateTimeField({
 const makeStyles = (t: Theme) =>
   StyleSheet.create({
     field: { gap: space.s2 },
-    hint: { fontFamily: font.body400, fontSize: 13, color: t.textBody },
+    hint: { fontFamily: font.body400, fontSize: fs.sm, color: t.textBody },
   });
 
 const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

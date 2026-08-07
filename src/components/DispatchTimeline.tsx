@@ -13,7 +13,7 @@ import { formatTime } from '@/lib/format';
 import { SPINE_LABELS } from '@/lib/booking';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { color, font, radius, space } from '@/theme/tokens';
+import { color, font, fs, radius, space } from '@/theme/tokens';
 
 const PX_PER_HOUR = 48;
 const COL_WIDTH = 168;
@@ -202,7 +202,7 @@ const makeStyles = (t: Theme) =>
       position: 'absolute',
       right: 8,
       fontFamily: font.body400,
-      fontSize: 11,
+      fontSize: fs.label,
       color: t.textBody,
     },
     hScroll: {
@@ -224,7 +224,7 @@ const makeStyles = (t: Theme) =>
     },
     colHeaderText: {
       fontFamily: font.body600,
-      fontSize: 13,
+      fontSize: fs.sm,
       color: t.textPrimary,
     },
     col: {
@@ -255,17 +255,17 @@ const makeStyles = (t: Theme) =>
     },
     evTime: {
       fontFamily: font.body600,
-      fontSize: 11,
+      fontSize: fs.label,
       color: color.white,
     },
     evRoute: {
       fontFamily: font.body600,
-      fontSize: 13,
+      fontSize: fs.sm,
       color: color.white,
     },
     evMeta: {
       fontFamily: font.body400,
-      fontSize: 11,
+      fontSize: fs.label,
       color: 'rgba(255,255,255,0.88)',
     },
     nowLine: {

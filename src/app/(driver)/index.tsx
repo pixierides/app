@@ -17,7 +17,7 @@ import { firstName, formatTime, greetingWord, inMinutes } from '@/lib/format';
 import { useAuth } from '@/providers/auth';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, ls, lsDisplay, radius, space, track } from '@/theme/tokens';
 
 export default function DriverHome() {
   const th = useTheme();
@@ -215,8 +215,8 @@ const makeStyles = (t: Theme) =>
     },
     greeting: {
       fontFamily: font.display700,
-      fontSize: fs.h3 + 4,
-      letterSpacing: ls(track.h2, fs.h3 + 4),
+      fontSize: fs.accent,
+      letterSpacing: lsDisplay(fs.accent),
       color: t.textHeading,
       flexShrink: 1,
     },
@@ -245,7 +245,7 @@ const makeStyles = (t: Theme) =>
     },
     shiftText: {
       fontFamily: font.body600,
-      fontSize: 14,
+      fontSize: fs.sm,
       color: t.textBody,
     },
     shiftTextOn: {
@@ -253,8 +253,8 @@ const makeStyles = (t: Theme) =>
     },
     shiftHint: {
       fontFamily: font.body400,
-      fontSize: 14,
-      lineHeight: 21,
+      fontSize: fs.sm,
+      lineHeight: fs.sm * lh.body,
       color: t.textBody,
     },
     nextCard: {
@@ -275,18 +275,18 @@ const makeStyles = (t: Theme) =>
     },
     time: {
       fontFamily: font.display700,
-      fontSize: 22,
-      letterSpacing: ls(track.h2, 22),
+      fontSize: fs.accent,
+      letterSpacing: lsDisplay(22),
       color: t.textHeading,
     },
     party: {
       fontFamily: font.body400,
-      fontSize: 15,
+      fontSize: fs.bodySm,
       color: t.textBody,
     },
     reference: {
       fontFamily: font.body600,
-      fontSize: 12,
+      fontSize: fs.label,
       letterSpacing: ls(track.label, 12),
       color: t.textBody,
     },
@@ -301,7 +301,7 @@ const makeStyles = (t: Theme) =>
     },
     flight: {
       fontFamily: font.body600,
-      fontSize: 13,
+      fontSize: fs.sm,
       color: t.textBody,
     },
     empty: {
@@ -314,13 +314,13 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.display700,
       fontSize: fs.h2,
       lineHeight: fs.h2 * lh.tight,
-      letterSpacing: ls(track.h2, fs.h2),
+      letterSpacing: lsDisplay(fs.h2),
       color: t.textHeading,
     },
     emptySub: {
       fontFamily: font.body400,
-      fontSize: 16,
-      lineHeight: 16 * 1.5,
+      fontSize: fs.bodySm,
+      lineHeight: fs.bodySm * 1.0 * 1.5,
       color: t.textBody,
     },
   });

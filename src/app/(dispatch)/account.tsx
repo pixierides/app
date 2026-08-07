@@ -6,7 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, Button, Section } from '@/components/ui';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/providers/auth';
-import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, lsDisplay, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 
@@ -51,7 +51,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.display700,
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
-    letterSpacing: ls(track.h2, fs.h2),
+    letterSpacing: lsDisplay(fs.h2),
     color: t.textHeading,
   },
   card: {
@@ -60,12 +60,12 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   name: {
     fontFamily: font.display700,
     fontSize: fs.h3,
-    letterSpacing: ls(track.h2, fs.h3),
+    letterSpacing: lsDisplay(fs.h3),
     color: t.textHeading,
   },
   meta: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
 });

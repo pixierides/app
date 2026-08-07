@@ -66,8 +66,8 @@ const styles = StyleSheet.create({
   },
   backGlyph: {
     color: color.foam,
-    fontSize: 28,
-    lineHeight: 30,
+    fontSize: fs.h2,
+    lineHeight: fs.h2 * 1.07,
   },
   body: {
     flex: 1,
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   },
   caption: {
     fontFamily: font.body400,
-    fontSize: 15,
+    fontSize: fs.bodySm,
     color: color.foam,
   },
 });

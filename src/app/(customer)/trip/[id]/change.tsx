@@ -12,7 +12,7 @@ import { fetchMyTrips, type CustomerTrip } from '@/lib/booking';
 import { formatTime } from '@/lib/format';
 import { callDispatch, DISPATCH_PHONE } from '@/lib/links';
 import { changePickup, policyState } from '@/lib/policy';
-import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, lsDisplay, radius, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 
@@ -149,8 +149,8 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   backGlyph: {
     color: t.textBody,
-    fontSize: 28,
-    lineHeight: 30,
+    fontSize: fs.h2,
+    lineHeight: fs.h2 * 1.07,
   },
   body: {
     flex: 1,
@@ -162,13 +162,13 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.display700,
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
-    letterSpacing: ls(track.h2, fs.h2),
+    letterSpacing: lsDisplay(fs.h2),
     color: t.textHeading,
   },
   sub: {
     fontFamily: font.body400,
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: fs.bodySm,
+    lineHeight: fs.bodySm * lh.body,
     color: t.textBody,
   },
   chips: {
@@ -192,7 +192,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   chipText: {
     fontFamily: font.body600,
-    fontSize: 15,
+    fontSize: fs.bodySm,
     color: t.textBody,
   },
   chipTextOn: {
@@ -200,12 +200,12 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   error: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   routeNote: {
     fontFamily: font.body400,
-    fontSize: 13,
+    fontSize: fs.sm,
     color: t.textBody,
     textDecorationLine: 'underline',
     marginTop: space.s2,

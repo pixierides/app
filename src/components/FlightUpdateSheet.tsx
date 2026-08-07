@@ -35,7 +35,7 @@ import {
 } from '@/lib/flight';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { color, font, fs, ls, radius, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, ls, lsDisplay, radius, space, track } from '@/theme/tokens';
 
 const TERMINALS: Terminal[] = ['A', 'B', 'C'];
 // 'Landed' is gone from here: it belongs to the certainty row below, which
@@ -265,20 +265,20 @@ const makeStyles = (t: Theme) =>
     title: {
       fontFamily: font.display700,
       fontSize: fs.h3,
-      letterSpacing: ls(track.h2, fs.h3),
+      letterSpacing: lsDisplay(fs.h3),
       color: t.textHeading,
     },
     hint: {
       fontFamily: font.body400,
-      fontSize: 14,
-      lineHeight: 20,
+      fontSize: fs.sm,
+      lineHeight: fs.sm * lh.data,
       color: t.textBody,
     },
     // Why the sheet opened, said before anything else on it.
     gate: {
       fontFamily: font.body600,
-      fontSize: 15,
-      lineHeight: 22,
+      fontSize: fs.bodySm,
+      lineHeight: fs.bodySm * lh.body,
       color: t.textHeading,
     },
     label: {
@@ -311,12 +311,12 @@ const makeStyles = (t: Theme) =>
     },
     chipText: {
       fontFamily: font.display700,
-      fontSize: 20,
+      fontSize: fs.h3,
       color: t.textDim,
     },
     chipTextSm: {
       fontFamily: font.body600,
-      fontSize: 14,
+      fontSize: fs.sm,
       color: t.textBody,
     },
     chipTextOn: {
@@ -324,13 +324,13 @@ const makeStyles = (t: Theme) =>
     },
     outcome: {
       fontFamily: font.body400,
-      fontSize: 14,
-      lineHeight: 20,
+      fontSize: fs.sm,
+      lineHeight: fs.sm * lh.data,
       color: t.textBody,
     },
     error: {
       fontFamily: font.body600,
-      fontSize: 14,
+      fontSize: fs.sm,
       color: t.textBody,
     },
   });

@@ -17,7 +17,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/ui';
 import { useAuth } from '@/providers/auth';
-import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, lsDisplay, radius, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 
@@ -158,8 +158,8 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   backGlyph: {
     color: t.textBody,
-    fontSize: 28,
-    lineHeight: 30,
+    fontSize: fs.h2,
+    lineHeight: fs.h2 * 1.07,
   },
   body: {
     flex: 1,
@@ -171,13 +171,13 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.display700,
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
-    letterSpacing: ls(track.h2, fs.h2),
+    letterSpacing: lsDisplay(fs.h2),
     color: t.textHeading,
   },
   sub: {
     fontFamily: font.body400,
-    fontSize: 16,
-    lineHeight: 16 * 1.5,
+    fontSize: fs.bodySm,
+    lineHeight: fs.bodySm * 1.0 * 1.5,
     color: t.textBody,
   },
   boxes: {
@@ -201,7 +201,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   digit: {
     fontFamily: font.display700,
-    fontSize: 24,
+    fontSize: fs.accent,
     color: t.textHeading,
   },
   hiddenInput: {
@@ -212,7 +212,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   error: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   resendRow: {
@@ -224,12 +224,12 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   resendLabel: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   resendLink: {
     fontFamily: font.body600,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
     textDecorationLine: 'underline',
   },

@@ -12,7 +12,7 @@ import { fetchDriverRuns, type DriverRun } from '@/lib/trips';
 import { formatTime } from '@/lib/format';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { font, fs, lh, ls, lsDisplay, space, track } from '@/theme/tokens';
 
 const DAYS_AHEAD = 7;
 
@@ -93,7 +93,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.display700,
       fontSize: fs.h2,
       lineHeight: fs.h2 * lh.tight,
-      letterSpacing: ls(track.h2, fs.h2),
+      letterSpacing: lsDisplay(fs.h2),
       color: t.textHeading,
     },
     dayBlock: {
@@ -107,8 +107,8 @@ const makeStyles = (t: Theme) =>
     },
     empty: {
       fontFamily: font.body400,
-      fontSize: 16,
-      lineHeight: 24,
+      fontSize: fs.bodySm,
+      lineHeight: fs.bodySm * lh.body,
       color: t.textBody,
     },
   });

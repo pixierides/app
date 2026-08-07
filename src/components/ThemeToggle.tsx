@@ -4,7 +4,7 @@
  */
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSetThemeMode, useTheme, useThemeMode } from '@/providers/theme';
-import { font, radius, space } from '@/theme/tokens';
+import { font, fs, radius, space } from '@/theme/tokens';
 
 const MODES = [
   { key: 'light', label: 'Light' },
@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: font.body600,
-    fontSize: 16,
+    fontSize: fs.bodySm,
   },
   group: {
     flexDirection: 'row',
@@ -71,6 +71,6 @@ const styles = StyleSheet.create({
   },
   segText: {
     fontFamily: font.body600,
-    fontSize: 14,
+    fontSize: fs.sm,
   },
 });

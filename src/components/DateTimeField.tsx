@@ -12,7 +12,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { color, font, ls, radius, space, track } from '@/theme/tokens';
+import { color, font, fs, ls, radius, space, track } from '@/theme/tokens';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 
@@ -217,7 +217,7 @@ const makeStyles = (t: Theme) =>
     field: { gap: space.s2 },
     label: {
       fontFamily: font.body600,
-      fontSize: 12,
+      fontSize: fs.label,
       letterSpacing: ls(track.label, 12),
       color: t.textBody,
     },
@@ -230,8 +230,8 @@ const makeStyles = (t: Theme) =>
       paddingHorizontal: space.s4,
       justifyContent: 'center',
     },
-    value: { fontFamily: font.body600, fontSize: 16, color: t.textHeading },
-    placeholder: { fontFamily: font.body400, fontSize: 16, color: t.textBody },
+    value: { fontFamily: font.body600, fontSize: fs.bodySm, color: t.textHeading },
+    placeholder: { fontFamily: font.body400, fontSize: fs.bodySm, color: t.textBody },
     // Centred, not bottom-anchored: the wheel is the only thing being decided,
     // so it sits where the eye already is.
     backdrop: {
@@ -254,7 +254,7 @@ const makeStyles = (t: Theme) =>
     },
     sheetTitle: {
       fontFamily: font.body600,
-      fontSize: 16,
+      fontSize: fs.bodySm,
       color: t.textHeading,
       textAlign: 'center',
     },
@@ -266,7 +266,7 @@ const makeStyles = (t: Theme) =>
       borderTopWidth: 1,
       borderTopColor: t.divider,
     },
-    doneText: { fontFamily: font.body600, fontSize: 16, color: t.textHeading },
+    doneText: { fontFamily: font.body600, fontSize: fs.bodySm, color: t.textHeading },
   });
 
 const themed = { light: makeStyles(themes.light), dark: makeStyles(themes.dark) };

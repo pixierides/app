@@ -14,7 +14,7 @@ import { Button, Card, IncludedRow } from '@/components/ui';
 import { devMarkPaid, dollars, fetchMyTrips, openPayScreen, type CustomerTrip } from '@/lib/booking';
 import { formatTime } from '@/lib/format';
 import { withinNonRefundableWindow } from '@/lib/policy';
-import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, ls, lsDisplay, radius, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 
@@ -149,8 +149,8 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   backGlyph: {
     color: t.textBody,
-    fontSize: 28,
-    lineHeight: 30,
+    fontSize: fs.h2,
+    lineHeight: fs.h2 * 1.07,
   },
   body: {
     flex: 1,
@@ -168,7 +168,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.display700,
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
-    letterSpacing: ls(track.h2, fs.h2),
+    letterSpacing: lsDisplay(fs.h2),
     color: t.textHeading,
   },
   card: {
@@ -182,30 +182,30 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   priceLabel: {
     fontFamily: font.body400,
-    fontSize: 15,
+    fontSize: fs.bodySm,
     color: t.textBody,
   },
   price: {
-    fontFamily: font.display800,
-    fontSize: 44,
-    letterSpacing: ls(track.price, 44),
+    fontFamily: font.display700,
+    fontSize: fs.price,
+    letterSpacing: lsDisplay(44),
     color: color.orange,
   },
   paidNow: {
     fontFamily: font.body600,
-    fontSize: 13,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   hold: {
     fontFamily: font.body400,
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: fs.bodySm,
+    lineHeight: fs.bodySm * lh.body,
     color: t.textBody,
     marginTop: space.s2,
   },
   error: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   consentRow: {
@@ -242,8 +242,8 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   consentText: {
     flex: 1,
     fontFamily: font.body400,
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: fs.sm,
+    lineHeight: fs.sm * lh.body,
     color: t.textBody,
   },
   footer: {
@@ -260,12 +260,12 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   applePayText: {
     fontFamily: font.body600,
-    fontSize: 17,
+    fontSize: fs.bodySm,
     color: '#fff',
   },
   or: {
     fontFamily: font.body400,
-    fontSize: 13,
+    fontSize: fs.sm,
     color: t.textBody,
     textAlign: 'center',
   },

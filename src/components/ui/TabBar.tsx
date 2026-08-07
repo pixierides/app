@@ -8,7 +8,7 @@ import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { themes } from '@/theme/themes';
-import { color, font, radius } from '@/theme/tokens';
+import { color, font, fs, radius } from '@/theme/tokens';
 
 export type TabItem = { label: string; icon?: React.ReactNode };
 
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontFamily: font.body600,
-    fontSize: 11,
+    fontSize: fs.label,
     letterSpacing: 0.22, // 0.02em × 11px
   },
   dot: {

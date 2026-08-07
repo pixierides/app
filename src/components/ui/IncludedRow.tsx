@@ -7,7 +7,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, type ViewStyle, type TextStyle } from 'react-native';
 import { useTheme } from '@/providers/theme';
-import { color, font } from '@/theme/tokens';
+import { color, font, fs } from '@/theme/tokens';
 
 export function IncludedRow({
   children,
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
   label: {
     flex: 1,
     fontFamily: font.body400,
-    fontSize: 15,
-    lineHeight: 15 * 1.45,
+    fontSize: fs.bodySm,
+    lineHeight: fs.bodySm * 1.0 * 1.45,
   },
 });

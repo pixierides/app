@@ -32,7 +32,7 @@ import { easternToUtcIso } from '@/lib/quote-submit';
 import { pickupIso, useBooking } from '@/providers/booking';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { font, fs, lh, ls, lsDisplay, radius, space, track } from '@/theme/tokens';
 
 export default function BookReceived() {
   const th = useTheme();
@@ -256,10 +256,10 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.display700,
       fontSize: fs.h2,
       lineHeight: fs.h2 * lh.tight,
-      letterSpacing: ls(track.h2, fs.h2),
+      letterSpacing: lsDisplay(fs.h2),
       color: t.textHeading,
     },
-    sub: { fontFamily: font.body400, fontSize: 16, lineHeight: 24, color: t.textBody },
+    sub: { fontFamily: font.body400, fontSize: fs.bodySm, lineHeight: fs.bodySm * lh.body, color: t.textBody },
     refBlock: {
       gap: space.s1,
       padding: space.s4,
@@ -276,39 +276,39 @@ const makeStyles = (t: Theme) =>
       color: t.textBody,
     },
     refValue: {
-      fontFamily: font.display800,
-      fontSize: 32,
-      letterSpacing: ls(track.h2, 32),
+      fontFamily: font.display700,
+      fontSize: fs.h2,
+      letterSpacing: lsDisplay(32),
       color: t.textHeading,
     },
     refShare: { paddingTop: space.s2 },
     refShareText: {
       fontFamily: font.body600,
-      fontSize: 13,
+      fontSize: fs.sm,
       color: t.textBody,
       textDecorationLine: 'underline',
     },
     calendar: { alignSelf: 'flex-start' },
     calendarText: {
       fontFamily: font.body600,
-      fontSize: 14,
+      fontSize: fs.sm,
       color: t.textHeading,
       textDecorationLine: 'underline',
     },
     summary: { gap: space.s3 },
     row: { flexDirection: 'row', justifyContent: 'space-between', gap: space.s4 },
-    rowKey: { fontFamily: font.body400, fontSize: 14, color: t.textBody },
+    rowKey: { fontFamily: font.body400, fontSize: fs.sm, color: t.textBody },
     rowValue: {
       flexShrink: 1,
       fontFamily: font.body600,
-      fontSize: 14,
+      fontSize: fs.sm,
       color: t.textHeading,
       textAlign: 'right',
     },
     policy: {
       fontFamily: font.body400,
-      fontSize: 14,
-      lineHeight: 21,
+      fontSize: fs.sm,
+      lineHeight: fs.sm * lh.body,
       color: t.textBody,
       borderTopWidth: 1,
       borderTopColor: t.divider,
@@ -316,15 +316,15 @@ const makeStyles = (t: Theme) =>
     },
     escalate: {
       fontFamily: font.body600,
-      fontSize: 14,
-      lineHeight: 21,
+      fontSize: fs.sm,
+      lineHeight: fs.sm * lh.body,
       color: t.textHeading,
       textDecorationLine: 'underline',
     },
     footer: { paddingHorizontal: space.s5, paddingBottom: space.s4, gap: space.s3 },
     ghost: {
       fontFamily: font.body600,
-      fontSize: 14,
+      fontSize: fs.sm,
       color: t.textBody,
       textAlign: 'center',
     },

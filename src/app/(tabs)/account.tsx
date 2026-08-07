@@ -17,7 +17,7 @@ import { formatUsPhone } from '@/lib/phone';
 import { useAuth } from '@/providers/auth';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { font, fs, lh, ls, lsDisplay, space, track } from '@/theme/tokens';
 
 export default function Account() {
   const th = useTheme();
@@ -77,7 +77,7 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.display700,
       fontSize: fs.h2,
       lineHeight: fs.h2 * lh.tight,
-      letterSpacing: ls(track.h2, fs.h2),
+      letterSpacing: lsDisplay(fs.h2),
       color: t.textHeading,
     },
     card: { gap: space.s4 },
@@ -88,12 +88,12 @@ const makeStyles = (t: Theme) =>
       color: t.textBody,
       marginBottom: space.s1,
     },
-    value: { fontFamily: font.body600, fontSize: 17, color: t.textHeading },
+    value: { fontFamily: font.body600, fontSize: fs.bodySm, color: t.textHeading },
     spacer: { flex: 1 },
     note: {
       fontFamily: font.body400,
-      fontSize: 12,
-      lineHeight: 17,
+      fontSize: fs.label,
+      lineHeight: fs.label * lh.data,
       color: t.textBody,
       textAlign: 'center',
     },

@@ -11,7 +11,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/providers/theme';
-import { color, font, radius } from '@/theme/tokens';
+import { color, font, fs, radius } from '@/theme/tokens';
 
 export type TripStep = { title: string; detail?: string };
 
@@ -117,11 +117,11 @@ const styles = StyleSheet.create({
   },
   title: {
     fontFamily: font.body600,
-    fontSize: 16,
+    fontSize: fs.bodySm,
   },
   detail: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     marginTop: 2,
   },
 });

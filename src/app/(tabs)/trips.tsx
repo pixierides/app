@@ -9,7 +9,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Badge, ListRow } from '@/components/ui';
 import { fetchMyTrips, STATUS_LABELS, type CustomerTrip } from '@/lib/booking';
 import { formatTime } from '@/lib/format';
-import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, lsDisplay, radius, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 
@@ -123,14 +123,14 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   backGlyph: {
     color: t.textBody,
-    fontSize: 28,
-    lineHeight: 30,
+    fontSize: fs.h2,
+    lineHeight: fs.h2 * 1.07,
   },
   h1: {
     fontFamily: font.display700,
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
-    letterSpacing: ls(track.h2, fs.h2),
+    letterSpacing: lsDisplay(fs.h2),
     color: t.textHeading,
   },
   tabs: {
@@ -152,7 +152,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   tabText: {
     fontFamily: font.body600,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   tabTextOn: {
@@ -160,7 +160,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   empty: {
     fontFamily: font.body400,
-    fontSize: 16,
+    fontSize: fs.bodySm,
     color: t.textBody,
     paddingVertical: space.s4,
   },

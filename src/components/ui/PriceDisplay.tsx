@@ -1,13 +1,13 @@
 /**
  * The price figure — the number the whole product exists to deliver.
  * Port of components/data/PriceDisplay.jsx.
- * Bricolage Grotesque 800, tight tracking, orange. "flat" and "taxes in"
+ * Manrope 700, tight tracking, orange. "flat" and "taxes in"
  * live around it in quiet ink so the number is the loud thing.
  */
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/providers/theme';
-import { color, font, ls, track } from '@/theme/tokens';
+import { color, font, fs, lsDisplay, track } from '@/theme/tokens';
 
 export function PriceDisplay({
   amount = '$129',
@@ -28,7 +28,7 @@ export function PriceDisplay({
       <Text
         style={[
           styles.amount,
-          { fontSize: size, letterSpacing: ls(track.price, size), lineHeight: size * 0.9 },
+          { fontSize: size, letterSpacing: lsDisplay(size), lineHeight: size * 0.9 },
         ]}
       >
         {amount}
@@ -48,12 +48,12 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
   },
   amount: {
-    fontFamily: font.display800,
+    fontFamily: font.display700,
     color: color.orange,
   },
   caption: {
     fontFamily: font.body600,
-    fontSize: 13,
+    fontSize: fs.sm,
     letterSpacing: 0.26, // 0.02em × 13px
   },
 });

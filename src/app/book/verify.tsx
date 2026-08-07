@@ -17,7 +17,7 @@ import { Button } from '@/components/ui';
 import { submitBookingFromDraft } from '@/lib/quote-submit';
 import { useAuth } from '@/providers/auth';
 import { useBooking } from '@/providers/booking';
-import { font, radius, space } from '@/theme/tokens';
+import { font, fs, lh, radius, space } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 
@@ -124,14 +124,14 @@ export default function BookVerify() {
 const makeStyles = (t: Theme) => StyleSheet.create({
   sub: {
     fontFamily: font.body400,
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: fs.bodySm,
+    lineHeight: fs.bodySm * lh.body,
     color: t.textBody,
   },
   note: {
     fontFamily: font.body400,
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: fs.sm,
+    lineHeight: fs.sm * lh.body,
     color: t.textBody,
   },
   boxes: {
@@ -155,7 +155,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   digit: {
     fontFamily: font.display700,
-    fontSize: 24,
+    fontSize: fs.accent,
     color: t.textHeading,
   },
   hiddenInput: {
@@ -166,7 +166,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   error: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   resendRow: {
@@ -178,12 +178,12 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   resendLabel: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   resendLink: {
     fontFamily: font.body600,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
     textDecorationLine: 'underline',
   },

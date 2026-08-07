@@ -41,7 +41,7 @@ import { arrivalWord, hasLanded } from '@/lib/flight';
 import { noCheckIn, runIsLive as isLiveRun, unreachableDriver } from '@/lib/trips';
 import { callDispatch, callNumber, DISPATCH_PHONE, textNumber } from '@/lib/links';
 import { cancelDeadline, formatDeadline, policyState } from '@/lib/policy';
-import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, ls, lsDisplay, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 
@@ -575,8 +575,8 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   backGlyph: {
     color: t.textBody,
-    fontSize: 28,
-    lineHeight: 30,
+    fontSize: fs.h2,
+    lineHeight: fs.h2 * 1.07,
   },
   headerRow: {
     flexDirection: 'row',
@@ -587,8 +587,8 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   route: {
     fontFamily: font.display700,
-    fontSize: fs.h3 + 2,
-    letterSpacing: ls(track.h2, fs.h3 + 2),
+    fontSize: fs.accent,
+    letterSpacing: lsDisplay(fs.accent),
     color: t.textHeading,
     flexShrink: 1,
   },
@@ -598,12 +598,12 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   dateLine: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   wasNow: {
     fontFamily: font.body600,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   wasNowRow: {
@@ -617,24 +617,24 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   wasNowLabel: {
     fontFamily: font.body600,
-    fontSize: 11,
+    fontSize: fs.label,
     letterSpacing: ls(track.label, 11),
     color: t.textBody,
   },
   wasNowOld: {
     fontFamily: font.display700,
-    fontSize: 22,
+    fontSize: fs.accent,
     color: t.textDim,
     textDecorationLine: 'line-through',
   },
   wasNowNew: {
     fontFamily: font.display700,
-    fontSize: 22,
+    fontSize: fs.accent,
     color: t.textHeading,
   },
   wasNowArrow: {
     fontFamily: font.body400,
-    fontSize: 20,
+    fontSize: fs.h3,
     color: t.textDim,
   },
   policyActions: {
@@ -655,15 +655,15 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   blockTitle: {
     fontFamily: font.display700,
-    fontSize: fs.h3 + 2,
-    lineHeight: (fs.h3 + 2) * lh.tight,
-    letterSpacing: ls(track.h2, fs.h3 + 2),
+    fontSize: fs.accent,
+    lineHeight: (fs.accent) * lh.tight,
+    letterSpacing: lsDisplay(fs.accent),
     color: t.textHeading,
   },
   blockBody: {
     fontFamily: font.body400,
-    fontSize: 15,
-    lineHeight: 15 * 1.5,
+    fontSize: fs.bodySm,
+    lineHeight: fs.bodySm * 1.0 * 1.5,
     color: t.textBody,
   },
   spineWrap: {
@@ -677,19 +677,19 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   kvLabel: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   kvValue: {
     fontFamily: font.body600,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
     flexShrink: 1,
     textAlign: 'right',
   },
   dispatchLine: {
     fontFamily: font.body400,
-    fontSize: 13,
+    fontSize: fs.sm,
     color: t.textBody,
     textAlign: 'center',
     paddingVertical: space.s2,

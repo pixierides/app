@@ -12,7 +12,7 @@ import { Badge, ListRow } from '@/components/ui';
 import { fetchDispatchTrips, type DispatchTrip } from '@/lib/dispatch';
 import { easternDate, easternToday } from '@/lib/calendar';
 import { formatTime } from '@/lib/format';
-import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, lsDisplay, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 
@@ -105,13 +105,13 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.display700,
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
-    letterSpacing: ls(track.h2, fs.h2),
+    letterSpacing: lsDisplay(fs.h2),
     color: t.textHeading,
   },
   empty: {
     fontFamily: font.body400,
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: fs.bodySm,
+    lineHeight: fs.bodySm * lh.body,
     color: t.textBody,
     paddingVertical: space.s4,
   },

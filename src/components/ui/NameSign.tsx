@@ -9,7 +9,7 @@
  */
 import React from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
-import { color, font, ls, radius, shadow } from '@/theme/tokens';
+import { color, font, fs, ls, lsDisplay, radius, shadow, track } from '@/theme/tokens';
 import { Logo } from './Logo';
 
 export function NameSign({
@@ -43,16 +43,16 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-start',
   },
   name: {
-    fontFamily: font.display800,
-    fontSize: 40,
-    lineHeight: 40 * 1.02,
-    letterSpacing: ls(-0.03, 40),
+    fontFamily: font.display700,
+    fontSize: fs.h1,
+    lineHeight: fs.h1 * 1.1,
+    letterSpacing: lsDisplay(fs.h1),
     color: color.sea,
   },
   foot: {
     fontFamily: font.body600,
-    fontSize: 13,
-    letterSpacing: ls(0.14, 13),
+    fontSize: fs.sm,
+    letterSpacing: ls(track.label, fs.sm),
     color: color.ink2,
   },
 });

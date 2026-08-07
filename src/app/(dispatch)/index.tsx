@@ -30,7 +30,7 @@ import { adjustmentLine, fetchOpenAdjustments, type PriceAdjustment } from '@/li
 import { easternDate, easternToday } from '@/lib/calendar';
 import { firstName, formatTime, greetingWord } from '@/lib/format';
 import { useAuth } from '@/providers/auth';
-import { color, font, fs, lh, ls, radius, shadow, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, ls, lsDisplay, radius, shadow, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 
@@ -483,8 +483,8 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   moneyLine: {
     fontFamily: font.body600,
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: fs.sm,
+    lineHeight: fs.sm * lh.data,
     color: t.textHeading,
     // 20 + 24 = 44: each row owns its floor. Adjacent-row hitSlop contested
     // the gap and left every row but the last at ~36px.
@@ -492,7 +492,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   moneyNote: {
     fontFamily: font.body400,
-    fontSize: 12,
+    fontSize: fs.label,
     color: t.textBody,
   },
   eyebrow: {
@@ -512,7 +512,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.display700,
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
-    letterSpacing: ls(track.h2, fs.h2),
+    letterSpacing: lsDisplay(fs.h2),
     color: t.textHeading,
     flexShrink: 1,
   },
@@ -533,7 +533,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   deskText: {
     fontFamily: font.body600,
-    fontSize: 13,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   tiles: {
@@ -558,13 +558,13 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     borderColor: t.textHeading,
   },
   tileCount: {
-    fontFamily: font.display800,
-    fontSize: 28,
+    fontFamily: font.display700,
+    fontSize: fs.h2,
     color: t.textHeading,
   },
   tileLabel: {
     fontFamily: font.body600,
-    fontSize: 12,
+    fontSize: fs.label,
     color: t.textBody,
   },
   section: {
@@ -593,37 +593,37 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   urgentRoute: {
     fontFamily: font.display700,
     fontSize: fs.h3,
-    letterSpacing: ls(track.h2, fs.h3),
+    letterSpacing: lsDisplay(fs.h3),
     color: t.textHeading,
     flexShrink: 1,
   },
   urgentWhen: {
     fontFamily: font.body600,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   urgentParty: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   urgentMore: {
     fontFamily: font.body400,
-    fontSize: 13,
+    fontSize: fs.sm,
     color: t.textBody,
     textAlign: 'center',
     textDecorationLine: 'underline',
   },
   empty: {
     fontFamily: font.body400,
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: fs.bodySm,
+    lineHeight: fs.bodySm * lh.body,
     color: t.textBody,
     paddingVertical: space.s5,
   },
   emptyQuiet: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
     paddingVertical: space.s2,
   },

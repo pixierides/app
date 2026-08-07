@@ -13,7 +13,7 @@ import { easternTimeToIso } from '@/lib/flight';
 import { formatTime } from '@/lib/format';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { font, fs, ls, space, track } from '@/theme/tokens';
+import { font, fs, lh, lsDisplay, space, track } from '@/theme/tokens';
 
 export function TimeWheel({
   value,
@@ -66,14 +66,14 @@ const makeStyles = (t: Theme) =>
     },
     readout: {
       fontFamily: font.display700,
-      fontSize: 26,
-      lineHeight: 30,
-      letterSpacing: ls(track.h2, 26),
+      fontSize: fs.accent,
+      lineHeight: fs.accent * lh.tight,
+      letterSpacing: lsDisplay(26),
       color: t.textHeading,
     },
     bad: {
       fontFamily: font.body600,
-      fontSize: 14,
+      fontSize: fs.sm,
       color: t.textBody,
     },
   });

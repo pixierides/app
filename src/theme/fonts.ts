@@ -1,28 +1,24 @@
 /**
- * The two brand families, loaded once at app root.
- * Display — Bricolage Grotesque 600/700/800. Body — Instrument Sans 400/500/600/700.
+ * The two brand families, loaded once at app root — Aero set.
+ * Display — Manrope 600/700: headings, the accent line, the price figure.
+ * Body — Instrument Sans 400/600. Weights 500, 700 and 800 are retired:
+ * Manrope 600 at display sizes reads as confident where a heavier face
+ * reads as loud.
+ * The root layout holds the splash until these resolve, so no screen ever
+ * renders in a system fallback face.
  */
-import {
-  BricolageGrotesque_600SemiBold,
-  BricolageGrotesque_700Bold,
-  BricolageGrotesque_800ExtraBold,
-} from '@expo-google-fonts/bricolage-grotesque';
+import { Manrope_600SemiBold, Manrope_700Bold } from '@expo-google-fonts/manrope';
 import {
   InstrumentSans_400Regular,
-  InstrumentSans_500Medium,
   InstrumentSans_600SemiBold,
-  InstrumentSans_700Bold,
 } from '@expo-google-fonts/instrument-sans';
 import { useFonts } from 'expo-font';
 
 export function useAppFonts() {
   return useFonts({
-    BricolageGrotesque_600SemiBold,
-    BricolageGrotesque_700Bold,
-    BricolageGrotesque_800ExtraBold,
+    Manrope_600SemiBold,
+    Manrope_700Bold,
     InstrumentSans_400Regular,
-    InstrumentSans_500Medium,
     InstrumentSans_600SemiBold,
-    InstrumentSans_700Bold,
   });
 }

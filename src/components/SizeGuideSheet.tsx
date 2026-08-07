@@ -21,7 +21,7 @@ import Svg, { Circle, Line, Path, Rect } from 'react-native-svg';
 import { BAGS, bagDims, CAPACITY, STROLLER_NOTES, type Bag } from '@/lib/luggage';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, lsDisplay, radius, space, track } from '@/theme/tokens';
 
 // The three bags are drawn at true relative proportion: inches scaled by one
 // shared factor, so the tallest reads at 150px and the others are honestly
@@ -208,7 +208,7 @@ const makeStyles = (t: Theme) =>
     },
     headerTitle: {
       fontFamily: font.body600,
-      fontSize: 16,
+      fontSize: fs.bodySm,
       color: t.textHeading,
       flexShrink: 1,
     },
@@ -223,16 +223,16 @@ const makeStyles = (t: Theme) =>
       fontFamily: font.display700,
       fontSize: fs.h3,
       lineHeight: fs.h3 * lh.tight,
-      letterSpacing: ls(track.h2, fs.h3),
+      letterSpacing: lsDisplay(fs.h3),
       color: t.textHeading,
     },
     h2: {
       fontFamily: font.display700,
-      fontSize: 17,
+      fontSize: fs.bodySm,
       color: t.textHeading,
       marginTop: space.s4,
     },
-    lede: { fontFamily: font.body400, fontSize: 14, lineHeight: 21, color: t.textBody },
+    lede: { fontFamily: font.body400, fontSize: fs.sm, lineHeight: fs.sm * lh.body, color: t.textBody },
     bagRow: {
       flexDirection: 'row',
       alignItems: 'flex-end',
@@ -244,28 +244,28 @@ const makeStyles = (t: Theme) =>
     bagArt: { height: 166, justifyContent: 'flex-end', marginBottom: space.s2 },
     bagName: {
       fontFamily: font.body600,
-      fontSize: 13,
+      fontSize: fs.sm,
       color: t.textHeading,
       textAlign: 'center',
     },
     bagDims: {
       fontFamily: font.body400,
-      fontSize: 12,
-      lineHeight: 17,
+      fontSize: fs.label,
+      lineHeight: fs.label * lh.data,
       color: t.textBody,
       textAlign: 'center',
       marginTop: 2,
     },
     bagFlies: {
       fontFamily: font.body600,
-      fontSize: 12,
+      fontSize: fs.label,
       color: t.textBody,
       textAlign: 'center',
       marginTop: 2,
     },
-    note: { fontFamily: font.body400, fontSize: 14, lineHeight: 21, color: t.textBody },
+    note: { fontFamily: font.body400, fontSize: fs.sm, lineHeight: fs.sm * lh.body, color: t.textBody },
     noteLead: { fontFamily: font.body600, color: t.textHeading },
-    fine: { fontFamily: font.body400, fontSize: 12, lineHeight: 18, color: t.textBody },
+    fine: { fontFamily: font.body400, fontSize: fs.label, lineHeight: fs.label * lh.body, color: t.textBody },
     table: {
       borderRadius: radius.input,
       overflow: 'hidden',
@@ -276,7 +276,7 @@ const makeStyles = (t: Theme) =>
     thead: { flexDirection: 'row', backgroundColor: color.sea },
     th: {
       fontFamily: font.body600,
-      fontSize: 13,
+      fontSize: fs.sm,
       color: color.white,
       paddingHorizontal: space.s3,
       paddingVertical: space.s3,
@@ -293,21 +293,21 @@ const makeStyles = (t: Theme) =>
     colNum: { flex: 1 },
     tdVehicle: {
       fontFamily: font.body600,
-      fontSize: 13,
+      fontSize: fs.sm,
       color: t.textHeading,
       paddingHorizontal: space.s3,
       paddingVertical: space.s3,
     },
     td: {
       fontFamily: font.body400,
-      fontSize: 13,
+      fontSize: fs.sm,
       color: t.textPrimary,
       paddingHorizontal: space.s3,
       paddingVertical: space.s3,
     },
     tdStrong: {
       fontFamily: font.display700,
-      fontSize: 14,
+      fontSize: fs.sm,
       color: t.textHeading,
       paddingHorizontal: space.s3,
       paddingVertical: space.s3,

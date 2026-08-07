@@ -10,7 +10,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 import Svg, { Circle, G, Path } from 'react-native-svg';
-import { color, font, radius } from '@/theme/tokens';
+import { color, font, fs, radius } from '@/theme/tokens';
 import { DotGrid } from './DotGrid';
 
 const TRAIL_PATH = 'M40 120 C 150 120, 190 54, 300 54 S 460 92, 560 44';
@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   label: {
     flex: 1,
     fontFamily: font.body600,
-    fontSize: 12.5,
+    fontSize: fs.label,
     color: color.foam,
   },
 });

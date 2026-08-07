@@ -38,7 +38,7 @@ import {
 import { firstName, formatTime } from '@/lib/format';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { color, font, fs, ls, radius, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, lsDisplay, radius, space, track } from '@/theme/tokens';
 
 const DEFAULT_VEHICLE = 'White Chevy Suburban · FL 8XK-221';
 const DEFAULT_MEET = 'Terminal A · door 2';
@@ -433,11 +433,13 @@ const monthStyles = StyleSheet.create({
   },
   dayNum: {
     fontFamily: font.body600,
-    fontSize: 14,
+    fontSize: fs.sm,
   },
+  // Grew 14->18 with the type floor: 9px text was below the scale, and a
+  // 12px count needs the room. Still well inside the 44px day cell.
   countPill: {
-    minWidth: 16,
-    height: 14,
+    minWidth: 18,
+    height: 18,
     borderRadius: radius.pill,
     paddingHorizontal: 3,
     backgroundColor: color.sea3,
@@ -446,7 +448,7 @@ const monthStyles = StyleSheet.create({
   },
   countText: {
     fontFamily: font.body600,
-    fontSize: 9,
+    fontSize: fs.label,
     color: color.white,
   },
 });
@@ -487,7 +489,7 @@ const makeStyles = (t: Theme) =>
     },
     chipText: {
       fontFamily: font.body600,
-      fontSize: 14,
+      fontSize: fs.sm,
       color: t.textBody,
     },
     chipTextOn: {
@@ -506,13 +508,13 @@ const makeStyles = (t: Theme) =>
     },
     navGlyph: {
       fontFamily: font.body600,
-      fontSize: 24,
+      fontSize: fs.accent,
       color: t.textBody,
     },
     navLabel: {
       fontFamily: font.display700,
       fontSize: fs.h3,
-      letterSpacing: ls(track.h2, fs.h3),
+      letterSpacing: lsDisplay(fs.h3),
       color: t.textHeading,
       textAlign: 'center',
     },
@@ -532,8 +534,8 @@ const makeStyles = (t: Theme) =>
     },
     empty: {
       fontFamily: font.body400,
-      fontSize: 15,
-      lineHeight: 22,
+      fontSize: fs.bodySm,
+      lineHeight: fs.bodySm * lh.body,
       color: t.textBody,
       paddingVertical: space.s5,
     },
@@ -555,13 +557,13 @@ const makeStyles = (t: Theme) =>
     },
     sheetTitle: {
       fontFamily: font.body600,
-      fontSize: 16,
+      fontSize: fs.bodySm,
       color: t.textHeading,
       marginBottom: space.s2,
     },
     sheetError: {
       fontFamily: font.body600,
-      fontSize: 14,
+      fontSize: fs.sm,
       color: t.textBody,
     },
   });

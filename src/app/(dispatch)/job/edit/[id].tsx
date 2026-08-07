@@ -42,7 +42,7 @@ import {
 } from '@/lib/zones';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
-import { font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { font, fs, lh, lsDisplay, radius, space, track } from '@/theme/tokens';
 
 /** A trip's timestamp as the Eastern date and time a dispatcher reads on a screen. */
 function splitEastern(iso: string | null): { date: string; time: string } {
@@ -559,18 +559,18 @@ const makeStyles = (t: Theme) =>
     centre: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: space.s5, gap: space.s4 },
     head: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: space.s3, height: 48 },
     back: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
-    backGlyph: { color: t.textBody, fontSize: 28, lineHeight: 30 },
-    headRef: { fontFamily: font.body600, fontSize: 14, color: t.textBody },
+    backGlyph: { color: t.textBody, fontSize: fs.h2, lineHeight: fs.h2 * 1.07 },
+    headRef: { fontFamily: font.body600, fontSize: fs.sm, color: t.textBody },
     body_: { paddingHorizontal: space.s5, paddingBottom: space.s6, gap: space.s4 },
     h1: {
       fontFamily: font.display700,
       fontSize: fs.h3,
       lineHeight: fs.h3 * lh.tight,
-      letterSpacing: ls(track.h2, fs.h3),
+      letterSpacing: lsDisplay(fs.h3),
       color: t.textHeading,
     },
-    body: { fontFamily: font.body400, fontSize: 15, lineHeight: 22, color: t.textBody, textAlign: 'center' },
-    hint: { fontFamily: font.body400, fontSize: 13, lineHeight: 19, color: t.textBody },
+    body: { fontFamily: font.body400, fontSize: fs.bodySm, lineHeight: fs.bodySm * lh.body, color: t.textBody, textAlign: 'center' },
+    hint: { fontFamily: font.body400, fontSize: fs.sm, lineHeight: fs.sm * lh.body, color: t.textBody },
     row2: { flexDirection: 'row', gap: space.s3 },
     col: { flex: 1 },
     leg: {
@@ -579,28 +579,28 @@ const makeStyles = (t: Theme) =>
       borderTopColor: t.divider,
       paddingTop: space.s4,
     },
-    legHead: { fontFamily: font.body600, fontSize: 16, color: t.textHeading },
+    legHead: { fontFamily: font.body600, fontSize: fs.bodySm, color: t.textHeading },
     alert: {
       gap: space.s3,
       padding: space.s4,
       borderRadius: radius.card,
       backgroundColor: t.chipBg,
     },
-    alertLead: { fontFamily: font.body600, fontSize: 15, color: t.textHeading },
-    alertBody: { fontFamily: font.body400, fontSize: 14, lineHeight: 20, color: t.textBody },
+    alertLead: { fontFamily: font.body600, fontSize: fs.bodySm, color: t.textHeading },
+    alertBody: { fontFamily: font.body400, fontSize: fs.sm, lineHeight: fs.sm * lh.data, color: t.textBody },
     saved: { gap: space.s1, padding: space.s4, borderRadius: radius.card, backgroundColor: t.bgRaised },
-    savedLead: { fontFamily: font.body600, fontSize: 14, color: t.confirmText },
-    savedItem: { fontFamily: font.body400, fontSize: 12, color: t.textBody },
+    savedLead: { fontFamily: font.body600, fontSize: fs.sm, color: t.confirmText },
+    savedItem: { fontFamily: font.body400, fontSize: fs.label, color: t.textBody },
     paidNote: {
       fontFamily: font.body400,
-      fontSize: 13,
-      lineHeight: 19,
+      fontSize: fs.sm,
+      lineHeight: fs.sm * lh.body,
       color: t.textBody,
       padding: space.s3,
       borderRadius: radius.input,
       backgroundColor: t.chipBg,
     },
-    error: { fontFamily: font.body600, fontSize: 14, color: t.textBody, textAlign: 'center' },
+    error: { fontFamily: font.body600, fontSize: fs.sm, color: t.textBody, textAlign: 'center' },
     footer: {
       paddingHorizontal: space.s5,
       paddingBottom: space.s4,
@@ -610,11 +610,11 @@ const makeStyles = (t: Theme) =>
       borderTopColor: t.divider,
       backgroundColor: t.bgRaised,
     },
-    count: { fontFamily: font.body600, fontSize: 13, color: t.textBody, textAlign: 'center' },
+    count: { fontFamily: font.body600, fontSize: fs.sm, color: t.textBody, textAlign: 'center' },
     footNote: {
       fontFamily: font.body400,
-      fontSize: 12,
-      lineHeight: 17,
+      fontSize: fs.label,
+      lineHeight: fs.label * lh.data,
       color: t.textBody,
       textAlign: 'center',
     },

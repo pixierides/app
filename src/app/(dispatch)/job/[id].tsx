@@ -50,7 +50,7 @@ import {
 import { firstName, formatTime, partyLine } from '@/lib/format';
 import { callNumber, emailTo } from '@/lib/links';
 import { formatDeadline } from '@/lib/policy';
-import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, ls, lsDisplay, radius, space, track } from '@/theme/tokens';
 import { themes } from '@/theme/themes';
 
 const DEFAULT_VEHICLE = 'White Chevy Suburban · FL 8XK-221';
@@ -809,8 +809,8 @@ const styles = StyleSheet.create({
   },
   backGlyph: {
     color: t.textBody,
-    fontSize: 28,
-    lineHeight: 30,
+    fontSize: fs.h2,
+    lineHeight: fs.h2 * 1.07,
   },
   headerRow: {
     flexDirection: 'row',
@@ -821,19 +821,19 @@ const styles = StyleSheet.create({
   },
   h1: {
     fontFamily: font.display700,
-    fontSize: fs.h3 + 2,
-    letterSpacing: ls(track.h2, fs.h3 + 2),
+    fontSize: fs.accent,
+    letterSpacing: lsDisplay(fs.accent),
     color: t.textHeading,
     flexShrink: 1,
   },
   meta: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   cutoffLine: {
     fontFamily: font.body600,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   eyebrow: {
@@ -858,26 +858,26 @@ const styles = StyleSheet.create({
   },
   blockTitle: {
     fontFamily: font.display700,
-    fontSize: fs.h3 + 2,
-    lineHeight: (fs.h3 + 2) * lh.tight,
-    letterSpacing: ls(track.h2, fs.h3 + 2),
+    fontSize: fs.accent,
+    lineHeight: (fs.accent) * lh.tight,
+    letterSpacing: lsDisplay(fs.accent),
     color: t.textHeading,
   },
   blockBody: {
     fontFamily: font.body400,
-    fontSize: 15,
-    lineHeight: 15 * 1.5,
+    fontSize: fs.bodySm,
+    lineHeight: fs.bodySm * 1.0 * 1.5,
     color: t.textBody,
   },
   blockBodyDim: {
     fontFamily: font.body400,
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: fs.sm,
+    lineHeight: fs.sm * lh.body,
     color: t.textBody,
   },
   error: {
     fontFamily: font.body600,
-    fontSize: 14,
+    fontSize: fs.sm,
     // A failure must not read as ordinary copy.
     color: t.dangerText,
   },
@@ -902,9 +902,9 @@ const styles = StyleSheet.create({
     gap: 2,
   },
   writeoffPrice: {
-    fontFamily: font.display800,
-    fontSize: 34,
-    letterSpacing: ls(track.price, 34),
+    fontFamily: font.display700,
+    fontSize: fs.h1,
+    letterSpacing: lsDisplay(34),
     color: t.textHeading,
   },
   flightRow: {
@@ -935,7 +935,7 @@ const styles = StyleSheet.create({
   },
   driverChipText: {
     fontFamily: font.body600,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   driverChipTextOn: {
@@ -943,14 +943,14 @@ const styles = StyleSheet.create({
   },
   adjustLine: {
     fontFamily: font.body600,
-    fontSize: 15,
-    lineHeight: 22,
+    fontSize: fs.bodySm,
+    lineHeight: fs.bodySm * lh.body,
     color: t.textHeading,
   },
   adjustNote: {
     fontFamily: font.body400,
-    fontSize: 13,
-    lineHeight: 19,
+    fontSize: fs.sm,
+    lineHeight: fs.sm * lh.body,
     color: t.textBody,
   },
   historyBlock: {
@@ -961,8 +961,8 @@ const styles = StyleSheet.create({
   },
   historyLine: {
     fontFamily: font.body400,
-    fontSize: 12,
-    lineHeight: 18,
+    fontSize: fs.label,
+    lineHeight: fs.label * lh.body,
     color: t.textBody,
   },
   historyWho: {

@@ -16,7 +16,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Input } from '@/components/ui';
 import { formatUsPhone, toE164 } from '@/lib/phone';
 import { useAuth } from '@/providers/auth';
-import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, lsDisplay, space, track } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
 import { themes, type Theme } from '@/theme/themes';
 
@@ -120,8 +120,8 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   backGlyph: {
     color: t.textBody,
-    fontSize: 28,
-    lineHeight: 30,
+    fontSize: fs.h2,
+    lineHeight: fs.h2 * 1.07,
   },
   body: {
     flex: 1,
@@ -133,19 +133,19 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     fontFamily: font.display700,
     fontSize: fs.h2,
     lineHeight: fs.h2 * lh.tight,
-    letterSpacing: ls(track.h2, fs.h2),
+    letterSpacing: lsDisplay(fs.h2),
     color: t.textHeading,
   },
   sub: {
     fontFamily: font.body400,
-    fontSize: 16,
-    lineHeight: 16 * 1.5,
+    fontSize: fs.bodySm,
+    lineHeight: fs.bodySm * 1.0 * 1.5,
     color: t.textBody,
     marginBottom: space.s2,
   },
   prefix: {
     fontFamily: font.body600,
-    fontSize: 16,
+    fontSize: fs.bodySm,
     color: t.textBody,
   },
   field: {
@@ -153,7 +153,7 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   error: {
     fontFamily: font.body400,
-    fontSize: 14,
+    fontSize: fs.sm,
     color: t.textBody,
   },
   footer: {
@@ -163,8 +163,8 @@ const makeStyles = (t: Theme) => StyleSheet.create({
   },
   foot: {
     fontFamily: font.body400,
-    fontSize: 13,
-    lineHeight: 13 * 1.5,
+    fontSize: fs.sm,
+    lineHeight: fs.sm * 1.0 * 1.5,
     color: t.textBody,
     textAlign: 'center',
   },
