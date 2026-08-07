@@ -82,15 +82,16 @@ export function DispatchTimeline({
             key={trip.id}
             accessibilityRole="button"
             onPress={() => onPressEvent(trip.id)}
-            // Week-view rows are minHeight 33.6; ±6 clears the floor without
-            // depending on how many text lines happen to render. Overlapping
-            // events contest a few px — the later (nearer) row wins, rightly.
+            // Compact rows are minHeight 45.6 (0.95×48) since the status word
+            // joined week view — over the 44 floor on their own; the slop is
+            // margin for the shorter single-text case. Overlapping events
+            // contest a few px — the later (nearer) row wins, rightly.
             hitSlop={compact ? { top: 6, bottom: 6 } : undefined}
             style={({ pressed }) => [
               styles.event,
               {
                 top,
-                minHeight: compact ? PX_PER_HOUR * 0.7 : PX_PER_HOUR,
+                minHeight: compact ? PX_PER_HOUR * 0.95 : PX_PER_HOUR,
                 backgroundColor: bg,
               },
               pressed && { opacity: 0.85 },
@@ -102,12 +103,14 @@ export function DispatchTimeline({
             <Text style={[styles.evRoute, { color: fg }]} numberOfLines={1}>
               {trip.origin} → {trip.destination}
             </Text>
-            {!compact ? (
-              <Text style={[styles.evMeta, { color: fg, opacity: 0.9 }]} numberOfLines={1}>
-                {(SPINE_LABELS[trip.status] ?? trip.status).toLowerCase()}
-                {note ? ` · ${note}` : ''}
-              </Text>
-            ) : null}
+            {/* The status word renders in BOTH densities — in week view the
+                tint was the only status signal, and colour is never the only
+                signal. Compact drops just the driver-name note for space; the
+                word is never abbreviated. */}
+            <Text style={[styles.evMeta, { color: fg, opacity: 0.9 }]} numberOfLines={1}>
+              {(SPINE_LABELS[trip.status] ?? trip.status).toLowerCase()}
+              {!compact && note ? ` · ${note}` : ''}
+            </Text>
           </Pressable>
         );
       })}

@@ -6,7 +6,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, Card, ListRow } from '@/components/ui';
+import { Badge, ListRow } from '@/components/ui';
 import { fetchMyTrips, STATUS_LABELS, type CustomerTrip } from '@/lib/booking';
 import { formatTime } from '@/lib/format';
 import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
@@ -68,11 +68,11 @@ export default function Trips() {
         </View>
 
         {trips === null ? null : shown.length ? (
-          <Card tone="surface" pad={8}>
-            {shown.map((t) => (
+          <View>
+            {shown.map((t, i) => (
               <ListRow
                 key={t.id}
-                onDark
+                rule={i > 0}
                 title={`${t.origin} → ${t.destination}`}
                 subtitle={`${new Date(t.pickup_at).toLocaleDateString('en-US', {
                   weekday: 'short',
@@ -90,7 +90,7 @@ export default function Trips() {
                 onPress={() => router.push(`/trip/${t.id}` as never)}
               />
             ))}
-          </Card>
+          </View>
         ) : (
           <Text style={styles.empty}>
             {tab === 'upcoming' ? 'No upcoming trips.' : 'No past trips yet.'}

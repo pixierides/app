@@ -3,7 +3,7 @@
  */
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, Button, Card } from '@/components/ui';
+import { Badge, Button, Section } from '@/components/ui';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAuth } from '@/providers/auth';
 import { color, font, fs, lh, ls, space, track } from '@/theme/tokens';
@@ -18,15 +18,15 @@ export default function Account() {
     <SafeAreaView style={styles.screen} edges={['top']}>
       <View style={styles.shell}>
         <Text style={styles.h1}>Account.</Text>
-        <Card tone="surface" pad={20} style={styles.card}>
+        <Section first style={styles.card}>
           <Text style={styles.name}>{profile?.full_name ?? '—'}</Text>
           {profile?.phone ? <Text style={styles.meta}>{profile.phone}</Text> : null}
           <Badge tone="on-dark">dispatch</Badge>
-        </Card>
-        <Card tone="surface" pad={20}>
+        </Section>
+        <Section>
           <ThemeToggle />
-        </Card>
-        <Button variant="secondary" onDark fullWidth onPress={signOut}>
+        </Section>
+        <Button variant="secondary" fullWidth onPress={signOut}>
           Sign out
         </Button>
       </View>

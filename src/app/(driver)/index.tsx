@@ -123,7 +123,7 @@ export default function DriverHome() {
 
         {runs === null ? null : next ? (
           <>
-            <Card tone="surface" texture pad={20} style={styles.nextCard}>
+            <Card float texture pad={20} style={styles.nextCard}>
               <Text style={styles.eyebrow}>
                 NEXT PICKUP · {inMinutes(next.pickup_at).toUpperCase()}
               </Text>
@@ -150,10 +150,11 @@ export default function DriverHome() {
             {later.length > 0 ? (
               <View style={styles.laterWrap}>
                 <Text style={styles.sectionLabel}>LATER TODAY</Text>
-                <Card tone="surface" pad={8}>
-                  {later.map((r) => (
+                <View>
+                  {later.map((r, i) => (
                     <ListRow
                       key={r.id}
+                      rule={i > 0}
                       title={`${r.origin} → ${r.destination}`}
                       subtitle={`${formatTime(r.pickup_at)} · ${r.customer_name}`}
                       trailing={
@@ -165,7 +166,7 @@ export default function DriverHome() {
                       onPress={() => router.push(`/run/${r.id}` as Href)}
                     />
                   ))}
-                </Card>
+                </View>
               </View>
             ) : null}
           </>

@@ -77,7 +77,8 @@ const styles = StyleSheet.create({
     height: 5,
     borderRadius: radius.pill,
     backgroundColor: color.orange,
-    // orange500 at 25% — a halo on the one attention dot, not a decoration.
+    // orange500 at 25% — KEPT by Phase 3 ruling: the halo marks the active
+    // tab, paired with the label weight change. A signifier, not decoration.
     boxShadow: '0 0 0 3px rgba(249,115,22,0.25)',
   },
 });

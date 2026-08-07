@@ -6,7 +6,7 @@ import { router, useFocusEffect, type Href } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Card, ListRow } from '@/components/ui';
+import { ListRow } from '@/components/ui';
 import { addDays, easternDate, easternToday, labelForDay } from '@/lib/calendar';
 import { fetchDriverRuns, type DriverRun } from '@/lib/trips';
 import { formatTime } from '@/lib/format';
@@ -52,9 +52,10 @@ export default function DriverSchedule() {
                 {labelForDay(ymd).toUpperCase()}
                 {ymd === today ? ' · TODAY' : ''}
               </Text>
-              <Card tone="surface" pad={8}>
-                {dayRuns.map((r) => (
+              <View>
+                {dayRuns.map((r, i) => (
                   <ListRow
+                    rule={i > 0}
                     key={r.id}
                     title={`${formatTime(r.pickup_at)} · ${r.origin} → ${r.destination}`}
                     subtitle={`${r.customer_name}${r.guests ? ` · ${r.guests} guests` : ''}${r.flight_number ? ` · ${r.flight_number}` : ''}`}
@@ -62,7 +63,7 @@ export default function DriverSchedule() {
                     onPress={() => router.push(`/run/${r.id}` as Href)}
                   />
                 ))}
-              </Card>
+              </View>
             </View>
           ))
         ) : (

@@ -122,7 +122,7 @@ export default function Home() {
             accessibilityLabel={`Your trip, ${next.origin} to ${next.destination}, ${whenLine(next)}`}
             onPress={() => router.push(`/trip/${next.id}` as never)}
           >
-            <Card tone="surface" texture pad={20} style={styles.card}>
+            <Card float texture pad={20} style={styles.card}>
               <Text style={styles.route}>
                 {next.origin} <Text style={styles.arrow}>→</Text> {next.destination}
               </Text>

@@ -6,7 +6,7 @@ import { useCallback, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, Button, Card } from '@/components/ui';
+import { Badge, Button, Section } from '@/components/ui';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { VehiclePicker } from '@/components/VehiclePicker';
 import { setMyShift } from '@/lib/driver';
@@ -53,13 +53,13 @@ export default function DriverAccount() {
       <ScrollView contentContainerStyle={styles.scroll}>
         <Text style={styles.h1}>Account.</Text>
 
-        <Card tone="surface" pad={20} style={styles.card}>
+        <Section first style={styles.card}>
           <Text style={styles.name}>{profile?.full_name ?? '—'}</Text>
           {profile?.phone ? <Text style={styles.meta}>{profile.phone}</Text> : null}
           <Badge tone="on-dark">driver</Badge>
-        </Card>
+        </Section>
 
-        <Card tone="surface" pad={20} style={styles.card}>
+        <Section style={styles.card}>
           <Text style={styles.eyebrow}>YOUR CAR</Text>
           <Text style={styles.value}>{myCar ? vehicleLabel(myCar) : 'No car chosen yet'}</Text>
           <Text style={styles.hint}>
@@ -69,9 +69,9 @@ export default function DriverAccount() {
           <Button variant="secondary" fullWidth onPress={() => setPickingCar(true)}>
             {myCar ? 'Change car' : 'Choose your car'}
           </Button>
-        </Card>
+        </Section>
 
-        <Card tone="surface" pad={20} style={styles.card}>
+        <Section style={styles.card}>
           <Text style={styles.eyebrow}>SHIFT</Text>
           <Pressable
             accessibilityRole="switch"
@@ -90,11 +90,11 @@ export default function DriverAccount() {
           <Text style={styles.hint}>
             Dispatch sees this on the roster. It never blocks them from sending you a run.
           </Text>
-        </Card>
+        </Section>
 
-        <Card tone="surface" pad={20}>
+        <Section>
           <ThemeToggle />
-        </Card>
+        </Section>
 
         <Button variant="secondary" fullWidth onPress={signOut}>
           Sign out

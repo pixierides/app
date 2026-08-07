@@ -201,14 +201,15 @@ export default function Board() {
 
   // "Check DL1487" rides on the row, not in the reason line: a marker to notice
   // at 1am, never at the cost of hiding why else the trip needs a look.
-  const rowFor = (t: DispatchTrip, subtitle: string) => {
+  // Rows carry their own hairline rules — the card wrappers are gone.
+  const rowFor = (t: DispatchTrip, subtitle: string, i = 0) => {
     const check = needsFlightCheck(t)
       ? `Check ${t.flight_number?.replace(/\s+/g, '')}`
       : null;
     return (
       <ListRow
         key={t.id}
-        onDark
+        rule={i > 0}
         title={check ? `${t.customer_name} · ${check}` : t.customer_name}
         subtitle={subtitle}
         trailing={<Badge tone="on-dark">{proximity(t.pickup_at)}</Badge>}
@@ -305,8 +306,8 @@ export default function Board() {
                     {tiles.find((t) => t.key === filter)!.label.toUpperCase()}
                   </Text>
                   {filtered.length ? (
-                    <Card tone="surface" pad={8}>
-                      {filtered.map((t) =>
+                    <View>
+                      {filtered.map((t, i) =>
                         rowFor(
                           t,
                           filter === 'rolling'
@@ -317,7 +318,7 @@ export default function Board() {
                               `${t.status === 'reassigning' ? 'CAR FAILED · ' : ''}${t.reference} · ${t.origin} → ${t.destination} · ${formatTime(t.pickup_at)}`,
                         ),
                       )}
-                    </Card>
+                    </View>
                   ) : (
                     <Text style={styles.emptyQuiet}>{filterEmpty[filter]}</Text>
                   )}
@@ -353,7 +354,7 @@ export default function Board() {
                           {urgent.flight_number ? ` · ${flightLabel(urgent.flight_number)}` : ''}
                         </Text>
                         {urgent.car_seats ? (
-                          <IncludedRow onDark>{urgent.car_seats}</IncludedRow>
+                          <IncludedRow>{urgent.car_seats}</IncludedRow>
                         ) : null}
                         <Button size="md" fullWidth onPress={() => doConfirm(urgent.id)}>
                           {busy
@@ -377,16 +378,17 @@ export default function Board() {
                   <View style={styles.section}>
                     <Text style={styles.sectionLabel}>NEEDS A LOOK</Text>
                     {needsLook.length ? (
-                      <Card tone="surface" pad={8}>
-                        {needsLook.map(({ trip, reason }) =>
+                      <View>
+                        {needsLook.map(({ trip, reason }, i) =>
                           rowFor(
                             trip,
                             [reason, trip.reference, `${trip.origin} → ${trip.destination}`]
                               .filter(Boolean)
                               .join(' · '),
+                            i,
                           ),
                         )}
-                      </Card>
+                      </View>
                     ) : (
                       <Text style={styles.emptyQuiet}>Nothing needs a look.</Text>
                     )}
@@ -396,7 +398,7 @@ export default function Board() {
                   <View style={styles.section}>
                     <Text style={styles.sectionLabel}>DRIVERS</Text>
                     {drivers.length ? (
-                      <Card tone="surface" pad={8}>
+                      <View>
                         {drivers.map((d) => {
                           const runs = open.filter(
                             (t) => t.driver_id === d.id && t.status === 'driver_assigned',
@@ -417,10 +419,11 @@ export default function Board() {
                                 onPress={() => setOpenDriver(expanded ? null : d.id)}
                               />
                               {expanded
-                                ? runs.map((t) =>
+                                ? runs.map((t, i) =>
                                     rowFor(
                                       t,
                                       `${t.reference} · ${t.origin} → ${t.destination} · ${formatTime(t.pickup_at)}`,
+                                      i + 1,
                                     ),
                                   )
                                 : null}
@@ -430,7 +433,7 @@ export default function Board() {
                             </View>
                           );
                         })}
-                      </Card>
+                      </View>
                     ) : (
                       <Text style={styles.emptyQuiet}>No drivers on the roster.</Text>
                     )}
@@ -461,11 +464,13 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     paddingTop: space.s4,
     gap: space.s4,
   },
+  // A tinted inset, not an elevated card: the orange border is the flag,
+  // the urgent request keeps the screen's one shadow.
   moneyBlock: {
     gap: space.s2,
     padding: space.s4,
     borderRadius: radius.card,
-    backgroundColor: t.surfaceCard,
+    backgroundColor: t.surfaceTint,
     borderLeftWidth: 3,
     borderLeftColor: color.orange,
     marginBottom: space.s4,
@@ -540,13 +545,12 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     flexGrow: 1,
     flexBasis: 140,
     minWidth: 140,
-    backgroundColor: t.surfaceCard,
+    backgroundColor: t.surfaceTint,
     borderRadius: radius.card,
     paddingVertical: space.s3,
     paddingHorizontal: space.s3,
     alignItems: 'center',
     gap: 2,
-    boxShadow: t.shadowCard,
     borderWidth: 1.5,
     borderColor: 'transparent',
   },

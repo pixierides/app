@@ -74,7 +74,7 @@ export default function ConfirmAndPay() {
         <Text style={styles.eyebrow}>DISPATCH CONFIRMED YOUR TRIP</Text>
         <Text style={styles.h1}>Let's lock it in.</Text>
 
-        <Card tone="surface" texture pad={20} style={styles.card}>
+        <Card float texture pad={20} style={styles.card}>
           <View style={styles.priceRow}>
             <Text style={styles.priceLabel}>Flat price</Text>
             <Text style={styles.price}>{dollars(trip.price_cents)}</Text>
@@ -124,7 +124,7 @@ export default function ConfirmAndPay() {
         <Button size="lg" fullWidth disabled={payBlocked} onPress={pay}>
           {busy ? 'Paying…' : `Pay ${dollars(trip.price_cents)} now`}
         </Button>
-        <IncludedRow onDark style={styles.included}>
+        <IncludedRow style={styles.included}>
           Paid in full — nothing to pay at pickup.
         </IncludedRow>
       </View>

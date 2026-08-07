@@ -12,7 +12,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Button, Card } from '@/components/ui';
+import { Button, Section } from '@/components/ui';
 import { formatUsPhone } from '@/lib/phone';
 import { useAuth } from '@/providers/auth';
 import { useTheme } from '@/providers/theme';
@@ -33,7 +33,7 @@ export default function Account() {
       <View style={styles.body}>
         <Text style={styles.h1}>Account</Text>
 
-        <Card tone="surface" pad={20} style={styles.card}>
+        <Section first style={styles.card}>
           <View>
             <Text style={styles.label}>NAME</Text>
             <Text style={styles.value}>{profile?.full_name?.trim() || 'Not set'}</Text>
@@ -44,11 +44,11 @@ export default function Account() {
               {phone ? formatUsPhone(phone.replace(/^\+1/, '')) : 'Not set'}
             </Text>
           </View>
-        </Card>
+        </Section>
 
-        <Card tone="surface" pad={20}>
+        <Section>
           <ThemeToggle />
-        </Card>
+        </Section>
 
         <View style={styles.spacer} />
 

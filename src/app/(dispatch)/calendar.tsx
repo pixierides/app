@@ -278,7 +278,8 @@ export default function DispatchCalendar() {
         {/* ——— day ——— */}
         {view === 'day' ? (
           dayTrips.length ? (
-            <View style={styles.calWrap}>
+            /* The day detail panel is the screen's one elevated block. */
+            <View style={[styles.calWrap, { boxShadow: th.shadowFloat }]}>
               <DispatchTimeline
                 columns={dayColumns}
                 stretch
@@ -312,7 +313,10 @@ export default function DispatchCalendar() {
         {/* ——— month ——— */}
         {view === 'month' ? (
           <ScrollView contentContainerStyle={styles.monthScroll}>
-            <Card tone="surface" pad={8}>
+            {/* The grid is flat — zero elevated blocks in month and week views
+                is the rule working, not a gap: nothing here is the current
+                action, the tap into a day is. */}
+            <View style={styles.monthFlat}>
               <MonthCalendar
                 key={`month-${date.slice(0, 7)}-${th.mode}`}
                 current={date}
@@ -362,7 +366,7 @@ export default function DispatchCalendar() {
                   );
                 }}
               />
-            </Card>
+            </View>
             {!monthHasTrips ? <Text style={styles.empty}>No trips this month.</Text> : null}
           </ScrollView>
         ) : null}
@@ -512,12 +516,15 @@ const makeStyles = (t: Theme) =>
       color: t.textHeading,
       textAlign: 'center',
     },
+    monthFlat: {
+      borderRadius: radius.card,
+      overflow: 'hidden',
+    },
     calWrap: {
       flex: 1,
       borderRadius: radius.card,
       overflow: 'hidden',
       backgroundColor: t.surfaceCard,
-      boxShadow: t.shadowCard,
     },
     monthScroll: {
       paddingBottom: space.s6,

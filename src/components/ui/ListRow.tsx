@@ -8,6 +8,7 @@ import { useTheme } from '@/providers/theme';
 import { font, radius } from '@/theme/tokens';
 
 export function ListRow({
+  rule = false,
   leading,
   title,
   subtitle,
@@ -25,6 +26,8 @@ export function ListRow({
   onDark?: boolean;
   chevron?: boolean;
   onPress?: () => void;
+  /** Hairline above the row — flat lists separate with rules, not a card. */
+  rule?: boolean;
   style?: ViewStyle;
 }) {
   const t = useTheme();
@@ -35,6 +38,7 @@ export function ListRow({
       accessibilityRole={onPress ? 'button' : undefined}
       style={({ pressed }: { pressed?: boolean } = {}) => [
         styles.row,
+        rule && { borderTopWidth: StyleSheet.hairlineWidth, borderTopColor: t.divider },
         pressed && { opacity: 0.72 },
         style,
       ]}

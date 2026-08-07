@@ -157,7 +157,7 @@ export default function RunScreen() {
       <SafeAreaView style={styles.screen}>
         <View style={styles.body}>
           <Text style={styles.h1}>This run has moved.</Text>
-          <Button variant="ghost" onDark onPress={() => router.back()}>
+          <Button variant="ghost" onPress={() => router.back()}>
             Back to tonight
           </Button>
         </View>
@@ -201,7 +201,6 @@ export default function RunScreen() {
           </Text>
           <Button
             variant="secondary"
-            onDark
             fullWidth
             onPress={async () => {
               if (busy) return;
@@ -217,7 +216,7 @@ export default function RunScreen() {
           >
             {busy ? 'One moment…' : "Yes — I can't do it"}
           </Button>
-          <Button variant="ghost" onDark fullWidth onPress={() => setFailOpen(false)}>
+          <Button variant="ghost" fullWidth onPress={() => setFailOpen(false)}>
             Never mind
           </Button>
         </>
@@ -259,7 +258,7 @@ export default function RunScreen() {
           </Text>
           <Text style={styles.h1}>Head to the cell lot.</Text>
 
-          <Card tone="surface" pad={20} style={styles.infoCard}>
+          <Card float pad={20} style={styles.infoCard}>
             <Text style={styles.cardName}>{run.customer_name}</Text>
             <Text style={styles.cardSub}>
               {run.guests ? `${run.guests} guests` : partyLine(run.adults, run.children)}
@@ -298,17 +297,16 @@ export default function RunScreen() {
 
           <View style={styles.included}>
             {run.car_seats ? (
-              <IncludedRow onDark>{run.car_seats.replace(' · free', '')} — fitted & checked</IncludedRow>
+              <IncludedRow>{run.car_seats.replace(' · free', '')} — fitted & checked</IncludedRow>
             ) : null}
-            {run.stroller ? <IncludedRow onDark>Stroller: {run.stroller}</IncludedRow> : null}
-            <IncludedRow onDark>
+            {run.stroller ? <IncludedRow>Stroller: {run.stroller}</IncludedRow> : null}
+            <IncludedRow>
               {door ? `They're expecting you at ${door}` : "They're expecting you"}
             </IncludedRow>
           </View>
 
           <Button
             variant="secondary"
-            onDark
             fullWidth
             onPress={() => navigateTo(CELL_LOT.address)}
           >
@@ -350,12 +348,11 @@ export default function RunScreen() {
           </Text>
 
           {run.flight_number ? (
-            <Card tone="surface" pad={20} style={styles.infoCard}>
+            <Card tone="tint" pad={20} style={styles.infoCard}>
               <FlightBlock run={run} styles={styles} />
               <View style={styles.reachRow}>
                 <Button
                   variant="secondary"
-                  onDark
                   style={styles.reachButton}
                   onPress={() => openFlightSearch(run.flight_number)}
                 >
@@ -363,7 +360,6 @@ export default function RunScreen() {
                 </Button>
                 <Button
                   variant="secondary"
-                  onDark
                   style={styles.reachButton}
                   onPress={() => setFlightOpen(true)}
                 >
@@ -373,7 +369,7 @@ export default function RunScreen() {
             </Card>
           ) : null}
 
-          <Card tone="surface" pad={20} style={styles.infoCard}>
+          <Card float pad={20} style={styles.infoCard}>
             <Text style={styles.cardName}>{run.customer_name}</Text>
             {run.customer_phone ? (
               <Text style={styles.cardSub}>{run.customer_phone}</Text>
@@ -382,7 +378,6 @@ export default function RunScreen() {
               <View style={styles.reachRow}>
                 <Button
                   variant="secondary"
-                  onDark
                   style={styles.reachButton}
                   onPress={() => textNumber(run.customer_phone!, TEXT_TEMPLATE(run))}
                 >
@@ -390,7 +385,6 @@ export default function RunScreen() {
                 </Button>
                 <Button
                   variant="secondary"
-                  onDark
                   style={styles.reachButton}
                   onPress={() => callNumber(run.customer_phone!)}
                 >
@@ -479,7 +473,7 @@ export default function RunScreen() {
             </Text>
           )}
 
-          <Card tone="surface" pad={20} style={styles.infoCard}>
+          <Card float pad={20} style={styles.infoCard}>
             <Text style={styles.cardName}>{run.customer_name}</Text>
             <View style={styles.kvRows}>
               {terminal ? (
@@ -505,7 +499,6 @@ export default function RunScreen() {
 
           <Button
             variant="secondary"
-            onDark
             fullWidth
             onPress={() => {
               const lane = terminalPickup(terminal);
@@ -557,7 +550,7 @@ export default function RunScreen() {
 
           {/* Reaching them is one tap from their number, not a button that
               sits under the primary action waiting to be hit by accident. */}
-          <Card tone="surface" pad={20} style={styles.infoCard}>
+          <Card float pad={20} style={styles.infoCard}>
             <View style={styles.paxRow}>
               <View style={styles.paxWho}>
                 <Text style={styles.cardName}>{run.customer_name}</Text>
@@ -603,13 +596,12 @@ export default function RunScreen() {
           </View>
 
           {out ? (
-            <Card tone="surface" pad={20} style={styles.infoCard}>
+            <Card tone="tint" pad={20} style={styles.infoCard}>
               <Text style={styles.notifyLine}>
                 Loop around and come back. We&apos;ll hold your place.
               </Text>
               <Button
                 variant="secondary"
-                onDark
                 fullWidth
                 style={{ marginTop: space.s3 }}
                 onPress={async () => {
@@ -653,7 +645,7 @@ export default function RunScreen() {
             <Text style={styles.subLine}>{run.dropoff_address}</Text>
           ) : null}
 
-          <Card tone="surface" pad={20} style={styles.infoCard}>
+          <Card float pad={20} style={styles.infoCard}>
             <View style={styles.passengerRow}>
               <View style={styles.avatar}>
                 <Text style={styles.avatarGlyph}>{run.customer_name[0]}</Text>
@@ -670,7 +662,6 @@ export default function RunScreen() {
 
           <Button
             variant="secondary"
-            onDark
             fullWidth
             onPress={() => navigateTo(run.dropoff_address ?? run.destination)}
           >
@@ -692,7 +683,7 @@ export default function RunScreen() {
         <Text style={styles.eyebrow}>DROP-OFF COMPLETE</Text>
         <Text style={styles.h1}>Nice run, {firstName(profile?.full_name)}.</Text>
 
-        <Card tone="surface" pad={20}>
+        <Card float pad={20}>
           <View style={styles.kvRows}>
             <View style={styles.kvRow}>
               <Text style={styles.kvLabelDark}>Route</Text>
@@ -717,7 +708,7 @@ export default function RunScreen() {
           </View>
           {run.car_seats ? (
             <View style={{ marginTop: space.s4 }}>
-              <IncludedRow onDark>Booster returned & sanitized</IncludedRow>
+              <IncludedRow>Booster returned & sanitized</IncludedRow>
             </View>
           ) : null}
         </Card>
@@ -764,7 +755,6 @@ export default function RunScreen() {
         ) : null}
         <Button
           variant="ghost"
-          onDark
           fullWidth
           onPress={() => router.replace('/(driver)')}
           style={{ marginTop: space.s3 }}

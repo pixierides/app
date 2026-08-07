@@ -50,7 +50,7 @@ import {
 import { firstName, formatTime, partyLine } from '@/lib/format';
 import { callNumber, emailTo } from '@/lib/links';
 import { formatDeadline } from '@/lib/policy';
-import { font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
+import { color, font, fs, lh, ls, radius, space, track } from '@/theme/tokens';
 import { themes } from '@/theme/themes';
 
 const DEFAULT_VEHICLE = 'White Chevy Suburban · FL 8XK-221';
@@ -217,7 +217,7 @@ export default function DispatchJob() {
 
           {/* ——— action by state ——— */}
           {open && trip.status === 'requested' && !decide ? (
-            <Card tone="dark-raised" texture pad={20} style={styles.block}>
+            <Card tone="dark-raised" float texture pad={20} style={styles.floatBlock}>
               <Text style={styles.blockTitle}>Confirm this trip.</Text>
               <Text style={styles.blockBody}>
                 Confirming tells {firstName(trip.customer_name)} to pay — the driver hold starts
@@ -230,7 +230,7 @@ export default function DispatchJob() {
           ) : null}
 
           {open && trip.status === 'confirmed' && !trip.paid_at && !decide ? (
-            <Card tone="dark-raised" pad={20} style={styles.block}>
+            <Card tone="dark-raised" float pad={20} style={styles.floatBlock}>
               <Text style={styles.blockTitle}>Waiting on payment.</Text>
               <Text style={styles.blockBody}>
                 {trip.hold_until
@@ -240,8 +240,30 @@ export default function DispatchJob() {
             </Card>
           ) : null}
 
-          {open && trip.status === 'paid' && !trip.driver_id ? (
-            <Card tone="dark-raised" texture pad={20} style={styles.block}>
+          {/* ——— it already failed and is waiting on you ———
+               The assigned card is gone (the driver was cleared), so without this
+               the screen would show an ordinary unassigned trip and lose the one
+               fact that matters: a customer is waiting and has been told so. */}
+          {trip.status === 'reassigning' ? (
+            <Card tone="dark" pad={20} style={styles.block}>
+              <Text style={styles.eyebrow}>CAR FAILED</Text>
+              <Text style={styles.blockTitle}>
+                {trip.reassigning_at
+                  ? `Reported ${formatTime(trip.reassigning_at)}`
+                  : 'Waiting on another car'}
+              </Text>
+              {trip.reassign_reason ? (
+                <Text style={styles.blockBody}>{trip.reassign_reason}</Text>
+              ) : null}
+              <Text style={styles.blockBodyDim}>
+                {trip.customer_name.split(' ')[0]} has been told we&apos;re finding another
+                driver. Assign one below, or cancel the trip if you can&apos;t.
+              </Text>
+            </Card>
+          ) : null}
+
+          {open && (trip.status === 'paid' || trip.status === 'reassigning') && !trip.driver_id ? (
+            <Card tone="dark-raised" float texture pad={20} style={styles.floatBlock}>
               <Text style={styles.blockTitle}>Assign a driver.</Text>
 
               {/* The button is never disabled. A disabled control says what you
@@ -281,7 +303,7 @@ export default function DispatchJob() {
 
           {/* ——— assigned: who has it, and the undo for a mis-assign ——— */}
           {open && trip.driver_id ? (
-            <Card tone="dark-raised" pad={20} style={styles.block}>
+            <Card tone="dark-raised" float pad={20} style={styles.floatBlock}>
               <Text style={styles.eyebrow}>DRIVER ASSIGNED</Text>
               <Text style={styles.blockTitle}>{trip.driver_name ?? 'Assigned'}</Text>
               {trip.vehicle ? <Text style={styles.blockBody}>{trip.vehicle}</Text> : null}
@@ -390,31 +412,10 @@ export default function DispatchJob() {
             </Card>
           ) : null}
 
-          {/* ——— it already failed and is waiting on you ———
-               The assigned card is gone (the driver was cleared), so without this
-               the screen would show an ordinary unassigned trip and lose the one
-               fact that matters: a customer is waiting and has been told so. */}
-          {trip.status === 'reassigning' ? (
-            <Card tone="dark-raised" pad={20} style={styles.block}>
-              <Text style={styles.eyebrow}>CAR FAILED</Text>
-              <Text style={styles.blockTitle}>
-                {trip.reassigning_at
-                  ? `Reported ${formatTime(trip.reassigning_at)}`
-                  : 'Waiting on another car'}
-              </Text>
-              {trip.reassign_reason ? (
-                <Text style={styles.blockBody}>{trip.reassign_reason}</Text>
-              ) : null}
-              <Text style={styles.blockBodyDim}>
-                {trip.customer_name.split(' ')[0]} has been told we&apos;re finding another
-                driver. Assign one below, or cancel the trip if you can&apos;t.
-              </Text>
-            </Card>
-          ) : null}
 
           {/* ——— the return leg — a date, not "4 days out" ——— */}
           {trip.return_at ? (
-            <Card tone="dark-raised" pad={20} style={styles.block}>
+            <Card tone="dark" pad={20} style={styles.block}>
               <Text style={styles.eyebrow}>RETURN LEG</Text>
               <Text style={styles.blockTitle}>
                 {new Date(trip.return_at).toLocaleDateString('en-US', {
@@ -438,7 +439,7 @@ export default function DispatchJob() {
 
           {/* ——— the flight, checked by hand ——— */}
           {open && isAirportPickup(trip.origin) ? (
-            <Card tone="dark-raised" pad={20} style={styles.block}>
+            <Card tone="dark" pad={20} style={styles.block}>
               <Text style={styles.eyebrow}>FLIGHT</Text>
               <Text style={styles.blockTitle}>
                 {[flightLabel(trip.flight_number),
@@ -529,7 +530,7 @@ export default function DispatchJob() {
 
           {/* ——— where the run is, plus the exception path ——— */}
           {open && trip.driver_id && trip.driver_state !== 'pending' ? (
-            <Card tone="dark-raised" pad={20} style={styles.block}>
+            <Card tone="dark" pad={20} style={styles.block}>
               <Text style={styles.eyebrow}>RUN STATE</Text>
               <Text style={styles.blockTitle}>
                 {RUN_STATE_LABELS[trip.driver_state]}
@@ -601,8 +602,12 @@ export default function DispatchJob() {
           ) : null}
 
           {/* ——— 68c · send the car anyway ——— */}
-          {open && decide ? (
-            <Card tone="dark-raised" texture pad={20} style={styles.block}>
+          {/* Once the car was sent anyway (written off) or a driver holds the
+              run, the 68c decision is MADE — without these guards this card
+              floated alongside the driver card for the life of a written-off
+              run, and re-offered the picker on a run that had a driver. */}
+          {open && decide && !trip.written_off && !trip.driver_id ? (
+            <Card tone="dark-raised" float texture pad={20} style={styles.floatBlock}>
               <Text style={styles.eyebrow}>UNREACHABLE · PAYMENT CUTOFF PASSED</Text>
               <Text style={styles.blockTitle}>
                 {firstName(trip.customer_name)} lands at {formatTime(trip.pickup_at)}.{'\n'}Do we
@@ -646,7 +651,7 @@ export default function DispatchJob() {
 
           {/* ——— booking details (web bookings carry addresses + extras) ——— */}
           {trip.notes ? (
-            <Card tone="dark-raised" pad={20} style={styles.block}>
+            <Card tone="dark" pad={20} style={styles.block}>
               <Text style={styles.eyebrow}>DETAILS</Text>
               <Text style={styles.blockBodyDim}>{trip.notes}</Text>
             </Card>
@@ -672,7 +677,7 @@ export default function DispatchJob() {
               settled needs a note: "resolved" with nothing after it is not a
               record of anything. */}
           {adjustment ? (
-            <Card tone="dark" pad={20} style={styles.block}>
+            <Card tone="dark" pad={20} style={[styles.block, styles.moneyFlag] as never}>
               <Text style={styles.eyebrow}>PRICE CHANGED AFTER PAYMENT</Text>
               <Text style={styles.adjustLine}>{adjustmentLine(adjustment)}</Text>
               <Text style={styles.adjustNote}>
@@ -839,6 +844,17 @@ const styles = StyleSheet.create({
   },
   block: {
     gap: space.s3,
+  },
+  // The one elevated block, with the shadow pinned to the dark theme — this
+  // screen is mode-locked and Card's own float shadow follows the toggle.
+  floatBlock: {
+    gap: space.s3,
+    boxShadow: t.shadowFloat,
+  },
+  // A tinted inset, not an elevated card — the orange edge is the flag.
+  moneyFlag: {
+    borderLeftWidth: 3,
+    borderLeftColor: color.orange,
   },
   blockTitle: {
     fontFamily: font.display700,

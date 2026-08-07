@@ -1,5 +1,6 @@
 export { Badge } from './Badge';
 export { Button } from './Button';
+export { Section } from './Section';
 export { Card } from './Card';
 export { DotGrid } from './DotGrid';
 export { IncludedRow } from './IncludedRow';

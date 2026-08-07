@@ -8,7 +8,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, Card, ListRow } from '@/components/ui';
+import { Badge, ListRow } from '@/components/ui';
 import { fetchDispatchTrips, type DispatchTrip } from '@/lib/dispatch';
 import { easternDate, easternToday } from '@/lib/calendar';
 import { formatTime } from '@/lib/format';
@@ -63,11 +63,11 @@ export default function Requests() {
         <View style={styles.shell}>
           <Text style={styles.h1}>Requests.</Text>
           {trips === null ? null : rows.length ? (
-            <Card tone="surface" pad={8}>
-              {rows.map((t) => (
+            <View>
+              {rows.map((t, i) => (
                 <ListRow
+                  rule={i > 0}
                   key={t.id}
-                  onDark
                   title={t.customer_name}
                   subtitle={`${!t.customer_id ? 'unclaimed · ' : ''}${t.reference} · ${t.origin} → ${t.destination} · ${formatTime(t.pickup_at)}${t.source === 'web' ? ' · web' : ''}`}
                   trailing={<Badge tone="on-dark">{proximity(t.pickup_at)}</Badge>}
@@ -75,7 +75,7 @@ export default function Requests() {
                   onPress={() => router.push(`/job/${t.id}` as never)}
                 />
               ))}
-            </Card>
+            </View>
           ) : (
             <Text style={styles.empty}>No open requests. Nothing needs contact.</Text>
           )}

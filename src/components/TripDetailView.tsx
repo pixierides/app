@@ -26,7 +26,7 @@
 import { router } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, Button, Card, IncludedRow, TripStatus } from '@/components/ui';
+import { Badge, Button, Card, IncludedRow, Section, TripStatus } from '@/components/ui';
 import {
   dollars,
   SPINE_LABELS,
@@ -108,12 +108,11 @@ export function TripDetailView({
     <View style={styles.policyActions}>
       <Button
         variant="secondary"
-        onDark
         onPress={() => textNumber(trip.driver_phone!)}
       >
         Text {driver ?? 'driver'}
       </Button>
-      <Button variant="ghost" onDark onPress={() => callNumber(trip.driver_phone!)}>
+      <Button variant="ghost" onPress={() => callNumber(trip.driver_phone!)}>
         Call {driver ?? 'driver'}
       </Button>
     </View>
@@ -121,7 +120,7 @@ export function TripDetailView({
 
   const dispatchInstead = (
     <View style={styles.policyActions}>
-      <Button variant="secondary" onDark onPress={callDispatch}>
+      <Button variant="secondary" onPress={callDispatch}>
         We'll connect you — call {DISPATCH_PHONE}
       </Button>
     </View>
@@ -167,7 +166,7 @@ export function TripDetailView({
 
         {/* ——— 7a · flight delayed — we moved the pickup ——— */}
         {upcoming && trip.pickup_at_was ? (
-          <Card tone="surface" texture pad={20} style={styles.block}>
+          <Card tone="tint" pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>
               FLIGHT UPDATE{trip.flight_number ? ` · ${trip.flight_number}` : ''}
             </Text>
@@ -189,16 +188,16 @@ export function TripDetailView({
                 <Text style={styles.wasNowNew}>{formatTime(trip.pickup_at)}</Text>
               </View>
             </View>
-            <IncludedRow onDark>
+            <IncludedRow>
               Same flat {dollars(trip.price_cents)} — delays never change your price.
             </IncludedRow>
-            <IncludedRow onDark>Waiting is included, however long the belt takes.</IncludedRow>
+            <IncludedRow>Waiting is included, however long the belt takes.</IncludedRow>
           </Card>
         ) : null}
 
         {/* ——— cancelled ——— */}
         {trip.status === 'cancelled' ? (
-          <Card tone="surface" pad={20} style={styles.block}>
+          <Card float pad={20} style={styles.block}>
             <Text style={styles.blockTitle}>This booking is cancelled.</Text>
             {trip.paid_at ? (
               <Text style={styles.blockBody}>
@@ -213,7 +212,7 @@ export function TripDetailView({
         {/* ——— no-show · excluded from `upcoming`, so it had no block and the
              screen went silent in the state most likely to cause a call ——— */}
         {trip.status === 'no_show' ? (
-          <Card tone="surface" pad={20} style={styles.block}>
+          <Card float pad={20} style={styles.block}>
             <Text style={styles.blockTitle}>We couldn&apos;t find you.</Text>
             <Text style={styles.blockBody}>
               {driverOr} waited at {terminal ?? 'the pickup point'} and we weren&apos;t able to
@@ -223,7 +222,7 @@ export function TripDetailView({
               A held car and driver can&apos;t be recovered, so this booking is
               non-refundable. If you think this is wrong, call us — a person will look at it.
             </Text>
-            <Button variant="secondary" onDark fullWidth onPress={callDispatch}>
+            <Button variant="secondary" fullWidth onPress={callDispatch}>
               Call {DISPATCH_PHONE}
             </Button>
           </Card>
@@ -233,14 +232,14 @@ export function TripDetailView({
              Never entered automatically: a stalled run is a human's call. The
              15-minute figure is what dispatch works to, not a countdown. */}
         {trip.status === 'reassigning' ? (
-          <Card tone="surface" texture pad={20} style={styles.block}>
+          <Card float texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>WE'RE ON IT</Text>
             <Text style={styles.blockTitle}>Something's come up with your car.</Text>
             <Text style={styles.blockBody}>
               We're getting you another driver now. We'll message you the moment it's sorted —
               usually within 15 minutes.
             </Text>
-            <Button variant="secondary" onDark fullWidth onPress={callDispatch}>
+            <Button variant="secondary" fullWidth onPress={callDispatch}>
               Call {DISPATCH_PHONE}
             </Button>
           </Card>
@@ -248,7 +247,7 @@ export function TripDetailView({
 
         {/* ——— status-specific block ——— */}
         {trip.status === 'requested' ? (
-          <Card tone="surface" texture pad={20} style={styles.block}>
+          <Card float texture pad={20} style={styles.block}>
             <Text style={styles.blockTitle}>A person is looking at it now.</Text>
             <Text style={styles.blockBody}>
               You'll hear within the hour. You're not charged until a human confirms.
@@ -257,7 +256,7 @@ export function TripDetailView({
         ) : null}
 
         {trip.status === 'confirmed' ? (
-          <Card tone="surface" texture pad={20} style={styles.block}>
+          <Card float texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>DISPATCH CONFIRMED YOUR TRIP</Text>
             <Text style={styles.blockTitle}>Let's lock it in.</Text>
             <Button
@@ -271,15 +270,15 @@ export function TripDetailView({
         ) : null}
 
         {trip.status === 'paid' ? (
-          <Card tone="surface" texture pad={20} style={styles.block}>
+          <Card float texture pad={20} style={styles.block}>
             <Text style={styles.blockTitle}>Your ride is locked in.</Text>
             <Text style={styles.blockBody}>
               We'll notify you here with your driver's name and car, about two hours before
               pickup.
             </Text>
-            <IncludedRow onDark>Paid in full — nothing to pay at pickup.</IncludedRow>
+            <IncludedRow>Paid in full — nothing to pay at pickup.</IncludedRow>
             {trip.flight_number && !trip.pickup_at_was ? (
-              <IncludedRow onDark>
+              <IncludedRow>
                 We're tracking {trip.flight_number}. If it slips, we move your pickup and tell
                 you — you don't need to do anything.
               </IncludedRow>
@@ -287,9 +286,13 @@ export function TripDetailView({
           </Card>
         ) : null}
 
-        {/* ——— the driver is holding and will make contact ——— */}
-        {driverHolding ? (
-          <Card tone="surface" texture pad={20} style={styles.block}>
+        {/* ——— the driver is holding and will make contact ———
+             All four live cards are gated on `upcoming`: a written-off run can
+             be cancelled MID-RUN, and without the gate the cancelled card and a
+             live card floated together — offering text-the-driver on a trip
+             that no longer exists. ——— */}
+        {upcoming && driverHolding ? (
+          <Card float texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>
               {trip.flight_number && trip.flight_landed_at
                 ? `${flightLabel(trip.flight_number).toUpperCase()} · ${arrivalWord(trip.flight_landed_at, trip.flight_arrival_is_actual)} ${formatTime(trip.flight_landed_at).toUpperCase()}`
@@ -305,8 +308,8 @@ export function TripDetailView({
           </Card>
         ) : null}
 
-        {driverCalled ? (
-          <Card tone="surface" texture pad={20} style={styles.block}>
+        {upcoming && driverCalled ? (
+          <Card float texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>ON THE WAY TO YOU</Text>
             <Text style={styles.blockTitle}>
               {trip.driver_name ? `${trip.driver_name} is` : "We're"} bringing the car to the door.
@@ -321,14 +324,14 @@ export function TripDetailView({
         ) : null}
 
         {awaitingCheckIn ? (
-          <Card tone="surface" texture pad={20} style={styles.block}>
+          <Card float texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>YOUR DRIVER</Text>
             <Text style={styles.blockTitle}>We're checking on your driver.</Text>
             <Text style={styles.blockBody}>
               {driver ? `${driver} hasn't` : "Your driver hasn't"} checked in yet. Give us a call
               and we'll find out where they are.
             </Text>
-            <Button variant="secondary" onDark fullWidth onPress={callDispatch}>
+            <Button variant="secondary" fullWidth onPress={callDispatch}>
               Call {DISPATCH_PHONE}
             </Button>
           </Card>
@@ -340,7 +343,7 @@ export function TripDetailView({
         !driverCalled &&
         !driverHere &&
         !onTrip ? (
-          <Card tone="surface" texture pad={20} style={styles.block}>
+          <Card float texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>
               {landed && trip.flight_number
                 ? `${flightLabel(trip.flight_number)} · LANDED ${formatTime(trip.flight_landed_at!).toUpperCase()}`
@@ -364,15 +367,15 @@ export function TripDetailView({
             {/* The actual seat that was booked. "Booster" was hardcoded, so a
                 rear-facing infant seat was described as a booster. */}
             {trip.car_seats ? (
-              <IncludedRow onDark>
+              <IncludedRow>
                 {trip.car_seats.replace(' · free', '')} — fitted before we leave, free
               </IncludedRow>
             ) : null}
           </Card>
         ) : null}
 
-        {driverHere ? (
-          <Card tone="surface" texture pad={20} style={styles.block}>
+        {upcoming && driverHere ? (
+          <Card float texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>AT THE DOOR</Text>
             <Text style={styles.blockTitle}>
               {trip.driver_name ?? 'Your driver'} is outside.
@@ -394,8 +397,8 @@ export function TripDetailView({
           </Card>
         ) : null}
 
-        {onTrip ? (
-          <Card tone="surface" texture pad={20} style={styles.block}>
+        {upcoming && onTrip ? (
+          <Card float texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>IN TRANSIT</Text>
             <Text style={styles.blockTitle}>On the way to {trip.destination}.</Text>
             <Text style={styles.blockBody}>
@@ -408,11 +411,10 @@ export function TripDetailView({
         ) : null}
 
         {trip.status === 'complete' ? (
-          <Card tone="surface" texture pad={20} style={styles.block}>
+          <Card float texture pad={20} style={styles.block}>
             <Text style={styles.blockTitle}>Welcome to Orlando.</Text>
             <Button
               variant="secondary"
-              onDark
               fullWidth
               onPress={() => router.push(`/trip/${trip.id}/receipt` as never)}
             >
@@ -429,12 +431,12 @@ export function TripDetailView({
              so it would sit at "Requested" and read as a lost booking. */}
         {runLive || trip.status === 'reassigning' ? null : (
           <View style={styles.spineWrap}>
-            <TripStatus steps={steps} current={spineIndex} onDark />
+            <TripStatus steps={steps} current={spineIndex} />
           </View>
         )}
 
         {/* ——— itinerary ——— */}
-        <Card tone="surface" pad={20} style={styles.block}>
+        <Section>
           <View style={styles.kvRow}>
             <Text style={styles.kvLabel}>Flat price</Text>
             <Text style={styles.kvValue}>
@@ -458,11 +460,11 @@ export function TripDetailView({
               <Text style={styles.kvValue}>{trip.car_seats}</Text>
             </View>
           ) : null}
-        </Card>
+        </Section>
 
         {/* ——— cancel / change · three distinct states, never greyed buttons ——— */}
         {upcoming ? (
-          <Card tone="surface" pad={20} style={styles.block}>
+          <Card tone="tint" pad={20} style={styles.block}>
             {pState === 'A' ? (
               <>
                 {/* State A only exists while free cancellation is live, so the
@@ -480,14 +482,12 @@ export function TripDetailView({
                 <View style={styles.policyActions}>
                   <Button
                     variant="secondary"
-                    onDark
                     onPress={() => router.push(`/trip/${trip.id}/change` as never)}
                   >
                     Change booking
                   </Button>
                   <Button
                     variant="ghost"
-                    onDark
                     onPress={() => router.push(`/trip/${trip.id}/cancel` as never)}
                   >
                     Cancel booking
@@ -514,12 +514,11 @@ export function TripDetailView({
                 <View style={styles.policyActions}>
                   <Button
                     variant="secondary"
-                    onDark
                     onPress={() => router.push(`/trip/${trip.id}/change` as never)}
                   >
                     Change booking
                   </Button>
-                  <Button variant="ghost" onDark onPress={callDispatch}>
+                  <Button variant="ghost" onPress={callDispatch}>
                     Call us
                   </Button>
                 </View>
@@ -536,7 +535,7 @@ export function TripDetailView({
                 </Text>
                 {canReachDriver ? driverContact : null}
                 <View style={styles.policyActions}>
-                  <Button variant="secondary" onDark onPress={callDispatch}>
+                  <Button variant="secondary" onPress={callDispatch}>
                     Call {DISPATCH_PHONE}
                   </Button>
                 </View>

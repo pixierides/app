@@ -48,9 +48,9 @@ export default function Receipt() {
         </View>
 
         <Text style={styles.h1}>Your receipt.</Text>
-        <RouteChip from={trip.origin} to={trip.destination} onDark />
+        <RouteChip from={trip.origin} to={trip.destination} />
 
-        <Card tone="surface" pad={20} style={styles.card}>
+        <Card float pad={20} style={styles.card}>
           <View style={styles.row}>
             <Text style={styles.rowLabel}>Flat fare</Text>
             <Text style={styles.rowValue}>{dollars(trip.price_cents)}</Text>
@@ -78,7 +78,7 @@ export default function Receipt() {
           <Text style={styles.paidLine}>Booking {trip.reference}</Text>
         </Card>
 
-        <IncludedRow onDark>
+        <IncludedRow>
           The total matches your quote — the price never changed after the availability check.
         </IncludedRow>
         <Text style={styles.noTip}>No tip is needed. Really.</Text>

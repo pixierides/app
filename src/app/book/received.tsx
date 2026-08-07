@@ -265,6 +265,8 @@ const makeStyles = (t: Theme) =>
       padding: space.s4,
       borderRadius: radius.card,
       backgroundColor: t.surfaceCard,
+      // The reference is what the customer comes back to this screen for.
+      boxShadow: t.shadowFloat,
       alignItems: 'center',
     },
     refKey: {

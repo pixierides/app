@@ -120,11 +120,11 @@ export default function CancelTrip() {
           </Button>
         ) : null}
         {cancellable ? (
-          <Button variant="secondary" onDark fullWidth onPress={doCancel}>
+          <Button variant="secondary" fullWidth onPress={doCancel}>
             {busy ? 'Cancelling…' : 'Cancel and refund me'}
           </Button>
         ) : (
-          <Button variant="secondary" onDark fullWidth onPress={callDispatch}>
+          <Button variant="secondary" fullWidth onPress={callDispatch}>
             Call {DISPATCH_PHONE}
           </Button>
         )}
