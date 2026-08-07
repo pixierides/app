@@ -6,7 +6,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, ListRow } from '@/components/ui';
+import { Badge, LightTrailBackdrop, ListRow } from '@/components/ui';
 import { fetchMyTrips, STATUS_LABELS, type CustomerTrip } from '@/lib/booking';
 import { formatTime } from '@/lib/format';
 import { color, font, fs, lh, lsDisplay, radius, space, track } from '@/theme/tokens';
@@ -92,9 +92,13 @@ export default function Trips() {
             ))}
           </View>
         ) : (
-          <Text style={styles.empty}>
-            {tab === 'upcoming' ? 'No upcoming trips.' : 'No past trips yet.'}
-          </Text>
+          <>
+            {/* Absolute: decorates the empty expanse without moving the text. */}
+            <LightTrailBackdrop variant="sparse" style={{ top: 280 }} />
+            <Text style={styles.empty}>
+              {tab === 'upcoming' ? 'No upcoming trips.' : 'No past trips yet.'}
+            </Text>
+          </>
         )}
 
       </ScrollView>

@@ -6,7 +6,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { DotGrid, NameSign } from '@/components/ui';
+import { DotGrid, LightTrailBackdrop, NameSign } from '@/components/ui';
 import { fetchMyTrips, type CustomerTrip } from '@/lib/booking';
 import { terminalLabel } from '@/lib/format';
 import { color, font, fs, ls, space, track } from '@/theme/tokens';
@@ -24,6 +24,8 @@ export default function CustomerSign() {
   return (
     <SafeAreaView style={styles.screen}>
       <DotGrid variant="warm" cell={18} opacity={0.5} />
+      {/* Ornament in the top and bottom thirds only — never under the sign. */}
+      <LightTrailBackdrop variant="full" onNavy />
       <View style={styles.top}>
         <Pressable
           accessibilityRole="button"

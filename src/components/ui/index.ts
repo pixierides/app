@@ -5,7 +5,7 @@ export { Card } from './Card';
 export { DotGrid } from './DotGrid';
 export { IncludedRow } from './IncludedRow';
 export { Input } from './Input';
-export { LightTrail } from './LightTrail';
+export { LightTrail, LightTrailBackdrop } from './LightTrail';
 export { ListRow } from './ListRow';
 export { Logo } from './Logo';
 export { NameSign } from './NameSign';

@@ -11,6 +11,7 @@ import React from 'react';
 import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 import Svg, { Circle, G, Path } from 'react-native-svg';
 import { color, font, fs, radius } from '@/theme/tokens';
+import { useTheme } from '@/providers/theme';
 import { DotGrid } from './DotGrid';
 
 const TRAIL_PATH = 'M40 120 C 150 120, 190 54, 300 54 S 460 92, 560 44';
@@ -124,5 +125,87 @@ const styles = StyleSheet.create({
     fontFamily: font.body600,
     fontSize: fs.label,
     color: color.foam,
+  },
+});
+
+/**
+ * The backdrop variant — Phase 5's ornament. Hairline curves and a few
+ * orange dots suggesting a flight path, absolutely positioned BEHIND
+ * content. Decoration only: pointer-transparent, invisible to screen
+ * readers, zero layout shift.
+ *
+ * Static by decision, not omission: the drift animation was budgeted but
+ * static ships clean on Expo Go where the first animation would be the
+ * app's only one and the emulator jank is real. The motion tokens and the
+ * reduced-motion gate are waiting when it earns its movement.
+ *
+ * 'full' = two curves + 7 dots in the top and bottom bands (never the
+ * middle, where the sign card lives). 'sparse' = one curve + 4 dots for
+ * empty states.
+ */
+export function LightTrailBackdrop({
+  variant = 'full',
+  onNavy = false,
+  style,
+}: {
+  variant?: 'full' | 'sparse';
+  /** The mode-locked navy screen — themed screens read the theme. */
+  onNavy?: boolean;
+  style?: ViewStyle;
+}) {
+  const th = useTheme();
+  const dark = onNavy || th.mode === 'dark';
+  const curve = dark ? 'rgba(168,205,226,0.22)' : 'rgba(8,52,79,0.12)';
+  const dot = (o: number) => `rgba(249,115,22,${o})`;
+
+  const band = (d: string, dots: { x: number; y: number; r: number; o: number }[]) => (
+    <Svg viewBox="0 0 400 120" width="100%" height={120} preserveAspectRatio="none">
+      <Path d={d} fill="none" stroke={curve} strokeWidth={1} />
+      {dots.map((c, i) => (
+        <Circle key={i} cx={c.x} cy={c.y} r={c.r} fill={dot(c.o)} />
+      ))}
+    </Svg>
+  );
+
+  return (
+    <View
+      style={[StyleSheet.absoluteFill, style]}
+      pointerEvents="none"
+      importantForAccessibility="no-hide-descendants"
+      accessibilityElementsHidden
+    >
+      <View style={trailStyles.top}>
+        {band('M-10 90 C 90 20, 210 110, 410 30', [
+          { x: 60, y: 52, r: 3, o: 0.55 },
+          { x: 150, y: 62, r: 2.5, o: 0.4 },
+          { x: 250, y: 82, r: 3.5, o: 0.7 },
+          { x: 340, y: 48, r: 2.5, o: 0.5 },
+        ])}
+      </View>
+      {variant === 'full' ? (
+        <View style={trailStyles.bottom}>
+          {band('M-10 30 C 120 100, 260 10, 410 80', [
+            { x: 90, y: 62, r: 3, o: 0.5 },
+            { x: 220, y: 46, r: 2.5, o: 0.35 },
+            { x: 330, y: 62, r: 3.5, o: 0.65 },
+          ])}
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+const trailStyles = StyleSheet.create({
+  top: {
+    position: 'absolute',
+    top: '8%',
+    left: 0,
+    right: 0,
+  },
+  bottom: {
+    position: 'absolute',
+    bottom: '6%',
+    left: 0,
+    right: 0,
   },
 });

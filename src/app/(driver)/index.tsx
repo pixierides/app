@@ -9,7 +9,7 @@ import { router, useFocusEffect, type Href } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, Card, ListRow, RouteChip } from '@/components/ui';
+import { Button, Card, LightTrailBackdrop, ListRow, RouteChip } from '@/components/ui';
 import { setMyShift } from '@/lib/driver';
 import { addDays, easternDate, easternToday, labelForDay } from '@/lib/calendar';
 import { fetchDriverRuns, type DriverRun } from '@/lib/trips';
@@ -173,6 +173,8 @@ export default function DriverHome() {
         ) : (
           // 31b — honest empty state
           <View style={styles.empty}>
+            {/* Absolute, in the air above the headline — zero layout shift. */}
+            <LightTrailBackdrop variant="sparse" style={{ top: '8%' }} />
             <Text style={styles.emptyH1}>You&apos;re all caught up.</Text>
             <Text style={styles.emptySub}>
               Nothing left today.{' '}
