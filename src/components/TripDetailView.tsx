@@ -374,6 +374,8 @@ export function TripDetailView({
           </Card>
         ) : null}
 
+        {/* SOLID BY RULING (Phase 6): read at the kerb, at night, in glare —
+             this block never goes translucent. */}
         {upcoming && driverHere ? (
           <Card float texture pad={20} style={styles.block}>
             <Text style={styles.eyebrow}>AT THE DOOR</Text>

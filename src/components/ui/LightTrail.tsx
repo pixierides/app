@@ -12,6 +12,7 @@ import { View, Text, StyleSheet, type ViewStyle } from 'react-native';
 import Svg, { Circle, G, Path } from 'react-native-svg';
 import { color, font, fs, radius } from '@/theme/tokens';
 import { useTheme } from '@/providers/theme';
+import { themes } from '@/theme/themes';
 import { DotGrid } from './DotGrid';
 
 const TRAIL_PATH = 'M40 120 C 150 120, 190 54, 300 54 S 460 92, 560 44';
@@ -155,7 +156,9 @@ export function LightTrailBackdrop({
 }) {
   const th = useTheme();
   const dark = onNavy || th.mode === 'dark';
-  const curve = dark ? 'rgba(168,205,226,0.22)' : 'rgba(8,52,79,0.12)';
+  // The line tokens, not new literals: strong on navy so the hairline
+  // survives the dark ground, standard on the pale page.
+  const curve = dark ? themes.dark.dividerStrong : th.divider;
   const dot = (o: number) => `rgba(249,115,22,${o})`;
 
   const band = (d: string, dots: { x: number; y: number; r: number; o: number }[]) => (

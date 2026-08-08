@@ -584,7 +584,7 @@ const makeStyles = (t: Theme) =>
       gap: space.s3,
       padding: space.s4,
       borderRadius: radius.card,
-      backgroundColor: t.chipBg,
+      backgroundColor: t.surfaceTint, // solid — panel, not a chip (Phase 6)
     },
     alertLead: { fontFamily: font.body600, fontSize: fs.bodySm, color: t.textHeading },
     alertBody: { fontFamily: font.body400, fontSize: fs.sm, lineHeight: fs.sm * lh.data, color: t.textBody },
@@ -598,7 +598,7 @@ const makeStyles = (t: Theme) =>
       color: t.textBody,
       padding: space.s3,
       borderRadius: radius.input,
-      backgroundColor: t.chipBg,
+      backgroundColor: t.surfaceTint, // solid — panel, not a chip (Phase 6)
     },
     error: { fontFamily: font.body600, fontSize: fs.sm, color: t.textBody, textAlign: 'center' },
     footer: {

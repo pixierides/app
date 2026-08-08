@@ -263,6 +263,8 @@ const makeStyles = (t: Theme) =>
       fontSize: fs.sm,
       color: color.white,
     },
+    // The colour here is a dead default — the render site always overrides
+    // it with the event's own status fg. Kept only so the style is complete.
     evMeta: {
       fontFamily: font.body400,
       fontSize: fs.label,

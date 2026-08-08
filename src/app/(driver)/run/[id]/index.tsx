@@ -519,6 +519,9 @@ export default function RunScreen() {
   }
 
   // ——— At the kerb · the one countdown in the app ——————————
+  // SOLID SURFACES BY RULING (Phase 6): this screen is the app's
+  // highest-stakes reading moment — outside, night, glare, luggage in
+  // hand. Nothing here may ever go translucent, including over a map.
   // Thirty minutes is the airport's rule, not ours, which is why a clock is
   // allowed here and nowhere else. Running out is not a failure.
   if (run.driver_state === 'at_kerb') {

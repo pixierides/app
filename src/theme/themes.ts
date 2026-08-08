@@ -7,6 +7,11 @@
  * meaning when the lights go down. Status TEXT does invert: the light values
  * measure ~1.5:1 on the dark card surface and would vanish.
  *
+ * GLASS SHIPS NOWHERE (Phase 6 ruling). The guide allows translucency only
+ * on bars with content scrolling beneath — this app's tab bar is a flex
+ * sibling, nothing scrolls under it, so every surface is solid and the
+ * translucent token was removed rather than left as an invitation.
+ *
  * The four text tones are four DISTINCT values in both modes:
  *   textHeading — headings
  *   textPrimary — "text": body copy, values, anything a customer must read
@@ -28,12 +33,6 @@ export type Theme = {
   bgRaised: string;
   /** The solid card/input surface (Aero "surface-solid"). */
   surfaceCard: string;
-  /**
-   * Aero's translucent surface. Declared for Phases 2/6 (glass is for
-   * navigation and floating status only); NOTHING consumes it yet — cards
-   * stay solid in Phase 1.
-   */
-  surfaceTranslucent: string;
   /** Tinted surface — selected controls, information washes. */
   surfaceTint: string;
   /** Strong tinted surface — the heaviest non-card ground. */
@@ -74,7 +73,6 @@ export const themes: Record<ThemeMode, Theme> = {
     bgPageSoft: color.sky100,
     bgRaised: color.sky200,
     surfaceCard: color.white,
-    surfaceTranslucent: 'rgba(255,255,255,0.88)',
     surfaceTint: color.sky150,
     surfaceStrong: color.sky200,
     divider: 'rgba(8,52,79,0.10)',
@@ -101,7 +99,6 @@ export const themes: Record<ThemeMode, Theme> = {
     bgPageSoft: '#082A3F',
     bgRaised: color.navy900,
     surfaceCard: color.navy800,
-    surfaceTranslucent: 'rgba(14,74,110,0.66)',
     surfaceTint: color.navy900,
     surfaceStrong: color.navy700,
     divider: 'rgba(201,223,237,0.13)',

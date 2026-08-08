@@ -251,6 +251,8 @@ const makeStyles = (t: Theme) => StyleSheet.create({
     paddingBottom: space.s4,
     gap: space.s3,
   },
+  // TRIPWIRE EXEMPTION: Apple's brand rule — the Apple Pay button is black
+  // with white text, in every theme, not ours to restyle.
   applePay: {
     height: 52,
     borderRadius: radius.btn,

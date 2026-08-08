@@ -883,7 +883,9 @@ const makeStyles = (t: Theme) =>
       gap: space.s2,
       padding: space.s4,
       borderRadius: radius.card,
-      backgroundColor: t.chipBg,
+      // surfaceTint, not chipBg: panel-scale block, and chipBg is translucent
+    // in dark mode — surfaces are solid (Phase 6).
+    backgroundColor: t.surfaceTint,
     },
     errSummaryLead: { fontFamily: font.body600, fontSize: fs.sm, color: t.textHeading },
     errSummaryItem: {
