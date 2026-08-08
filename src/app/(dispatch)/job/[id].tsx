@@ -8,7 +8,7 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, Button, Card, Input } from '@/components/ui';
+import { Badge, Button, Card, Input, useDockClearance } from '@/components/ui';
 import {
   adjustmentLine,
   fetchOpenAdjustments,
@@ -58,6 +58,7 @@ const DEFAULT_MEET = 'Terminal A · door 2';
 
 export default function DispatchJob() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const dock = useDockClearance();
   const [trip, setTrip] = useState<DispatchTrip | null>(null);
   const [drivers, setDrivers] = useState<Driver[]>([]);
   const [driverId, setDriverId] = useState<string | null>(null);
@@ -97,7 +98,7 @@ export default function DispatchJob() {
     }, [load]),
   );
 
-  if (!trip) return <SafeAreaView style={styles.screen} />;
+  if (!trip) return <SafeAreaView style={styles.screen} edges={['top']} />;
 
   const cutoff = paymentDeadline(trip);
   const decide = pastCutoff(trip);
@@ -173,8 +174,8 @@ export default function DispatchJob() {
   );
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.scrollOuter}>
+    <SafeAreaView style={styles.screen} edges={['top']}>
+      <ScrollView contentContainerStyle={[styles.scrollOuter, { paddingBottom: dock }]}>
         <View style={styles.shell}>
           <View style={styles.top}>
             <Pressable

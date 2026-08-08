@@ -1,14 +1,13 @@
 /**
- * Dispatch shell — four tabs on the design-system TabBar.
- * Active tab brightens to white plus the small warm dot; never orange.
- * Icons are Lucide, ~1.8px stroke, foam/white — never orange.
+ * Dispatch shell — four tabs on the design-system floating dock.
+ * Active tab takes the heading colour and 600 weight; inactive is muted.
+ * Icons are Lucide outline, ~1.8px stroke — never orange.
  */
 import { Tabs } from 'expo-router';
 import { CalendarDays, CircleUser, ClipboardList, Inbox } from 'lucide-react-native';
 import { RoleGate } from '@/components/RoleGate';
 import { TabBar } from '@/components/ui';
 import { useTheme } from '@/providers/theme';
-import { color } from '@/theme/tokens';
 
 const TABS = [
   { name: 'index', label: 'Board', Icon: ClipboardList },
@@ -36,7 +35,7 @@ function DispatchTabs() {
                   <t.Icon
                     size={22}
                     strokeWidth={1.8}
-                    color={i === activeIdx ? color.white : color.foamDim}
+                    color={i === activeIdx ? th.textHeading : th.textBody}
                   />
                 ),
               }))}

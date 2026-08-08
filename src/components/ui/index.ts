@@ -11,5 +11,5 @@ export { Logo } from './Logo';
 export { NameSign } from './NameSign';
 export { PriceDisplay } from './PriceDisplay';
 export { RouteChip } from './RouteChip';
-export { TabBar } from './TabBar';
+export { TabBar, DOCK_HEIGHT, useDockClearance } from './TabBar';
 export { TripStatus } from './TripStatus';

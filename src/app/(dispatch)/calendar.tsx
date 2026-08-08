@@ -16,7 +16,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Calendar as MonthCalendar } from 'react-native-calendars';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, Card, ListRow } from '@/components/ui';
+import { Button, Card, ListRow, useDockClearance } from '@/components/ui';
 import { DispatchTimeline, type TimelineColumn } from '@/components/DispatchTimeline';
 import {
   addDays,
@@ -73,6 +73,7 @@ function statusPaint(t: DispatchTrip): { bg: string; fg: string } {
 export default function DispatchCalendar() {
   const th = useTheme();
   const styles = themed[th.mode];
+  const dock = useDockClearance();
   const [view, setView] = useState<ViewMode>('month');
   const [date, setDate] = useState<string>(easternToday());
   /** false = "wherever today is"; true = the dispatcher chose this day. */
@@ -279,7 +280,7 @@ export default function DispatchCalendar() {
         {view === 'day' ? (
           dayTrips.length ? (
             /* The day detail panel is the screen's one elevated block. */
-            <View style={[styles.calWrap, { boxShadow: th.shadowFloat }]}>
+            <View style={[styles.calWrap, { boxShadow: th.shadowFloat, marginBottom: dock - space.s3 }]}>
               <DispatchTimeline
                 columns={dayColumns}
                 stretch
@@ -295,7 +296,7 @@ export default function DispatchCalendar() {
         {/* ——— week ——— */}
         {view === 'week' ? (
           weekCount ? (
-            <View style={styles.calWrap}>
+            <View style={[styles.calWrap, { marginBottom: dock - space.s3 }]}>
               <DispatchTimeline
                 columns={weekColumns}
                 compact
@@ -312,7 +313,7 @@ export default function DispatchCalendar() {
 
         {/* ——— month ——— */}
         {view === 'month' ? (
-          <ScrollView contentContainerStyle={styles.monthScroll}>
+          <ScrollView contentContainerStyle={[styles.monthScroll, { paddingBottom: dock }]}>
             {/* The grid is flat — zero elevated blocks in month and week views
                 is the rule working, not a gap: nothing here is the current
                 action, the tap into a day is. */}

@@ -68,12 +68,14 @@ export const color = {
   foamDim: '#7BA6C2', // dark-mode faint — see themes.ts textDim
 } as const;
 
-/** Radius — Aero geometry. `sheet` is bottom sheets and centred modals ONLY. */
+/** Radius — Aero geometry. `sheet` is bottom sheets and centred modals ONLY.
+ * `dock` is the floating tab pill ONLY (Phase 6 addendum). */
 export const radius = {
   btn: 12,
   input: 16,
   card: 20,
   sheet: 28,
+  dock: 22,
   pill: 999,
 } as const;
 

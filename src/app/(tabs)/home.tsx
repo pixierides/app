@@ -24,7 +24,7 @@ import { useCallback, useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { TripDetailView } from '@/components/TripDetailView';
-import { Button, Card, Logo } from '@/components/ui';
+import { Button, Card, Logo, useDockClearance } from '@/components/ui';
 import { dollars, fetchMyTrips, type CustomerTrip } from '@/lib/booking';
 import { formatTime } from '@/lib/format';
 import { paymentDeadline } from '@/lib/dispatch';
@@ -62,6 +62,7 @@ function whenLine(t: CustomerTrip): string {
 export default function Home() {
   const th = useTheme();
   const styles = themed[th.mode];
+  const dock = useDockClearance();
   const { session, profile, profileLoading } = useAuth();
   const [trips, setTrips] = useState<CustomerTrip[] | null>(null);
 
@@ -101,7 +102,7 @@ export default function Home() {
   // day out would show the summary card reading "Paid. Your driver's details
   // arrive before pickup", which is the opposite of what is happening.
   if (next && (runUnderway(next) || next.status === 'reassigning' || hoursAway(next.pickup_at) <= 24)) {
-    return <TripDetailView trip={next} topSlot="none" />;
+    return <TripDetailView trip={next} topSlot="none" bottomClearance={dock} />;
   }
 
   // ——— 2 · upcoming ———
@@ -114,7 +115,9 @@ export default function Home() {
     const driverReady = !!next.driver_name && next.status === 'driver_assigned';
     return (
       <SafeAreaView style={styles.screen} edges={['top']}>
-        <View style={styles.topBody}>
+        {/* The dock floats over the page now — the bottom padding keeps the
+            secondary action above it. */}
+        <View style={[styles.topBody, { paddingBottom: dock }]}>
           <Logo variant="auto" size={13} />
 
           <Pressable
@@ -221,13 +224,16 @@ export default function Home() {
 function Shell({ children }: { children: React.ReactNode }) {
   const th = useTheme();
   const styles = themed[th.mode];
+  const dock = useDockClearance();
   return (
-    <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.screen} edges={['top']}>
       <View style={styles.top}>
         <Logo variant="auto" size={13} />
       </View>
       <View style={styles.spacer} />
-      <View style={styles.actions}>{children}</View>
+      {/* Clearance instead of the bottom edge: the primary must sit above
+          the floating dock, and the dock already accounts for the inset. */}
+      <View style={[styles.actions, { paddingBottom: dock }]}>{children}</View>
     </SafeAreaView>
   );
 }

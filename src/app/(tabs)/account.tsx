@@ -12,7 +12,7 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Button, Section } from '@/components/ui';
+import { Button, Section, useDockClearance } from '@/components/ui';
 import { formatUsPhone } from '@/lib/phone';
 import { useAuth } from '@/providers/auth';
 import { useTheme } from '@/providers/theme';
@@ -22,6 +22,7 @@ import { font, fs, lh, ls, lsDisplay, space, track } from '@/theme/tokens';
 export default function Account() {
   const th = useTheme();
   const styles = themed[th.mode];
+  const dock = useDockClearance();
   const { profile, session, signOut } = useAuth();
 
   // The phone is the account: it is how you signed in and how your driver
@@ -30,7 +31,8 @@ export default function Account() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <View style={styles.body}>
+      {/* Sign out is bottom-anchored — the clearance keeps it above the dock. */}
+      <View style={[styles.body, { paddingBottom: dock }]}>
         <Text style={styles.h1}>Account</Text>
 
         <Section first style={styles.card}>

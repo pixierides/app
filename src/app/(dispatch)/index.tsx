@@ -9,7 +9,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, Button, Card, IncludedRow, ListRow } from '@/components/ui';
+import { Badge, Button, Card, IncludedRow, ListRow, useDockClearance } from '@/components/ui';
 import { dollars } from '@/lib/booking';
 import { flightLabel } from '@/lib/airlines';
 import {
@@ -87,6 +87,7 @@ function lookReason(t: DispatchTrip): string | null {
 export default function Board() {
   const th = useTheme();
   const styles = themed[th.mode];
+  const dock = useDockClearance();
   const { profile } = useAuth();
   const [trips, setTrips] = useState<DispatchTrip[] | null>(null);
   const [drivers, setDrivers] = useState<Driver[]>([]);
@@ -222,7 +223,7 @@ export default function Board() {
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScrollView
-        contentContainerStyle={styles.scrollOuter}
+        contentContainerStyle={[styles.scrollOuter, { paddingBottom: dock }]}
         refreshControl={
           <RefreshControl
             tintColor={th.textDim}

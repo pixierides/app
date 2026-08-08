@@ -21,7 +21,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { DateTimeField } from '@/components/DateTimeField';
 import { FieldError, Picker, Segmented } from '@/components/FormControls';
-import { Button, Input } from '@/components/ui';
+import { Button, DOCK_HEIGHT, Input } from '@/components/ui';
 import {
   fetchTripForEdit,
   isEditable,
@@ -527,7 +527,9 @@ export default function EditBooking() {
         <FieldError>{error ?? undefined}</FieldError>
       </ScrollView>
 
-      <View style={styles.footer}>
+      {/* The floating dock hovers where this footer used to end — the margin
+          keeps Save reachable above it (the bottom edge covers the inset). */}
+      <View style={[styles.footer, { marginBottom: DOCK_HEIGHT + space.s6 }]}>
         <Text style={styles.count}>
           {changeCount === 0
             ? 'No changes yet'

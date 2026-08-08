@@ -59,10 +59,14 @@ function dateLine(t: CustomerTrip): string {
 export function TripDetailView({
   trip,
   topSlot = 'back',
+  bottomClearance,
 }: {
   trip: CustomerTrip;
   /** 'back' on the trip route; 'none' when this view IS the home screen. */
   topSlot?: 'back' | 'none';
+  /** Set when this view renders under the floating dock (the home tab);
+   * the trip route has no dock and passes nothing. */
+  bottomClearance?: number;
 }) {
   const th = useTheme();
   const styles = themed[th.mode];
@@ -131,7 +135,12 @@ export function TripDetailView({
 
   return (
     <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.scroll,
+          bottomClearance ? { paddingBottom: bottomClearance } : null,
+        ]}
+      >
         <View style={styles.top}>
           {topSlot === 'back' ? (
             <Pressable

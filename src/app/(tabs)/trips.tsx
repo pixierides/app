@@ -6,7 +6,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, LightTrailBackdrop, ListRow } from '@/components/ui';
+import { Badge, LightTrailBackdrop, ListRow, useDockClearance } from '@/components/ui';
 import { fetchMyTrips, STATUS_LABELS, type CustomerTrip } from '@/lib/booking';
 import { formatTime } from '@/lib/format';
 import { color, font, fs, lh, lsDisplay, radius, space, track } from '@/theme/tokens';
@@ -16,6 +16,7 @@ import { themes, type Theme } from '@/theme/themes';
 export default function Trips() {
   const th = useTheme();
   const styles = themed[th.mode];
+  const dock = useDockClearance();
   const [trips, setTrips] = useState<CustomerTrip[] | null>(null);
   const [tab, setTab] = useState<'upcoming' | 'past'>('upcoming');
 
@@ -36,8 +37,8 @@ export default function Trips() {
   const shown = tab === 'upcoming' ? upcoming : past;
 
   return (
-    <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+    <SafeAreaView style={styles.screen} edges={['top']}>
+      <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: dock }]}>
         <View style={styles.top}>
           <Pressable
             accessibilityRole="button"

@@ -8,7 +8,7 @@ import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, ListRow } from '@/components/ui';
+import { Badge, ListRow, useDockClearance } from '@/components/ui';
 import { fetchDispatchTrips, type DispatchTrip } from '@/lib/dispatch';
 import { easternDate, easternToday } from '@/lib/calendar';
 import { formatTime } from '@/lib/format';
@@ -37,6 +37,7 @@ function proximity(pickupAtIso: string): string {
 export default function Requests() {
   const th = useTheme();
   const styles = themed[th.mode];
+  const dock = useDockClearance();
   const [trips, setTrips] = useState<DispatchTrip[] | null>(null);
 
   useFocusEffect(
@@ -59,7 +60,7 @@ export default function Requests() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scrollOuter}>
+      <ScrollView contentContainerStyle={[styles.scrollOuter, { paddingBottom: dock }]}>
         <View style={styles.shell}>
           <Text style={styles.h1}>Requests.</Text>
           {trips === null ? null : rows.length ? (

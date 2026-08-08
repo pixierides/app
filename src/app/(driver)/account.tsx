@@ -6,7 +6,7 @@ import { useCallback, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, Button, Section } from '@/components/ui';
+import { Badge, Button, Section, useDockClearance } from '@/components/ui';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { VehiclePicker } from '@/components/VehiclePicker';
 import { setMyShift } from '@/lib/driver';
@@ -19,6 +19,7 @@ import { color, font, fs, lh, ls, lsDisplay, radius, space, track } from '@/them
 export default function DriverAccount() {
   const th = useTheme();
   const styles = themed[th.mode];
+  const dock = useDockClearance();
   const { profile, refreshProfile, signOut } = useAuth();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [pickingCar, setPickingCar] = useState(false);
@@ -50,7 +51,7 @@ export default function DriverAccount() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: dock }]}>
         <Text style={styles.h1}>Account.</Text>
 
         <Section first style={styles.card}>

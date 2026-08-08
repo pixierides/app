@@ -9,7 +9,7 @@ import { router, useFocusEffect, type Href } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, Card, LightTrailBackdrop, ListRow, RouteChip } from '@/components/ui';
+import { Button, Card, LightTrailBackdrop, ListRow, RouteChip, useDockClearance } from '@/components/ui';
 import { setMyShift } from '@/lib/driver';
 import { addDays, easternDate, easternToday, labelForDay } from '@/lib/calendar';
 import { fetchDriverRuns, type DriverRun } from '@/lib/trips';
@@ -22,6 +22,7 @@ import { color, font, fs, lh, ls, lsDisplay, radius, space, track } from '@/them
 export default function DriverHome() {
   const th = useTheme();
   const styles = themed[th.mode];
+  const dock = useDockClearance();
   const { profile, refreshProfile } = useAuth();
   const [runs, setRuns] = useState<DriverRun[] | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -84,7 +85,7 @@ export default function DriverHome() {
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScrollView
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, { paddingBottom: dock }]}
         refreshControl={
           <RefreshControl
             tintColor={th.textDim}

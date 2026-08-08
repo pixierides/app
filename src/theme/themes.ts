@@ -7,10 +7,13 @@
  * meaning when the lights go down. Status TEXT does invert: the light values
  * measure ~1.5:1 on the dark card surface and would vanish.
  *
- * GLASS SHIPS NOWHERE (Phase 6 ruling). The guide allows translucency only
- * on bars with content scrolling beneath — this app's tab bar is a flex
- * sibling, nothing scrolls under it, so every surface is solid and the
- * translucent token was removed rather than left as an invitation.
+ * GLASS SHIPS IN EXACTLY ONE PLACE (Phase 6 + tab-bar addendum): the
+ * floating tab dock. The addendum detaches the dock from the screen edges,
+ * so content genuinely scrolls beneath it — the one case the guide reserves
+ * translucency for. The driver's dock is the same pill built solid: driver
+ * screens carry zero transparency (Phase 6 §2.1 outranks the glass
+ * allowance). Every other surface stays solid; `surfaceTranslucent` exists
+ * for the dock ONLY and must not spread.
  *
  * The four text tones are four DISTINCT values in both modes:
  *   textHeading — headings
@@ -37,6 +40,8 @@ export type Theme = {
   surfaceTint: string;
   /** Strong tinted surface — the heaviest non-card ground. */
   surfaceStrong: string;
+  /** The one glass surface — the floating tab dock ONLY, never the driver's. */
+  surfaceTranslucent: string;
   /** Hairline ("line"). */
   divider: string;
   /** Strong border ("line-strong") — input borders, emphasised rules. */
@@ -75,6 +80,7 @@ export const themes: Record<ThemeMode, Theme> = {
     surfaceCard: color.white,
     surfaceTint: color.sky150,
     surfaceStrong: color.sky200,
+    surfaceTranslucent: 'rgba(255,255,255,0.88)',
     divider: 'rgba(8,52,79,0.10)',
     dividerStrong: 'rgba(8,52,79,0.18)',
     textHeading: color.navy950,
@@ -101,6 +107,7 @@ export const themes: Record<ThemeMode, Theme> = {
     surfaceCard: color.navy800,
     surfaceTint: color.navy900,
     surfaceStrong: color.navy700,
+    surfaceTranslucent: 'rgba(14,74,110,0.66)', // navy800 at .66
     divider: 'rgba(201,223,237,0.13)',
     dividerStrong: 'rgba(201,223,237,0.22)',
     textHeading: color.white,

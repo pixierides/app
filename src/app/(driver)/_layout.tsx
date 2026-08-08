@@ -9,7 +9,6 @@ import { CalendarRange, CircleUser, ClipboardList } from 'lucide-react-native';
 import { RoleGate } from '@/components/RoleGate';
 import { TabBar } from '@/components/ui';
 import { useTheme } from '@/providers/theme';
-import { color } from '@/theme/tokens';
 
 const TABS = [
   { name: 'index', label: 'Home', Icon: ClipboardList },
@@ -28,15 +27,18 @@ function DriverTabs() {
       tabBar={({ state, navigation }) => {
         const activeRoute = state.routes[state.index]?.name;
         const activeIdx = TABS.findIndex((t) => t.name === activeRoute);
+        // solid: driver screens carry zero transparency — Phase 6 §2.1
+        // outranks the dock's glass allowance.
         return (
           <TabBar
+            solid
             items={TABS.map((t, i) => ({
               label: t.label,
               icon: (
                 <t.Icon
                   size={22}
                   strokeWidth={1.8}
-                  color={i === activeIdx ? color.white : color.foamDim}
+                  color={i === activeIdx ? th.textHeading : th.textBody}
                 />
               ),
             }))}

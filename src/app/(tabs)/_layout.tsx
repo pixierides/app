@@ -17,15 +17,14 @@
  * The signed-out screen is the root route, outside this group, so it shows no tab
  * bar either: there is nothing to navigate to until you are in.
  *
- * Active tab brightens to white plus the small warm dot; never orange. Icons are
- * Lucide, foam or white — never orange.
+ * Active tab takes the heading colour and 600 weight; inactive is muted.
+ * Icons are Lucide outline — never orange.
  */
 import { Tabs } from 'expo-router';
 import { CarFront, CircleUser, House } from 'lucide-react-native';
 import { RoleGate } from '@/components/RoleGate';
 import { TabBar } from '@/components/ui';
 import { useTheme } from '@/providers/theme';
-import { color } from '@/theme/tokens';
 
 const TABS = [
   { name: 'home', label: 'Home', Icon: House },
@@ -52,7 +51,7 @@ function CustomerTabs() {
                 <t.Icon
                   size={22}
                   strokeWidth={1.8}
-                  color={i === activeIdx ? color.white : color.foamDim}
+                  color={i === activeIdx ? th.textHeading : th.textBody}
                 />
               ),
             }))}

@@ -18,7 +18,7 @@ import { router, useFocusEffect, useLocalSearchParams, type Href } from 'expo-ro
 import { useCallback, useEffect, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Badge, Button, Card, IncludedRow, NameSign } from '@/components/ui';
+import { Badge, Button, Card, IncludedRow, NameSign, useDockClearance } from '@/components/ui';
 import { FlightUpdateSheet } from '@/components/FlightUpdateSheet';
 import { Phone, MessageSquare } from 'lucide-react-native';
 import { checkedAgo, hasLanded, openFlightSearch, updateFlightAsDriver } from '@/lib/flight';
@@ -113,6 +113,7 @@ function FlightBlock({
 export default function RunScreen() {
   const th = useTheme();
   const styles = themed[th.mode];
+  const dock = useDockClearance();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { profile } = useAuth();
   const [runs, setRuns] = useState<DriverRun[] | null>(null);
@@ -149,12 +150,12 @@ export default function RunScreen() {
     return () => clearInterval(t);
   }, [atKerb]);
 
-  if (!runs) return <SafeAreaView style={styles.screen} />;
+  if (!runs) return <SafeAreaView style={styles.screen} edges={['top']} />;
 
   const run = runs.find((r) => r.id === id);
   if (!run) {
     return (
-      <SafeAreaView style={styles.screen}>
+      <SafeAreaView style={styles.screen} edges={['top']}>
         <View style={styles.body}>
           <Text style={styles.h1}>This run has moved.</Text>
           <Button variant="ghost" onPress={() => router.back()}>
@@ -250,8 +251,8 @@ export default function RunScreen() {
     const door = doorFrom(run.meet_point);
     const terminal = terminalLabel(run.flight_terminal, run.meet_point);
     return (
-      <SafeAreaView style={styles.screen}>
-        <ScrollView contentContainerStyle={styles.scroll}>
+      <SafeAreaView style={styles.screen} edges={['top']}>
+        <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: dock }]}>
           {back}
           <Text style={styles.eyebrow}>
             PICKUP {position + 1} OF {active.length} · {run.origin.toUpperCase()}
@@ -335,8 +336,8 @@ export default function RunScreen() {
   // minute forty in a cell lot.
   if (run.driver_state === 'holding') {
     return (
-      <SafeAreaView style={styles.screen}>
-        <ScrollView contentContainerStyle={styles.scroll}>
+      <SafeAreaView style={styles.screen} edges={['top']}>
+        <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: dock }]}>
           {back}
           <Text style={styles.eyebrow}>
             IN THE CELL LOT
@@ -445,8 +446,8 @@ export default function RunScreen() {
     const door = doorFrom(run.meet_point);
     const terminal = terminalLabel(run.flight_terminal, run.meet_point);
     return (
-      <SafeAreaView style={styles.screen}>
-        <ScrollView contentContainerStyle={styles.scroll}>
+      <SafeAreaView style={styles.screen} edges={['top']}>
+        <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: dock }]}>
           {back}
           <Text style={styles.eyebrow}>
             {run.kerb_loops > 0 ? `COMING BACK ROUND · LOOP ${run.kerb_loops + 1}` : 'THEY HAVE THEIR BAGS'}
@@ -532,8 +533,8 @@ export default function RunScreen() {
     const clock = `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
 
     return (
-      <SafeAreaView style={styles.screen}>
-        <ScrollView contentContainerStyle={styles.scroll}>
+      <SafeAreaView style={styles.screen} edges={['top']}>
+        <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: dock }]}>
           {back}
           <Text style={styles.eyebrow}>
             AT THE KERB
@@ -635,8 +636,8 @@ export default function RunScreen() {
   // ——— 29a · Trip in progress ——————————————————————————————
   if (run.driver_state === 'on_trip') {
     return (
-      <SafeAreaView style={styles.screen}>
-        <ScrollView contentContainerStyle={styles.scroll}>
+      <SafeAreaView style={styles.screen} edges={['top']}>
+        <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: dock }]}>
           {back}
           <Text style={styles.eyebrow}>TRIP IN PROGRESS</Text>
           <Text style={styles.h1}>To {run.destination}.</Text>
@@ -681,8 +682,8 @@ export default function RunScreen() {
 
   // ——— 30a · Trip complete ————————————————————————————————
   return (
-    <SafeAreaView style={styles.screen}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+    <SafeAreaView style={styles.screen} edges={['top']}>
+      <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: dock }]}>
         <Text style={styles.eyebrow}>DROP-OFF COMPLETE</Text>
         <Text style={styles.h1}>Nice run, {firstName(profile?.full_name)}.</Text>
 

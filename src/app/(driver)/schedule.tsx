@@ -6,7 +6,7 @@ import { router, useFocusEffect, type Href } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ListRow } from '@/components/ui';
+import { ListRow, useDockClearance } from '@/components/ui';
 import { addDays, easternDate, easternToday, labelForDay } from '@/lib/calendar';
 import { fetchDriverRuns, type DriverRun } from '@/lib/trips';
 import { formatTime } from '@/lib/format';
@@ -19,6 +19,7 @@ const DAYS_AHEAD = 7;
 export default function DriverSchedule() {
   const th = useTheme();
   const styles = themed[th.mode];
+  const dock = useDockClearance();
   const [runs, setRuns] = useState<DriverRun[] | null>(null);
 
   useFocusEffect(
@@ -42,7 +43,7 @@ export default function DriverSchedule() {
 
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scroll}>
+      <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: dock }]}>
         <Text style={styles.h1}>The week ahead.</Text>
 
         {runs === null ? null : byDay.length ? (
